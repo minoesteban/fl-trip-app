@@ -1,0 +1,501 @@
+[
+  {
+    "key": "1",
+    "name": "l'eterna roma",
+    "city": "Roma",
+    "country": "Italia",
+    "place_id": "ChIJu46S-ZZhLxMROG5lkwZ3D7k",
+    "creator": "giorgio",
+    "language": "IT",
+    "price": 8.5,
+    "purchased": true,
+    "saved": true,
+    "region": {
+      "latitude": 41.8919296,
+      "longitude": 12.5113297,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "1.1",
+        "name": "Colosseo",
+        "order": 1,
+        "rating": 4.1,
+        "place_id": "ChIJrRMgU7ZhLxMRxAOFkC7I8Sg",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.89020210802678,
+          "longitude": 12.492227554321289
+        }
+      },
+      {
+        "key": "1.2",
+        "name": "Piazza San Pietro",
+        "order": 2,
+        "rating": 4.2,
+        "place_id": "ChIJXRn8xopgLxMRxZ78rxjWwO8",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.902221143756634,
+          "longitude": 12.456725835800171
+        }
+      },
+      {
+        "key": "1.3",
+        "name": "Musei Vaticani",
+        "order": 3,
+        "rating": 4.3,
+        "place_id": "ChIJKcGbg2NgLxMRthZkUqDs4M8",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.90649314638965,
+          "longitude": 12.453646659851074
+        }
+      },
+      {
+        "key": "1.4",
+        "name": "Galleria Borghese",
+        "order": 4,
+        "rating": 4.4,
+        "place_id": "ChIJq-bXVgRhLxMRv3vgOXaktBs",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.91422194991033,
+          "longitude": 12.492141723632812
+        }
+      },
+      {
+        "key": "1.5",
+        "name": "Fontana di Trevi",
+        "order": 5,
+        "rating": 4.5,
+        "place_id": "ChIJ1UCDJ1NgLxMRtrsCzOHxdvY",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.90093549448897,
+          "longitude": 12.483301162719727
+        }
+      }
+    ]
+  },
+  {
+    "key": "2",
+    "name": "lights of paris",
+    "city": "Paris",
+    "country": "France",
+    "place_id": "ChIJD7fiBh9u5kcRYJSMaMOCCwQ",
+    "creator": "pierre",
+    "language": "US",
+    "price": 10.0,
+    "purchased": true,
+    "saved": true,
+    "region": {
+      "latitude": 48.8534088,
+      "longitude": 2.3487999,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "2.1",
+        "name": "Musée du Louvre",
+        "order": 1,
+        "rating": 4.3,
+        "place_id": "ChIJD3uTd9hx5kcR1IQvGfr8dbk",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 48.86066691898782,
+          "longitude": 2.337629310786724
+        }
+      },
+      {
+        "key": "2.2",
+        "name": "Tour Eiffel",
+        "order": 2,
+        "rating": 4.3,
+        "place_id": "ChIJLU7jZClu5kcR4PcOOO6p3I0",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 48.858352798373474,
+          "longitude": 2.2945386171340942
+        }
+      },
+      {
+        "key": "2.3",
+        "name": "Palais du Luxembourg",
+        "order": 3,
+        "rating": 4.3,
+        "place_id": "ChIJAVjEb9tx5kcRxWEv0cQd29s",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 48.84826727186008,
+          "longitude": 2.3372983932495117
+        }
+      }
+    ]
+  },
+  {
+    "key": "3",
+    "name": "cultural berlin",
+    "city": "Berlin",
+    "country": "Germany",
+    "place_id": "ChIJAVkDPzdOqEcRcDteW0YgIQQ",
+    "creator": "giorgio",
+    "language": "GB",
+    "rating": 4.45,
+    "price": 0.0,
+    "purchased": false,
+    "saved": true,
+    "region": {
+      "latitude": 52.5243683,
+      "longitude": 13.4105301,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "3.1",
+        "name": "Alexanderplatz",
+        "order": 1,
+        "rating": 4.0,
+        "place_id": "ChIJbygR2x5OqEcRbhbkZsMB_DA",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 52.5219136885478,
+          "longitude": 13.413233757019043
+        }
+      },
+      {
+        "key": "3.2",
+        "name": "Checkpoint Charlie",
+        "order": 2,
+        "rating": 4.0,
+        "place_id": "ChIJzdgmXNFRqEcRyIl9R0IApSM",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 52.50744515744915,
+          "longitude": 13.390402793884277
+        }
+      },
+      {
+        "key": "3.3",
+        "name": "Jüdisches Museum Berlin",
+        "order": 3,
+        "rating": 4.0,
+        "place_id": "ChIJ-UrRPdVRqEcRTzDm7VTSLEw",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 52.50229906218524,
+          "longitude": 13.395466804504395
+        }
+      }
+    ]
+  },
+  {
+    "key": "4",
+    "name": "to prague beer!",
+    "city": "Prague",
+    "country": "Czech Republic",
+    "place_id": "ChIJi3lwCZyTC0cRkEAWZg-vAAQ",
+    "creator": "topguides",
+    "language": "US",
+    "rating": 4.67,
+    "price": 0.0,
+    "purchased": true,
+    "saved": true,
+    "region": {
+      "latitude": 50.0880394,
+      "longitude": 14.4207602,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "4.1",
+        "name": "Karlův most",
+        "order": 1,
+        "rating": 4.0,
+        "place_id": "ChIJn7WO5eWUC0cRJrHT0TiXIHU",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 50.08648026273381,
+          "longitude": 14.411433935165403
+        }
+      },
+      {
+        "key": "4.2",
+        "name": "Pražský hrad",
+        "order": 2,
+        "rating": 4.0,
+        "place_id": "ChIJw7ckbB6VC0cRnyUSr4g8zyo",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 50.091071637395345,
+          "longitude": 14.401617050170898
+        }
+      },
+      {
+        "key": "4.3",
+        "name": "Tančící dům",
+        "order": 3,
+        "rating": 4.0,
+        "place_id": "ChIJFz83wvaUC0cRRDMLBTdlAZM",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 50.07540270745859,
+          "longitude": 14.414191246032715
+        }
+      }
+    ]
+  },
+  {
+    "key": "5",
+    "name": "red amsterdam",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "place_id": "ChIJVXealLU_xkcRja_At0z9AGY",
+    "creator": "sandemasnetherlands",
+    "language": "GB",
+    "rating": 3.89,
+    "price": 0.0,
+    "purchased": false,
+    "saved": true,
+    "region": {
+      "latitude": 52.3740311,
+      "longitude": 4.8896899,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "5.1",
+        "name": "Anne Frank Huis",
+        "order": 1,
+        "rating": 4.0,
+        "place_id": "ChIJSRE-IcUJxkcRCltjPmVdmtQ",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 52.3752061888951,
+          "longitude": 4.883980751037598
+        }
+      },
+      {
+        "key": "5.2",
+        "name": "Nationaal Monument",
+        "order": 2,
+        "rating": 4.0,
+        "place_id": "ChIJEUO-OccJxkcR4VAAGRIGuKA",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 52.37282198816532,
+          "longitude": 4.893701076507568
+        }
+      }
+    ]
+  },
+  {
+    "key": "6",
+    "name": "della nostra storia",
+    "city": "Roma",
+    "country": "Italy",
+    "place_id": "ChIJu46S-ZZhLxMROG5lkwZ3D7k",
+    "creator": "jorge",
+    "language": "es",
+    "price": 0.0,
+    "purchased": true,
+    "saved": true,
+    "region": {
+      "latitude": 41.8919296,
+      "longitude": 12.5113297,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "6.1",
+        "name": "Colosseo",
+        "order": 1,
+        "rating": 3.1,
+        "place_id": "ChIJrRMgU7ZhLxMRxAOFkC7I8Sg",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.89020210802678,
+          "longitude": 12.492227554321289
+        }
+      },
+      {
+        "key": "6.2",
+        "name": "Piazza San Pietro",
+        "order": 2,
+        "rating": 3.2,
+        "place_id": "ChIJXRn8xopgLxMRxZ78rxjWwO8",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.902221143756634,
+          "longitude": 12.456725835800171
+        }
+      },
+      {
+        "key": "6.3",
+        "name": "Musei Vaticani",
+        "order": 3,
+        "rating": 3.3,
+        "place_id": "ChIJKcGbg2NgLxMRthZkUqDs4M8",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.90649314638965,
+          "longitude": 12.453646659851074
+        }
+      },
+      {
+        "key": "6.4",
+        "name": "Galleria Borghese",
+        "order": 4,
+        "rating": 3.4,
+        "place_id": "ChIJq-bXVgRhLxMRv3vgOXaktBs",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.91422194991033,
+          "longitude": 12.492141723632812
+        }
+      },
+      {
+        "key": "6.5",
+        "name": "Fontana di Trevi",
+        "order": 5,
+        "rating": 3.5,
+        "place_id": "ChIJ1UCDJ1NgLxMRtrsCzOHxdvY",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 41.90093549448897,
+          "longitude": 12.483301162719727
+        }
+      }
+    ]
+  },
+  {
+    "key": "7",
+    "name": "toujours paris",
+    "city": "Paris",
+    "country": "France",
+    "place_id": "ChIJD7fiBh9u5kcRYJSMaMOCCwQ",
+    "creator": "sandemansfrance",
+    "language": "fr",
+    "price": 0.0,
+    "purchased": true,
+    "saved": true,
+    "region": {
+      "latitude": 48.8534088,
+      "longitude": 2.3487999,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "7.1",
+        "name": "Musée du Louvre",
+        "order": 1,
+        "rating": 3.8,
+        "place_id": "ChIJD3uTd9hx5kcR1IQvGfr8dbk",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 48.86066691898782,
+          "longitude": 2.337629310786724
+        }
+      },
+      {
+        "key": "7.2",
+        "name": "Tour Eiffel",
+        "order": 2,
+        "rating": 3.8,
+        "place_id": "ChIJLU7jZClu5kcR4PcOOO6p3I0",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 48.858352798373474,
+          "longitude": 2.2945386171340942
+        }
+      },
+      {
+        "key": "7.3",
+        "name": "Panthéon",
+        "order": 3,
+        "rating": 3.7,
+        "place_id": "ChIJc8mX0udx5kcRWKcjTwDr5QA",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 48.846219781212476,
+          "longitude": 2.3464179039001465
+        }
+      },
+      {
+        "key": "7.4",
+        "name": "Sainte Chapelle",
+        "order": 4,
+        "rating": 3.9,
+        "place_id": "ChIJR3122B9u5kcRaCck3PlB9DM",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 48.85542577069508,
+          "longitude": 2.344980239868164
+        }
+      }
+    ]
+  },
+  {
+    "key": "8",
+    "name": "alchemist prague",
+    "city": "Prague",
+    "country": "Czech Republic",
+    "place_id": "ChIJi3lwCZyTC0cRkEAWZg-vAAQ",
+    "creator": "sandemansczech",
+    "language": "GB",
+    "price": 0.0,
+    "purchased": true,
+    "saved": true,
+    "region": {
+      "latitude": 50.0880394,
+      "longitude": 14.4207602,
+      "latitudeDelta": 0.09,
+      "longitudeDelta": 0.04
+    },
+    "pois": [
+      {
+        "key": "8.1",
+        "name": "Karlův most",
+        "order": 1,
+        "rating": 4.1,
+        "place_id": "ChIJn7WO5eWUC0cRJrHT0TiXIHU",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 50.08648026273381,
+          "longitude": 14.411433935165403
+        }
+      },
+      {
+        "key": "8.2",
+        "name": "Pražský hrad",
+        "order": 2,
+        "rating": 4.2,
+        "place_id": "ChIJw7ckbB6VC0cRnyUSr4g8zyo",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 50.091071637395345,
+          "longitude": 14.401617050170898
+        }
+      },
+      {
+        "key": "8.3",
+        "name": "Prašná brána",
+        "order": 3,
+        "rating": 4.3,
+        "place_id": "ChIJBfIPBeuUC0cRphNG7F-4SZM",
+        "price": 0.0,
+        "coordinates": {
+          "latitude": 50.08727191043621,
+          "longitude": 14.427795410156248
+        }
+      }
+    ]
+  }
+]
