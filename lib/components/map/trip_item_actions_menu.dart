@@ -11,10 +11,9 @@ class TripOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
-        padding: EdgeInsets.all(0),
         icon: Icon(
           Icons.more_vert,
-          color: Colors.grey[600],
+          color: Colors.grey[800],
           size: 20,
         ),
         onSelected: (value) {},

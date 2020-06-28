@@ -4,15 +4,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tripit/models/poi_model.dart';
 import 'package:tripit/models/trip_model.dart';
 
 class TripMap extends StatefulWidget {
   final Position userPosition;
   final Trip trip;
-  TripMap({
-    this.trip,
-    this.userPosition,
-  });
+  final String selectedPoiKey;
+
+  TripMap(this.trip, this.userPosition, this.selectedPoiKey);
 
   @override
   _TripMapState createState() => _TripMapState();
@@ -24,7 +24,6 @@ class _TripMapState extends State<TripMap> {
   Set<Marker> _loadMarkers(Trip _trip) {
     Set<Marker> _markers = _trip.pois
         .map((t) => Marker(
-            icon: BitmapDescriptor.defaultMarker,
             markerId: MarkerId(t.key),
             draggable: false,
             position: LatLng(t.coordinates.latitude, t.coordinates.longitude),
@@ -47,7 +46,33 @@ class _TripMapState extends State<TripMap> {
         if (latLng.longitude < y0) y0 = latLng.longitude;
       }
     }
-    return LatLngBounds(northeast: LatLng(x1, y1), southwest: LatLng(x0, y0));
+    return LatLngBounds(
+        northeast: LatLng(x1 + 0.005, y1 + 0.005),
+        southwest: LatLng(x0 - 0.005, y0 - 0.005));
+  }
+
+  _centerMap(GoogleMapController controller) {
+    Future.delayed(
+        Duration(milliseconds: 200),
+        () => controller.animateCamera(CameraUpdate.newLatLngBounds(
+            boundsFromLatLngList(widget.trip.pois
+                .map((poi) =>
+                    LatLng(poi.coordinates.latitude, poi.coordinates.longitude))
+                .toList()),
+            1)));
+  }
+
+  _moveToMarker(GoogleMapController controller, String selectedPoiKey) {
+    Poi selectedPoi =
+        widget.trip.pois.singleWhere((poi) => poi.key == selectedPoiKey);
+    Future.delayed(
+        Duration(milliseconds: 200),
+        () => controller.animateCamera(CameraUpdate.newLatLngBounds(
+            boundsFromLatLngList([
+              LatLng(selectedPoi.coordinates.latitude,
+                  selectedPoi.coordinates.longitude)
+            ]),
+            1)));
   }
 
   @override
@@ -58,9 +83,7 @@ class _TripMapState extends State<TripMap> {
     );
 
     return Container(
-      height: MediaQuery.of(context).orientation == Orientation.portrait
-          ? MediaQuery.of(context).size.height / 2.5
-          : MediaQuery.of(context).size.width / 2.5,
+      height: 300,
       padding: EdgeInsets.all(10),
       child: GoogleMap(
         liteModeEnabled: Platform.isAndroid ? true : null,
@@ -73,14 +96,10 @@ class _TripMapState extends State<TripMap> {
         markers: _loadMarkers(widget.trip),
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
-          Future.delayed(
-              Duration(milliseconds: 200),
-              () => controller.animateCamera(CameraUpdate.newLatLngBounds(
-                  boundsFromLatLngList(widget.trip.pois
-                      .map((poi) => LatLng(
-                          poi.coordinates.latitude, poi.coordinates.longitude))
-                      .toList()),
-                  1)));
+          print('${widget.selectedPoiKey}');
+          widget.selectedPoiKey == null
+              ? _centerMap(controller)
+              : _moveToMarker(controller, widget.selectedPoiKey);
         },
       ),
     );

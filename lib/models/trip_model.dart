@@ -4,6 +4,7 @@ import 'region_model.dart';
 class Trip {
   String key;
   String name;
+  String description;
   String city;
   String country;
   String placeId;
@@ -19,6 +20,7 @@ class Trip {
   Trip(
       {this.price,
       this.name,
+      this.description,
       this.key,
       this.city,
       this.country,
@@ -51,11 +53,12 @@ class Trip {
       key: json['key'] == null ? null : json['key'],
       price: json['price'] == null ? null : json['price'],
       name: json['name'] == null ? null : json['name'],
+      description: json['description'] == null ? null : json['description'],
       city: json['city'] == null ? null : json['city'],
       country: json['country'] == null ? null : json['country'],
       creator: json['creator'] == null ? null : json['creator'],
       language: json['language'] == null ? null : json['language'],
-      placeId: json['placeId'] == null ? null : json['placeId'],
+      placeId: json['place_id'] == null ? null : json['place_id'],
       pois: poisList == null ? null : poisList,
       purchased: json['purchased'] == null ? null : json['purchased'],
       region: json['region'] == null ? null : Region.fromJson(json['region']),

@@ -1,12 +1,20 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tripit/credentials.dart';
+import 'package:tripit/models/trip_model.dart';
 
 final places = GoogleMapsPlaces(apiKey: PLACES_API_KEY);
 
-class DataSearch extends SearchDelegate<String> {
-  final cities = ['Ankara', 'İzmir', 'İstanbul', 'Samsun', 'Sakarya'];
-  var recentCities = ['Ankara'];
+class MapSearch extends SearchDelegate<Geometry> {
+  List<Trip> _trips = [];
+  Position _userPosition;
+
+  MapSearch(this._trips, this._userPosition);
+
+  var recentResults = [];
 
   @override
   ThemeData appBarTheme(BuildContext context) {
@@ -15,7 +23,7 @@ class DataSearch extends SearchDelegate<String> {
       textTheme: theme.textTheme.copyWith(
           headline6: theme.textTheme.headline6
               .copyWith(color: theme.primaryTextTheme.headline6.color)),
-      primaryColor: Colors.red[800],
+      primaryColor: Colors.red[900],
       inputDecorationTheme: theme.inputDecorationTheme.copyWith(
         hintStyle: theme.textTheme.headline6.copyWith(
           color: Colors.white70,
@@ -50,67 +58,326 @@ class DataSearch extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return FutureBuilder<List<String>>(
-      future: _getPlaces(query),
-      builder: (BuildContext context, AsyncSnapshot<List<String>> suggestions) {
-        return Text('No results');
-      },
-    );
+    return _buildResponses();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    final suggestionList = query.isEmpty
-        ? recentCities
-        : cities.where((p) => p.startsWith(query)).toList();
-    return ListView.builder(
-      itemCount: suggestionList.length,
-      itemBuilder: (context, index) => ListTile(
-        onTap: () {
-          this.close(context, this.query);
-        },
-        leading: Icon(Icons.location_city),
-        title: RichText(
-          text: TextSpan(
-            text: suggestionList[index].substring(0, query.length),
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-            children: [
-              TextSpan(
-                text: suggestionList[index].substring(query.length),
-              ),
-            ],
-          ),
+    return _buildResponses();
+  }
+
+  _buildResponses() {
+    if (query.length > 2) {
+      List<Map<String, String>> _countries = getCountries(_trips, query);
+      List<Map<String, String>> _cities = getCities(_trips, query);
+      List<Map<String, String>> _tripNames = getTrips(_trips, query);
+      List<Map<String, String>> _pois = getPois(_trips, query);
+
+      return FutureBuilder<PlacesAutocompleteResponse>(
+        future: places.autocomplete(
+          query,
+          language: Platform.localeName.split('_')[0],
+          location: Location(_userPosition.latitude, _userPosition.longitude),
         ),
-      ),
-    );
+        builder: (BuildContext context,
+            AsyncSnapshot<PlacesAutocompleteResponse> res) {
+          if (res.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.red[800]),
+              ),
+            );
+          } else {
+            if (res.hasError)
+              return Center(
+                  child: Icon(
+                Icons.sentiment_very_dissatisfied,
+                size: 35,
+                color: Colors.red[800],
+              ));
+            else {
+              if (res.data.predictions.length > 0)
+                addPredictionsToResults(res.data.predictions, _countries,
+                    _cities, _tripNames, _pois);
+
+              return SingleChildScrollView(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_pois.isNotEmpty)
+                        ListView.builder(
+                            padding: EdgeInsets.all(0),
+                            physics: ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: _pois.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: ListTile(
+                                  onTap: () async {
+                                    PlacesDetailsResponse details =
+                                        await places.getDetailsByPlaceId(
+                                      _pois[index]['id'],
+                                      language:
+                                          Platform.localeName.split('_')[0],
+                                    );
+                                    if (!details.isOkay)
+                                      print(
+                                          'error en get place details ${details.errorMessage}');
+                                    else
+                                      close(context, details.result.geometry);
+                                  },
+                                  leading: Icon(Icons.place),
+                                  title: Text(
+                                    _pois[index]['name'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  trailing: Text(
+                                    'place',
+                                    style: TextStyle(color: Colors.grey[800]),
+                                  ),
+                                ),
+                              );
+                            }),
+                      if (_tripNames.isNotEmpty)
+                        ListView.builder(
+                            padding: EdgeInsets.all(0),
+                            physics: ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: _tripNames.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: ListTile(
+                                  onTap: () async {
+                                    PlacesDetailsResponse details =
+                                        await places.getDetailsByPlaceId(
+                                      _tripNames[index]['id'],
+                                      language:
+                                          Platform.localeName.split('_')[0],
+                                    );
+                                    if (!details.isOkay)
+                                      print(
+                                          'error en get place details ${details.errorMessage}');
+                                    else
+                                      close(context, details.result.geometry);
+                                  },
+                                  leading: Icon(Icons.map),
+                                  title: Text(
+                                    _tripNames[index]['name'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  trailing: Text(
+                                    'trip',
+                                    style: TextStyle(color: Colors.grey[800]),
+                                  ),
+                                ),
+                              );
+                            }),
+                      if (_cities.isNotEmpty)
+                        ListView.builder(
+                            padding: EdgeInsets.all(0),
+                            physics: ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: _cities.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: ListTile(
+                                  onTap: () async {
+                                    PlacesDetailsResponse details =
+                                        await places.getDetailsByPlaceId(
+                                      _cities[index]['id'],
+                                      language:
+                                          Platform.localeName.split('_')[0],
+                                    );
+                                    if (!details.isOkay)
+                                      print(
+                                          'error en get place details ${details.errorMessage}');
+                                    else
+                                      close(context, details.result.geometry);
+                                  },
+                                  leading: Icon(Icons.location_city),
+                                  title: Text(
+                                    _cities[index]['name'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  trailing: Text(
+                                    'city / region',
+                                    style: TextStyle(color: Colors.grey[800]),
+                                  ),
+                                ),
+                              );
+                            }),
+                      if (_countries.isNotEmpty)
+                        ListView.builder(
+                            padding: EdgeInsets.all(0),
+                            physics: ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: _countries.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: ListTile(
+                                  onTap: () async {
+                                    PlacesDetailsResponse details =
+                                        await places.getDetailsByPlaceId(
+                                      _countries[index]['id'],
+                                      language:
+                                          Platform.localeName.split('_')[0],
+                                    );
+                                    if (!details.isOkay)
+                                      print(
+                                          'error en get place details ${details.errorMessage}');
+                                    else
+                                      close(context, details.result.geometry);
+                                  },
+                                  leading: Icon(Icons.flag),
+                                  title: Text(
+                                    _countries[index]['name'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  trailing: Text(
+                                    'country',
+                                    style: TextStyle(color: Colors.grey[800]),
+                                  ),
+                                ),
+                              );
+                            }),
+                    ],
+                  ),
+                ),
+              );
+            }
+          }
+        },
+      );
+    } else {
+      return Container();
+    }
   }
 }
 
-Future<void> _getPlaces(String query) async {
-  var sessionToken = 'xyzabc_1234';
-  var res = await places.autocomplete(query, sessionToken: sessionToken);
-
-  if (res.isOkay) {
-    // list autocomplete prediction
-    for (var p in res.predictions) {
-      print('- ${p.description}');
+addPredictionsToResults(
+    List<Prediction> _preds,
+    List<Map<String, String>> _countries,
+    List<Map<String, String>> _cities,
+    List<Map<String, String>> _trips,
+    List<Map<String, String>> _pois) {
+  _preds.forEach((pred) {
+    if (pred.types[0] == 'country') {
+      if (_countries.firstWhere(
+              (e) =>
+                  e['id'] == pred.placeId ||
+                  e['name'].toLowerCase() == pred.description.toLowerCase(),
+              orElse: () => null) ==
+          null) _countries.add({'name': pred.description, 'id': pred.placeId});
+    } else {
+      if ([
+        'locality',
+        'sublocality',
+        'postal_code',
+        'administrative_area_level_1',
+        'administrative_area_level_2',
+        'administrative_area_level_3'
+      ].contains(pred.types[0])) {
+        if (_cities.firstWhere(
+                (e) =>
+                    e['name'].toLowerCase() == pred.description.toLowerCase() ||
+                    e['id'] == pred.placeId,
+                orElse: () => null) ==
+            null) _cities.add({'name': pred.description, 'id': pred.placeId});
+      } else {
+        if (_pois.firstWhere(
+                (e) =>
+                    e['name'].toLowerCase() == pred.description.toLowerCase() ||
+                    e['id'] == pred.placeId,
+                orElse: () => null) ==
+            null) _pois.add({'name': pred.description, 'id': pred.placeId});
+      }
     }
+  });
+}
 
-    // get detail of the first result
-    var details = await places.getDetailsByPlaceId(
-        res.predictions.first.placeId,
-        sessionToken: sessionToken);
+getCountries(List<Trip> _trips, String searchValue) {
+  List<Map<String, String>> _countries = [];
+  _trips
+      .where((trip) =>
+          trip.country.toLowerCase().contains(searchValue.toLowerCase()))
+      .toList()
+      .forEach((trip) {
+    if (_countries.firstWhere(
+            (e) =>
+                e['name'].toLowerCase() == trip.country.toLowerCase() &&
+                e['id'] == trip.placeId,
+            orElse: () => null) ==
+        null) _countries.add({'name': trip.country, 'id': trip.placeId});
+  });
+  _countries = _countries.toSet().toList();
+  return _countries;
+}
 
-    print('\nDetails :');
-    print(details.result.formattedAddress);
-    print(details.result.formattedPhoneNumber);
-    print(details.result.url);
-  } else {
-    print(res.errorMessage);
-  }
+getCities(List<Trip> _trips, String searchValue) {
+  List<Map<String, String>> _cities = [];
+  _trips
+      .where(
+          (trip) => trip.city.toLowerCase().contains(searchValue.toLowerCase()))
+      .toList()
+      .forEach((trip) {
+    if (_cities.firstWhere(
+            (e) =>
+                e['name'].toLowerCase() ==
+                    '${trip.city}, ${trip.country}'.toLowerCase() &&
+                e['id'] == trip.placeId,
+            orElse: () => null) ==
+        null)
+      _cities
+          .add({'name': '${trip.city}, ${trip.country}', 'id': trip.placeId});
+  });
+  _cities = _cities.toSet().toList();
+  return _cities;
+}
 
-  places.dispose();
+getTrips(List<Trip> _trips, String searchValue) {
+  List<Map<String, String>> _tripNames = [];
+  _trips
+      .where(
+          (trip) => trip.name.toLowerCase().contains(searchValue.toLowerCase()))
+      .toList()
+      .forEach((trip) {
+    if (_tripNames.firstWhere(
+            (e) =>
+                e['name'].toLowerCase() == trip.name.toLowerCase() &&
+                e['id'] == trip.placeId,
+            orElse: () => null) ==
+        null) _tripNames.add({'name': trip.name, 'id': trip.placeId});
+  });
+  _tripNames = _tripNames.toSet().toList();
+  return _tripNames;
+}
+
+getPois(List<Trip> _trips, String searchValue) {
+  List<Map<String, String>> _pois = [];
+  _trips.forEach((trip) => trip.pois
+          .where((poi) =>
+              poi.name.toLowerCase().contains(searchValue.toLowerCase()))
+          .toList()
+          .forEach((poi) {
+        if (_pois.firstWhere(
+                (e) =>
+                    e['name'].toLowerCase() == poi.name.toLowerCase() ||
+                    e['id'] == poi.placeId,
+                orElse: () => null) ==
+            null) _pois.add({'name': poi.name, 'id': poi.placeId});
+      }));
+  _pois = _pois.toSet().toList();
+  return _pois;
 }

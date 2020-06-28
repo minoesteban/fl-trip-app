@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripit/components/poi/poi_card.dart';
 import 'package:tripit/models/trip_model.dart';
+
+import 'poi_card.dart';
 
 class PoiList extends StatelessWidget {
   final List<Trip> trips;
@@ -28,8 +29,8 @@ class PoiList extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Trip> _trips = [];
 
-    print('selectedTrip $selectedTrip ');
-    print('selectedPlaceId $selectedPlaceId');
+    print('PoiList - selectedTrip $selectedTrip ');
+    print('PoiList - selectedPlaceId $selectedPlaceId');
 
     //If user selected a Trip (and not a Marker), I show all trip's pois
     if (selectedTrip != null) {
@@ -42,11 +43,14 @@ class PoiList extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.only(top: 10),
+      padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
       child: Column(
         children: <Widget>[
+          SizedBox(
+            height: 10,
+          ),
           Padding(
-            padding: const EdgeInsets.only(left: 20),
+            padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
             child: InkWell(
               onTap: () => handleChangeSlidePanelViewItemType('trip'),
               child: Row(
@@ -57,14 +61,11 @@ class PoiList extends StatelessWidget {
                     color: Colors.grey[600],
                   ),
                   SizedBox(
-                    width: 5,
+                    width: 10,
                   ),
                   Text(
-                    selectedPlaceName != null
-                        ? "$selectedPlaceName's trips"
-                        : "${selectedTrip.name}'s places",
+                    'all trips',
                     style: TextStyle(
-                        fontFamily: 'Nunito',
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
                         color: Colors.grey[600],
@@ -74,9 +75,12 @@ class PoiList extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(
+            height: 10,
+          ),
           Expanded(
-            child: ListView.separated(
-//              shrinkWrap: true,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
               itemCount: _trips.length,
               itemBuilder: (context, index) {
                 return PoiCard(
@@ -86,11 +90,6 @@ class PoiList extends StatelessWidget {
                   mapController: mapController,
                 );
               },
-              separatorBuilder: (context, index) => Divider(
-                color: Colors.black54,
-                indent: 20,
-                endIndent: 20,
-              ),
             ),
           ),
         ],

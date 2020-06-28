@@ -1,89 +1,131 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tripit/components/app_bar.dart';
+import 'package:tripit/components/home/home_search.dart';
+import 'package:tripit/components/home/trip-list.dart';
+import 'package:tripit/components/map/map_search.dart';
 import 'package:tripit/models/trip_model.dart';
-import 'package:tripit/services/load-trips.dart' as TripService;
 
 class Home extends StatefulWidget {
+  final List<Trip> _trips;
+  final Position _userPosition;
+
+  Home(this._trips, this._userPosition);
+
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  List<Trip> _trips = [];
-  Position _userPosition = Position();
+  List<Trip> _myTrips = [];
+  List<Trip> _recommendedTrips = [];
   bool _loaded = false;
-
-  Future setInitData() async {
-    await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((value) => _userPosition = value)
-        .catchError((err) => print('getCurrentPosition $err'));
-
-    await TripService.loadTrips(_userPosition)
-        .then((value) => _trips = value)
-        .catchError((err) => print('loadTrips $err'));
-  }
 
   @override
   void initState() {
     super.initState();
-    setInitData().then((val) => setState(() {
-          _loaded = true;
-        }));
+    _myTrips = widget._trips
+        .where((e) => e.purchased == true || e.saved == true)
+        .toList();
+    _recommendedTrips =
+        widget._trips.where((e) => !e.purchased && !e.saved).toList();
+    setState(() {
+      _loaded = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBar,
+      appBar: AppBar(
+        title: Text('tripit',
+            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+        centerTitle: true,
+        backgroundColor: Colors.red[900],
+        leading: IconButton(
+          icon: Icon(Icons.search),
+          onPressed: () async {
+            var result = await showSearch(
+                context: context,
+                delegate: HomeSearch(widget._trips, widget._userPosition));
+          },
+        ),
+      ),
       body: SafeArea(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-          child: Column(
-            children: <Widget>[
-              Text('my trips'),
-              Divider(
-                height: 30,
-              ),
-              !_loaded
-                  ? CircularProgressIndicator(
-                      strokeWidth: 3,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.grey[300]),
-                    )
-                  : Expanded(
-                      child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: _trips.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 1),
-                              child: Card(
-                                  child: ListTile(
-                                onTap: () {
-                                  Navigator.pushNamed(context, '/trip-main',
-                                      arguments: {
-                                        'trip': _trips[index],
-                                        'userPosition': _userPosition
-                                      });
-                                },
-                                title: Text(
-                                  '${_trips[index].name}',
-                                  style: TextStyle(
-                                      fontFamily: 'Nunito',
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.2),
-                                ),
-                              )),
-                            );
-                          }),
-                    ),
-              Divider(
-                height: 30,
-              ),
-              Text('recommended trips')
-            ],
+        child: SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'recent trips',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Divider(
+                  height: 20,
+                ),
+                !_loaded
+                    ? CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.grey[300]),
+                      )
+                    : HomeTripList(_myTrips, widget._userPosition),
+                Divider(
+                  height: 20,
+                ),
+                Text(
+                  'my trips',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Divider(
+                  height: 20,
+                ),
+                !_loaded
+                    ? CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.grey[300]),
+                      )
+                    : HomeTripList(_myTrips, widget._userPosition),
+                Divider(
+                  height: 20,
+                ),
+                Text(
+                  'recommended trips',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Divider(
+                  height: 20,
+                ),
+                !_loaded
+                    ? CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.grey[300]),
+                      )
+                    : HomeTripList(_recommendedTrips, widget._userPosition),
+                Divider(
+                  height: 20,
+                ),
+                Text(
+                  'new trips',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Divider(
+                  height: 20,
+                ),
+                !_loaded
+                    ? CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.grey[300]),
+                      )
+                    : HomeTripList(_recommendedTrips, widget._userPosition),
+              ],
+            ),
           ),
         ),
       ),
