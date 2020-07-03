@@ -1,13 +1,10 @@
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripit/components/store/rating_overview.dart';
-import 'package:tripit/models/poi_model.dart';
-import 'package:tripit/models/trip_model.dart';
-
-import 'trip_item_actions_menu.dart';
+import '../store/rating_overview.dart';
+import '../../models/poi_model.dart';
+import '../../models/trip_model.dart';
 
 class PoiCard extends StatelessWidget {
   final Trip trip;
@@ -24,7 +21,7 @@ class PoiCard extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (ctx, cns) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 1),
+        padding: const EdgeInsets.only(bottom: 5, left: 1),
         child: Card(
           elevation: 3,
           shape: RoundedRectangleBorder(

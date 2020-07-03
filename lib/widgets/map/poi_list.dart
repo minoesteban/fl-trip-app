@@ -58,7 +58,7 @@ class PoiList extends StatelessWidget {
                   Icon(
                     Icons.arrow_back_ios,
                     size: 16,
-                    color: Colors.grey[600],
+                    color: Colors.grey[800],
                   ),
                   SizedBox(
                     width: 10,
@@ -68,7 +68,7 @@ class PoiList extends StatelessWidget {
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
-                        color: Colors.grey[600],
+                        color: Colors.grey[800],
                         fontSize: 12),
                   ),
                 ],

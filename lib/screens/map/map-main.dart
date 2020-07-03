@@ -5,10 +5,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:tripit/components/map/map_search.dart';
-import 'package:tripit/components/map/poi_list.dart';
-import 'package:tripit/components/map/trip_list.dart';
-import 'package:tripit/models/trip_model.dart';
+import '../../widgets/map/map_search.dart';
+import '../../widgets/map/poi_list.dart';
+import '../../widgets/map/trip_list.dart';
+import '../../models/trip_model.dart';
 
 class Map extends StatefulWidget {
   final List<Trip> _trips;
@@ -35,7 +35,6 @@ class _MapState extends State<Map> {
       _slidePanelViewItemType = type;
     });
   }
-
 
   Set<Marker> _loadMarkers() {
     Set<Marker> _markers = Set<Marker>();
@@ -67,8 +66,8 @@ class _MapState extends State<Map> {
   void initState() {
     super.initState();
     setState(() {
-          _loaded = true;
-        });
+      _loaded = true;
+    });
   }
 
   @override
@@ -84,13 +83,13 @@ class _MapState extends State<Map> {
           leading: IconButton(
             onPressed: () async {
               Geometry result = await showSearch(
-                  context: context, delegate: MapSearch(widget._trips, widget._userPosition));
+                  context: context,
+                  delegate: MapSearch(widget._trips, widget._userPosition));
               if (result != null)
-              _controller.future.then((value) => 
-                value.animateCamera(
-                  CameraUpdate.newLatLngZoom(LatLng(result.location.lat, result.location.lng), 13.5)
-                )
-              );
+                _controller.future.then((value) => value.animateCamera(
+                    CameraUpdate.newLatLngZoom(
+                        LatLng(result.location.lat, result.location.lng),
+                        13.5)));
             },
             icon: Icon(Icons.search),
           )),
@@ -155,8 +154,8 @@ class _MapState extends State<Map> {
                   myLocationEnabled: true,
                   mapType: MapType.normal,
                   initialCameraPosition: CameraPosition(
-                    target:
-                        LatLng(widget._userPosition.latitude, widget._userPosition.longitude),
+                    target: LatLng(widget._userPosition.latitude,
+                        widget._userPosition.longitude),
                     zoom: 14,
                   ),
                   markers: _loadMarkers(),

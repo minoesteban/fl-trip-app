@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/components/sort_menu.dart';
-import 'package:tripit/components/store/pois_list.dart';
-import 'package:tripit/components/store/rating_overview.dart';
-import 'package:tripit/components/store/trip_map.dart';
-import 'package:tripit/models/poi_model.dart';
-import 'package:tripit/models/sort_options.dart';
-import 'package:tripit/models/trip_model.dart';
+import '../../widgets/store/pois_list.dart';
+import '../../widgets/store/rating_overview.dart';
+import '../../widgets/store/trip_map.dart';
+import '../../models/poi_model.dart';
+import '../../models/sort_options.dart';
+import '../../models/trip_model.dart';
 
 class TripMain extends StatefulWidget {
   @override

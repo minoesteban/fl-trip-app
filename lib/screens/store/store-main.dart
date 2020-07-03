@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tripit/components/app_bar.dart';
+import '../../widgets/app_bar.dart';
 
 class Store extends StatefulWidget {
   @override
@@ -10,9 +10,9 @@ class _StoreState extends State<Store> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBar, 
+      appBar: appBar,
       body: SafeArea(
-              child: Center(
+        child: Center(
           child: Text('store'),
         ),
       ),

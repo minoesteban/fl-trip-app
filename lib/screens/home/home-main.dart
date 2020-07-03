@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/components/app_bar.dart';
-import 'package:tripit/components/home/home_search.dart';
-import 'package:tripit/components/home/trip-list.dart';
-import 'package:tripit/components/map/map_search.dart';
-import 'package:tripit/models/trip_model.dart';
+import '../../widgets/home/home_search.dart';
+import '../../widgets/home/trip-list.dart';
+import '../../models/trip_model.dart';
 
 class Home extends StatefulWidget {
   final List<Trip> _trips;
