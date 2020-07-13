@@ -1,49 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:tripit/screens/home/navigator-main.dart';
-import 'package:tripit/screens/store/trip-main.dart';
-import 'package:tripit/services/load-trips.dart' as TripService;
-import 'models/trip_model.dart';
+import 'package:provider/provider.dart';
+import 'package:tripit/core/geo/user-position-provider.dart';
+import 'package:tripit/core/utils.dart';
+import 'package:tripit/ui/screens/home/home-main.dart';
+import 'package:tripit/ui/screens/map/map-main.dart';
+import 'package:tripit/ui/screens/trip/trip-new.dart';
+import 'package:tripit/ui/screens/store/store-main.dart';
+
+import 'core/filters-provider.dart';
+import 'core/place/place-model.dart';
+import 'core/trip/trips-provider.dart';
+import 'ui/screens/profile/profile-main.dart';
+import 'ui/screens/tab-navigator.dart';
+import 'ui/screens/place/place-dialog.dart';
+import 'ui/screens/trip/trip-main.dart';
 
 void main() async {
-  List<Trip> _trips = [];
-  Position _userPosition = Position();
-
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
 
+  UserPosition _userPosition = UserPosition();
 
-  await Geolocator()
-      .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-      .then((value) => _userPosition = value)
-      .catchError((err) => print('getCurrentPosition $err'));
-
-  await TripService.loadTrips(_userPosition)
-      .then((value) => _trips = value)
-      .catchError((err) => print('loadTrips $err'));
-
-  
-  runApp(MaterialApp(
-    title: 'tripit',
-    debugShowCheckedModeBanner: false,
-    initialRoute: '/',
-    routes: {
-      '/map': (context) => NavigatorMain(_trips, _userPosition),
-      '/': (context) => NavigatorMain(_trips, _userPosition),
-      '/store': (context) => NavigatorMain(_trips, _userPosition),
-      '/profile': (context) => NavigatorMain(_trips, _userPosition),
-      '/store/trip-main': (context) => TripMain(),
-    },
-    theme: ThemeData(
-        // Use the old theme but apply the following three changes
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider<Trips>(
+        create: (_) => Trips(),
+      ),
+      ChangeNotifierProvider<UserPosition>.value(
+        value: _userPosition,
+      ),
+      ChangeNotifierProvider<Filters>(
+        create: (_) => Filters(),
+      ),
+    ],
+    child: MaterialApp(
+      title: 'tripit',
+      debugShowCheckedModeBanner: false,
+      routes: {
+        '/': (context) => TabNavigator(),
+        Home.routeName: (_) => Home(),
+        MapMain.routeName: (_) => MapMain(),
+        Store.routeName: (_) => Store(),
+        Profile.routeName: (_) => Profile(),
+        TripMain.routeName: (_) => TripMain(),
+        PlaceDialog.routeName: (_) => PlaceDialog(new Place(getRandString(1))),
+        TripNew.routeName: (_) => TripNew(),
+      },
+      theme: ThemeData(
         fontFamily: 'Nunito',
         primarySwatch: Colors.red,
         pageTransitionsTheme: PageTransitionsTheme(builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        })),
+        }),
+      ),
+    ),
   ));
 }
-
