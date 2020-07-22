@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'home/home-main.dart';
-import 'map/map-main.dart';
-import 'profile/profile-main.dart';
-import 'store/store-main.dart';
+import 'home-main.dart';
+import 'map-main.dart';
+import 'profile-main.dart';
+import 'store-main.dart';
 
 class TabNavigator extends StatefulWidget {
   @override

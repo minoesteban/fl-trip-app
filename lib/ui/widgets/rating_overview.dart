@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tripit/core/trip/trip-model.dart';
+import 'package:tripit/core/models/trip-model.dart';
 
 class RatingOverview extends StatefulWidget {
   final Trip _trip;

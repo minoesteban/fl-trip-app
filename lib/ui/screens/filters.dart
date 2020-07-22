@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/filters-provider.dart';
+import 'package:tripit/providers/filters-provider.dart';
 
 class FiltersScreen extends StatefulWidget {
   @override
