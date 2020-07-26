@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/filters-provider.dart';
-import 'package:tripit/providers/user-position-provider.dart';
-import 'package:tripit/core/models/trip-model.dart';
-import 'package:tripit/providers/trips-provider.dart';
+import 'package:tripit/providers/filters.provider.dart';
+import 'package:tripit/providers/user-position.provider.dart';
+import 'package:tripit/core/models/trip.model.dart';
+import 'package:tripit/providers/trip.provider.dart';
 import 'package:tripit/ui/screens/filters.dart';
 import 'trip-main.dart';
 import '../widgets/home-search.dart';
@@ -17,21 +17,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Trip> _trips = [];
   List<Trip> _myTrips = [];
   List<Trip> _recommendedTrips = [];
-  bool _loaded = false;
-
-  void loadTrips() {
-    _trips = Provider.of<Trips>(context).trips;
-    _myTrips =
-        _trips.where((e) => e.purchased == true || e.saved == true).toList();
-    _recommendedTrips = _trips.where((e) => !e.purchased && !e.saved).toList();
-    if (!_loaded)
-      setState(() {
-        _loaded = true;
-      });
-  }
 
   Widget buildLoading() {
     return Center(
@@ -93,10 +80,11 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    print('build HOME');
     var _userPosition = Provider.of<UserPosition>(context).getPosition;
     var _filters = Provider.of<Filters>(context, listen: false);
-
-    loadTrips();
+    var _tripsProvider = Provider.of<TripProvider>(context);
+    _myTrips = _tripsProvider.trips;
 
     return Scaffold(
       appBar: AppBar(
@@ -107,7 +95,8 @@ class _HomeState extends State<Home> {
         leading: IconButton(
           icon: Icon(Icons.search),
           onPressed: () async {
-            await showSearch(context: context, delegate: HomeSearch(_trips));
+            await showSearch(
+                context: context, delegate: HomeSearch(_tripsProvider.trips));
           },
         ),
         actions: [
@@ -125,63 +114,62 @@ class _HomeState extends State<Home> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'recent trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                !_loaded
-                    ? buildLoading()
-                    : buildTripList(_myTrips, _userPosition),
-                Divider(
-                  height: 20,
-                ),
-                Text(
-                  'my trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                !_loaded
-                    ? buildLoading()
-                    : buildTripList(_myTrips, _userPosition),
-                Divider(
-                  height: 20,
-                ),
-                Text(
-                  'recommended trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                !_loaded
-                    ? buildLoading()
-                    : buildTripList(_recommendedTrips, _userPosition),
-                Divider(
-                  height: 20,
-                ),
-                Text(
-                  'new trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                !_loaded
-                    ? buildLoading()
-                    : buildTripList(_recommendedTrips, _userPosition),
-              ],
+        child: RefreshIndicator(
+          onRefresh: () => _tripsProvider.loadTrips(),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'recent trips',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Divider(
+                    height: 20,
+                  ),
+                  // !_loaded ? buildLoading() :
+                  buildTripList(_myTrips, _userPosition),
+                  Divider(
+                    height: 20,
+                  ),
+                  Text(
+                    'my trips',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Divider(
+                    height: 20,
+                  ),
+                  // !_loaded ? buildLoading()
+                  buildTripList(_myTrips, _userPosition),
+                  Divider(
+                    height: 20,
+                  ),
+                  Text(
+                    'recommended trips',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Divider(
+                    height: 20,
+                  ),
+                  // !_loaded ? buildLoading()
+                  buildTripList(_recommendedTrips, _userPosition),
+                  Divider(
+                    height: 20,
+                  ),
+                  Text(
+                    'new trips',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Divider(
+                    height: 20,
+                  ),
+                  // !_loaded ? buildLoading()
+                  buildTripList(_recommendedTrips, _userPosition),
+                ],
+              ),
             ),
           ),
         ),

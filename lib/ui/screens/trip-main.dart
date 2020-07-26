@@ -1,14 +1,12 @@
-import 'dart:async';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/core/models/place-model.dart';
-import 'package:tripit/core/models/trip-model.dart';
+import 'package:tripit/core/models/place.model.dart';
+import 'package:tripit/core/models/trip.model.dart';
 import 'package:tripit/ui/widgets/image-list.dart';
 import '../widgets/store-trip-places-list.dart';
-import '../widgets/rating_overview.dart';
+import '../widgets/rating-overview.dart';
 import '../widgets/store-trip-map.dart';
 
 class TripMain extends StatefulWidget {
@@ -19,19 +17,11 @@ class TripMain extends StatefulWidget {
 
 class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
   Map _args = {};
-  bool _loaded = false;
   bool _ordered = false;
-  String _selectedPlaceKey;
   TextOverflow _overflow = TextOverflow.ellipsis;
   int _maxLines = 5;
   AnimationController _audioController;
   AnimationController _playPauseController;
-
-  Future getPlaceDistance(Trip _trip, Position _userPosition) async {
-    for (int i = 0; i < _trip.places.length; i++) {
-      _trip.places[i].getDistanceFromUser(_userPosition);
-    }
-  }
 
   void orderPlaces(List<Place> _places, Position _userPosition) {
     _places.sort((a, b) {
@@ -40,12 +30,6 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
     setState(() {
       _places = _places;
       _ordered = true;
-    });
-  }
-
-  void _handleSelectMarker(String _selectedPlaceKey) {
-    setState(() {
-      _selectedPlaceKey = _selectedPlaceKey;
     });
   }
 
@@ -64,7 +48,6 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
     _audioController.addListener(() => setState(() {}));
     _playPauseController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
-    // _playPauseController.addListener(() => setState(() {}));
   }
 
   @override
@@ -82,15 +65,6 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
     List<Place> _places = _trip.places;
 
     if (!_ordered) orderPlaces(_places, _userPosition);
-
-    if (!_loaded) {
-      getPlaceDistance(_trip, _userPosition).then((v) {
-        setState(() {
-          _trip = _trip;
-          _loaded = true;
-        });
-      });
-    }
 
     String audioTime() {
       int duration = 75;
@@ -111,19 +85,14 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
             ),
             IconButton(
               iconSize: 30,
-              icon: _trip.saved
+              icon: false
                   ? Icon(
                       Icons.favorite,
                     )
                   : Icon(
                       Icons.favorite_border,
                     ),
-              onPressed: () {
-                _trip.toggleSaved();
-                setState(() {
-                  _trip = _trip;
-                });
-              },
+              onPressed: () {},
             ),
           ],
           expandedHeight: MediaQuery.of(context).size.height / 3.5,
@@ -138,7 +107,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
             ),
             background: CachedNetworkImage(
               fit: BoxFit.cover,
-              imageUrl: '${_trip.imageUrl}',
+              imageUrl: '${_trip.pictureUrl}',
               placeholder: (context, url) => Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 0.5,
@@ -162,7 +131,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                     //location & purchase
                     ListTile(
                       title: Text(
-                        '${_trip.city}, ${_trip.country}',
+                        '${_trip.countryId}',
                         softWrap: true,
                         style: _titleStyle,
                       ),
@@ -172,11 +141,9 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                       ),
                       trailing: Builder(
                         builder: (ctx) => RaisedButton(
-                            color: _trip.purchased
-                                ? Colors.grey[400]
-                                : Colors.green[700],
+                            color: false ? Colors.grey[400] : Colors.green[700],
                             child: Text(
-                              _trip.purchased
+                              false
                                   ? 'purchased'
                                   : 'add to cart (\$${_trip.price})',
                               style: TextStyle(
@@ -186,12 +153,12 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                                   letterSpacing: 1.5),
                             ),
                             onPressed: () {
-                              _trip.toggleSaved();
-                              _trip.togglePurchased();
+                              // _trip.toggleSaved();
+                              // _trip.togglePurchased();
                               Scaffold.of(ctx).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    _trip.purchased
+                                    true
                                         ? 'trip added to cart!'
                                         : 'trip removed!',
                                   ),
@@ -243,7 +210,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Flag(
-                              _trip.language.toUpperCase(),
+                              _trip.languageFlagId.toUpperCase(),
                               height: 30,
                               width: 50,
                             ),
@@ -318,18 +285,19 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                                 onTap: () {
                                   showDialog(
                                       barrierDismissible: true,
-                                      barrierColor: Colors.black87,
+                                      // barrierColor: Colors.black87,
                                       context: context,
-                                      builder: (context) =>
-                                          ImageList(_trip.places[i].imageUrl));
+                                      builder: (context) => ImageList(
+                                          _trip.places[i].pictureUrl1));
                                 },
                                 child: Card(
                                   elevation: 1,
                                   child: Hero(
-                                    tag: '${_trip.places[i].imageUrl}',
+                                    tag: '${_trip.places[i].pictureUrl1}',
                                     child: CachedNetworkImage(
                                       fit: BoxFit.cover,
-                                      imageUrl: '${_trip.places[i].imageUrl}',
+                                      imageUrl:
+                                          '${_trip.places[i].pictureUrl1}',
                                       placeholder: (context, url) => Center(
                                         child: CircularProgressIndicator(
                                           strokeWidth: 0.5,
@@ -347,7 +315,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                     Divider(
                       height: 30,
                     ),
-                    //description text
+                    //about text
                     Text(
                       'about the trip',
                       style: _titleStyle,
@@ -358,7 +326,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 15, vertical: 10),
                         child: Text(
-                          '${_trip.description}',
+                          '${_trip.about}',
                           maxLines: _maxLines,
                           textAlign: TextAlign.justify,
                           overflow: _overflow,
@@ -373,14 +341,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                       child: Column(
                         children: [
                           Container(
-                            child: !_loaded
-                                ? CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.grey[300]),
-                                  )
-                                : TripMap(
-                                    _trip, _userPosition, _selectedPlaceKey),
+                            child: TripMap(_trip, _userPosition),
                           ),
                           ExpansionTile(
                             initiallyExpanded: true,
@@ -391,6 +352,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                                   'total distance',
                                   style: _titleStyle,
                                 ),
+                                //TODO: obtener distancia total del trip (lineas con geometry?)
                                 Text(
                                   '15.6 Km',
                                   style: _subtitleStyle,
@@ -400,14 +362,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                             ),
                             children: [
                               Container(
-                                child: !_loaded || !_ordered
-                                    ? CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.grey[300]),
-                                      )
-                                    : PlacesList(_places, _handleSelectMarker),
+                                child: PlacesList(_places),
                               )
                             ],
                           ),

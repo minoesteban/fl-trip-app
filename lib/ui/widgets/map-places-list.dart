@@ -5,8 +5,8 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripit/core/models/place-model.dart';
-import 'package:tripit/core/models/trip-model.dart';
+import 'package:tripit/core/models/place.model.dart';
+import 'package:tripit/core/models/trip.model.dart';
 import '../screens/trip-main.dart';
 
 class PlaceList extends StatelessWidget {
@@ -38,7 +38,7 @@ class PlaceList extends StatelessWidget {
     if (selectedTrip == null && selectedPlaceId != null) {
       _trips.addAll(trips.where((trip) =>
           trip.places
-              .where((place) => place.placeId == selectedPlaceId)
+              .where((place) => place.googlePlaceId == selectedPlaceId)
               .length >
           0));
     }
@@ -95,7 +95,7 @@ class _PlaceCardState extends State<PlaceCard> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     Place _place = widget.trip.places
-        .firstWhere((place) => place.placeId == widget.selectedPlaceId);
+        .firstWhere((place) => place.googlePlaceId == widget.selectedPlaceId);
 
     return Padding(
       padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -118,7 +118,7 @@ class _PlaceCardState extends State<PlaceCard> with TickerProviderStateMixin {
                   children: [
                     CachedNetworkImage(
                       fit: BoxFit.cover,
-                      imageUrl: '${_place.imageUrl}',
+                      imageUrl: '${_place.pictureUrl1}',
                       placeholder: (context, url) => Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 0.5,
@@ -127,7 +127,9 @@ class _PlaceCardState extends State<PlaceCard> with TickerProviderStateMixin {
                       ),
                       errorWidget: (context, url, error) => Icon(Icons.error),
                     ),
-                    widget.trip.purchased
+                    //TODO: get purchased state for a trip / place (purchase table? or collection in user?)
+                    //widget.trip.purchased
+                    false
                         ? Align(
                             alignment: Alignment.topRight,
                             child: Container(
@@ -139,7 +141,7 @@ class _PlaceCardState extends State<PlaceCard> with TickerProviderStateMixin {
                               height: 25,
                               width: 50,
                               child: Text(
-                                'Saved',
+                                'saved',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Colors.white,
@@ -159,7 +161,7 @@ class _PlaceCardState extends State<PlaceCard> with TickerProviderStateMixin {
                                   height: 25,
                                   width: 50,
                                   child: Text(
-                                    'Free!',
+                                    'free!',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         color: Colors.white,
@@ -196,7 +198,9 @@ class _PlaceCardState extends State<PlaceCard> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${widget.trip.tripRating.toStringAsPrecision(2)}',
+                          //TODO: obtener rating del trip
+                          // '${widget.trip.tripRating.toStringAsPrecision(2)}',
+                          '7.6',
                           style: TextStyle(
                               color: Colors.amber[500],
                               fontWeight: FontWeight.bold,
@@ -215,7 +219,7 @@ class _PlaceCardState extends State<PlaceCard> with TickerProviderStateMixin {
                     ClipRRect(
                       borderRadius: BorderRadius.all(Radius.circular(3)),
                       child: Flag(
-                        widget.trip.language.toUpperCase(),
+                        widget.trip.languageFlagId.toUpperCase(),
                         height: 25,
                         width: 40,
                         fit: BoxFit.cover,

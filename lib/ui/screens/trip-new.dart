@@ -8,13 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/models/region-model.dart';
-import 'package:tripit/providers/user-position-provider.dart';
-import 'package:tripit/core/models/place-model.dart';
-import 'package:tripit/core/models/trip-model.dart';
-import 'package:tripit/core/utils/utils.dart';
-import 'package:tripit/ui/screens/place-new.dart';
-import 'package:tripit/ui/widgets/profile-new-place-search.dart';
+
+import '../../providers/user-position.provider.dart';
+import '../../core/models/place.model.dart';
+import '../../core/models/trip.model.dart';
+import '../../ui/screens/place-new.dart';
+import '../../ui/widgets/place-new-search.dart';
 
 class TripNew extends StatefulWidget {
   static const routeName = '/profile/trip/new';
@@ -26,8 +25,8 @@ class TripNew extends StatefulWidget {
 class _TripNewState extends State<TripNew> {
   Completer<GoogleMapController> _controller = Completer();
   final _form = GlobalKey<FormState>();
-  String _countryCode = '';
-  Trip _newTrip = Trip(id: getRandString(10));
+  Trip _newTrip = Trip();
+  bool _selectedCountry = false;
   List<Place> _newPlaces = [];
   CameraPosition _initialPosition = CameraPosition(target: LatLng(0, 0));
   final _imageFocus = FocusNode();
@@ -96,15 +95,11 @@ class _TripNewState extends State<TripNew> {
             _form.currentState.save();
             print(_newTrip.id);
             print(_newTrip.name);
-            print(_newTrip.city);
-            print(_newTrip.country);
             print(_newTrip.price);
-            print(_newTrip.description);
-            print(_newTrip.guideId);
-            print(_newTrip.placeId);
-            print(_newTrip.imageUrl);
-            print(
-                ('${_newTrip.region.latitude}, ${_newTrip.region.longitude}'));
+            print(_newTrip.about);
+            print(_newTrip.ownerId);
+            print(_newTrip.googlePlaceId);
+            print(_newTrip.pictureUrl);
             print(_newTrip.places.length);
             Navigator.of(context).pop(_newTrip);
           }
@@ -135,7 +130,7 @@ class _TripNewState extends State<TripNew> {
   @override
   Widget build(BuildContext context) {
     Map _args = ModalRoute.of(context).settings.arguments;
-    var _guideId = _args['userId'];
+    int _ownerId = _args['ownerId'];
     var _userPosition =
         Provider.of<UserPosition>(context, listen: false).getPosition;
     _initialPosition = _initialPosition.target.latitude == 0
@@ -164,7 +159,7 @@ class _TripNewState extends State<TripNew> {
               }),
         ],
       ),
-      floatingActionButton: _countryCode.isEmpty
+      floatingActionButton: !_selectedCountry
           ? FloatingActionButton(
               backgroundColor: Colors.grey[600],
               child: const Icon(Icons.add),
@@ -206,7 +201,7 @@ class _TripNewState extends State<TripNew> {
                     color: Colors.white,
                   ))),
               openBuilder: (context, _) =>
-                  PlaceNew(_userPosition, _initialPosition, _countryCode),
+                  PlaceNew(_userPosition, _initialPosition, _newTrip.countryId),
               onClosed: (_newPlace) {
                 _addNewPlace(_newPlace);
               }),
@@ -215,12 +210,12 @@ class _TripNewState extends State<TripNew> {
           key: _form,
           onChanged: () {
             _newTrip.name = _nameController.text;
-            _newTrip.description = _aboutController.text;
-            _newTrip.imageUrl = _imageController.text;
+            _newTrip.about = _aboutController.text;
+            _newTrip.pictureUrl = _imageController.text;
             _newTrip.price = _priceController.text.isEmpty
                 ? 0
                 : double.parse(_priceController.text);
-            _newTrip.guideId = _guideId;
+            _newTrip.ownerId = _ownerId;
             _newTrip.places = _newPlaces;
           },
           child: SingleChildScrollView(
@@ -316,14 +311,8 @@ class _TripNewState extends State<TripNew> {
                                     14.5),
                               ),
                             );
-                            _newTrip.city = result.name;
-                            _newTrip.placeId = result.placeId;
-
-                            _newTrip.region = Region(
-                                latitude: result.geometry.location.lat,
-                                longitude: result.geometry.location.lng,
-                                latitudeDelta: 1,
-                                longitudeDelta: 1);
+                            // _newTrip.city = result.name;
+                            _newTrip.googlePlaceId = result.placeId;
 
                             _initialPosition = CameraPosition(
                               target: LatLng(result.geometry.location.lat,
@@ -331,20 +320,21 @@ class _TripNewState extends State<TripNew> {
                               zoom: 14.5,
                             );
 
+                            var _countryName = '';
                             result.addressComponents
                                 .forEach((comp) => comp.types.forEach((type) {
                                       if (type == 'country') {
-                                        _newTrip.country = comp.longName;
-                                        _countryCode = comp.shortName;
+                                        _newTrip.countryId = comp.shortName;
+                                        _countryName = comp.longName;
                                       }
                                     }));
 
                             setState(() {
                               _initialPosition = _initialPosition;
-                              _countryCode = _countryCode;
+                              _selectedCountry = true;
                               _newTrip = _newTrip;
                               _locationController.text =
-                                  '${_newTrip.city}, ${_newTrip.country}';
+                                  '${result.name}, $_countryName';
                             });
                           }
                         },
@@ -464,7 +454,7 @@ class _TripNewState extends State<TripNew> {
                                         BorderRadius.all(Radius.circular(5)),
                                     child: CachedNetworkImage(
                                       fit: BoxFit.cover,
-                                      imageUrl: '${_newPlaces[i].imageUrl}',
+                                      imageUrl: '${_newPlaces[i].pictureUrl1}',
                                       placeholder: (_, _a) => const Icon(
                                         Icons.photo_camera,
                                         size: 30,

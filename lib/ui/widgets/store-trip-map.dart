@@ -4,15 +4,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripit/core/models/place-model.dart';
-import 'package:tripit/core/models/trip-model.dart';
+import 'package:tripit/core/models/place.model.dart';
+import 'package:tripit/core/models/trip.model.dart';
 
 class TripMap extends StatefulWidget {
   final Position userPosition;
   final Trip trip;
-  final String selectedPlaceKey;
 
-  TripMap(this.trip, this.userPosition, this.selectedPlaceKey);
+  TripMap(this.trip, this.userPosition);
 
   @override
   _TripMapState createState() => _TripMapState();
@@ -23,12 +22,17 @@ class _TripMapState extends State<TripMap> {
 
   Set<Marker> _loadMarkers(Trip _trip) {
     Set<Marker> _markers = _trip.places
-        .map((t) => Marker(
-            markerId: MarkerId(t.id),
+        .map(
+          (t) => Marker(
+            markerId: MarkerId(t.id.toString()),
             draggable: false,
             position: LatLng(t.coordinates.latitude, t.coordinates.longitude),
             infoWindow: InfoWindow(
-                title: t.name, snippet: 'Rating ${t.rating.toString()} / 5')))
+                //TODO: obtener rating del place
+                title: t.name,
+                snippet: 'Rating 7.6'),
+          ),
+        )
         .toSet();
     return _markers;
   }
@@ -62,23 +66,24 @@ class _TripMapState extends State<TripMap> {
             1)));
   }
 
-  _moveToMarker(GoogleMapController controller, String selectedPlaceKey) {
-    Place selectedPlace =
-        widget.trip.places.singleWhere((place) => place.id == selectedPlaceKey);
-    Future.delayed(
-        Duration(milliseconds: 200),
-        () => controller.animateCamera(CameraUpdate.newLatLngBounds(
-            boundsFromLatLngList([
-              LatLng(selectedPlace.coordinates.latitude,
-                  selectedPlace.coordinates.longitude)
-            ]),
-            1)));
-  }
+  // _moveToMarker(GoogleMapController controller, String selectedPlaceKey) {
+  //   Place selectedPlace =
+  //       widget.trip.places.singleWhere((place) => place.id == selectedPlaceKey);
+  //   Future.delayed(
+  //       Duration(milliseconds: 200),
+  //       () => controller.animateCamera(CameraUpdate.newLatLngBounds(
+  //           boundsFromLatLngList([
+  //             LatLng(selectedPlace.coordinates.latitude,
+  //                 selectedPlace.coordinates.longitude)
+  //           ]),
+  //           1)));
+  // }
 
   @override
   Widget build(BuildContext context) {
     final CameraPosition _initialPosition = CameraPosition(
-      target: LatLng(widget.trip.region.latitude, widget.trip.region.longitude),
+      target: LatLng(widget.trip.places[0].coordinates.latitude,
+          widget.trip.places[0].coordinates.longitude),
       zoom: 13,
     );
 
@@ -96,9 +101,7 @@ class _TripMapState extends State<TripMap> {
         markers: _loadMarkers(widget.trip),
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
-          widget.selectedPlaceKey == null
-              ? _centerMap(controller)
-              : _moveToMarker(controller, widget.selectedPlaceKey);
+          _centerMap(controller);
         },
       ),
     );

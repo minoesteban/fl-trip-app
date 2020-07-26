@@ -4,8 +4,8 @@ import 'package:geolocator/geolocator.dart';
 class UserPosition with ChangeNotifier {
   Position _position;
 
-  UserPosition() {
-    Geolocator()
+  Future<void> getUserPosition() async {
+    await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((value) {
       _position = value;

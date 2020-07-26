@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tripit/core/models/trip-model.dart';
+import 'package:tripit/core/models/trip.model.dart';
 
 class RatingOverview extends StatefulWidget {
   final Trip _trip;
@@ -23,7 +23,9 @@ class _RatingOverviewState extends State<RatingOverview> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '${widget._trip.tripRating.toStringAsPrecision(2)}',
+                //TODO: obtener rating del trip
+                // '${widget.trip.tripRating.toStringAsPrecision(2)}',
+                '7.6',
                 style: TextStyle(
                     color: Colors.amber[500],
                     fontWeight: FontWeight.bold,

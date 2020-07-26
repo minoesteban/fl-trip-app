@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/models/countries-model.dart';
-import 'package:tripit/providers/user-position-provider.dart';
-import 'package:tripit/core/utils/utils.dart';
-import 'package:tripit/ui/screens/home-main.dart';
-import 'package:tripit/ui/screens/map-main.dart';
-import 'package:tripit/ui/screens/trip-new.dart';
-import 'package:tripit/ui/screens/store-main.dart';
 
-import 'providers/filters-provider.dart';
-import 'core/models/place-model.dart';
-import 'providers/trips-provider.dart';
+import 'providers/country.provider.dart';
+import 'providers/user-position.provider.dart';
+import 'ui/screens/home-main.dart';
+import 'ui/screens/map-main.dart';
+import 'ui/screens/trip-new.dart';
+import 'ui/screens/store-main.dart';
+import 'providers/filters.provider.dart';
+import 'core/models/place.model.dart';
+import 'providers/trip.provider.dart';
 import 'ui/screens/profile-main.dart';
 import 'ui/screens/tab-navigator.dart';
 import 'ui/screens/place-dialog.dart';
@@ -23,15 +22,22 @@ void main() async {
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
 
   UserPosition _userPosition = UserPosition();
+  await _userPosition.getUserPosition();
+
+  TripProvider _trips = TripProvider();
+  await _trips.loadTrips();
+
+  CountryProvider _countries = CountryProvider();
+  await _countries.loadCountries();
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<Countries>(
-          create: (_) => Countries(),
+        ChangeNotifierProvider<CountryProvider>.value(
+          value: _countries,
         ),
-        ChangeNotifierProvider<Trips>(
-          create: (_) => Trips(),
+        ChangeNotifierProvider<TripProvider>.value(
+          value: _trips,
         ),
         ChangeNotifierProvider<UserPosition>.value(
           value: _userPosition,
@@ -50,8 +56,7 @@ void main() async {
           Store.routeName: (_) => Store(),
           Profile.routeName: (_) => Profile(),
           TripMain.routeName: (_) => TripMain(),
-          PlaceDialog.routeName: (_) =>
-              PlaceDialog(new Place(getRandString(1))),
+          PlaceDialog.routeName: (_) => PlaceDialog(new Place()),
           TripNew.routeName: (_) => TripNew(),
         },
         theme: ThemeData(

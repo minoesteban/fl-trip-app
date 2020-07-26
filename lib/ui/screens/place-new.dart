@@ -6,10 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:tripit/core/models/coordinates-model.dart';
-import 'package:tripit/core/models/place-model.dart';
-import 'package:tripit/core/utils/utils.dart';
-import 'package:tripit/ui/widgets/profile-new-place-search.dart';
+
+import '../../core/models/place.model.dart';
+import '../../ui/widgets/place-new-search.dart';
 
 class PlaceNew extends StatefulWidget {
   static const routeName = '/profile/trip/new/place/new';
@@ -27,7 +26,7 @@ class PlaceNew extends StatefulWidget {
 class _PlaceNewState extends State<PlaceNew> {
   Completer<GoogleMapController> _controller = Completer();
   final _form = GlobalKey<FormState>();
-  Place _newPlace = Place(getRandString(10));
+  Place _newPlace = Place();
   final _imageFocus = FocusNode();
   final _imageController = TextEditingController();
   final _locationFocus = FocusNode();
@@ -141,8 +140,8 @@ class _PlaceNewState extends State<PlaceNew> {
           key: _form,
           onChanged: () {
             _newPlace.name = _nameController.text;
-            _newPlace.description = _aboutController.text;
-            _newPlace.imageUrl = _imageController.text;
+            _newPlace.about = _aboutController.text;
+            _newPlace.pictureUrl1 = _imageController.text;
             _newPlace.price = _priceController.text.isEmpty
                 ? 0
                 : double.parse(_priceController.text);
@@ -249,10 +248,10 @@ class _PlaceNewState extends State<PlaceNew> {
                             );
 
                             _newPlace.name = result.name;
-                            _newPlace.placeId = result.placeId;
-                            _newPlace.coordinates = Coordinates(
-                                latitude: result.geometry.location.lat,
-                                longitude: result.geometry.location.lng);
+                            _newPlace.googlePlaceId = result.placeId;
+                            _newPlace.coordinates = LatLng(
+                                result.geometry.location.lat,
+                                result.geometry.location.lng);
 
                             setState(() {
                               _locationController.text = '${result.name}';

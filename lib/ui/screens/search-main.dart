@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/core/models/trip-model.dart';
+import 'package:tripit/core/models/trip.model.dart';
 import '../widgets/map-search.dart';
 
 class Search extends StatefulWidget {

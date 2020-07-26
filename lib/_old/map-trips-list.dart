@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/trips-provider.dart';
+import 'package:tripit/providers/country.provider.dart';
+import 'package:tripit/providers/trip.provider.dart';
 import 'trip-item-actions-menu.dart';
 
 class TripList extends StatelessWidget {
@@ -15,7 +15,8 @@ class TripList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var trips = Provider.of<Trips>(context).trips;
+    var tripsProvider = Provider.of<TripProvider>(context);
+    var _trips = tripsProvider.trips;
 
     return Container(
       padding: EdgeInsets.fromLTRB(15, 10, 15, 0),
@@ -27,11 +28,11 @@ class TripList extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               controller: srollController,
-              itemCount: trips.length,
+              itemCount: _trips.length,
               itemBuilder: (context, index) => ChangeNotifierProvider.value(
-                value: trips[index],
+                value: tripsProvider,
                 child: TripCard(
-                  trips[index].id,
+                  _trips[index].id,
                   mapController: mapController,
                 ),
               ),
@@ -44,21 +45,22 @@ class TripList extends StatelessWidget {
 }
 
 class TripCard extends StatelessWidget {
-  final String tripId;
+  final int tripId;
   final Future<GoogleMapController> mapController;
 
   TripCard(this.tripId, {this.mapController});
 
   @override
   Widget build(BuildContext context) {
-    var trip = Provider.of<Trips>(context).findById(tripId);
+    var trip = Provider.of<TripProvider>(context).findById(tripId);
+    var _countries = Provider.of<CountryProvider>(context, listen: false);
 
     void _navigateToCity() async {
-      GoogleMapController _mc;
+      // GoogleMapController _mc;
       this.mapController.then((value) {
-        _mc = value;
-        _mc.animateCamera(CameraUpdate.newLatLngZoom(
-            LatLng(trip.region.latitude, trip.region.longitude), 13));
+        // _mc = value;
+        // _mc.animateCamera(CameraUpdate.newLatLngZoom(
+        //     LatLng(trip.region.latitude, trip.region.longitude), 13));
       });
     }
 
@@ -105,7 +107,7 @@ class TripCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           Text(
-                            '${trip.city}, ${trip.country}',
+                            '${_countries.getName(trip.countryId)}',
                             style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.black38,
@@ -133,16 +135,16 @@ class TripCard extends StatelessWidget {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
-                          RatingBarIndicator(
-                            itemPadding: EdgeInsets.all(0),
-                            rating: trip.tripRating,
-                            itemBuilder: (context, index) => Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                            ),
-                            itemCount: 5,
-                            itemSize: 22.0,
-                          ),
+                          // RatingBarIndicator(
+                          //   itemPadding: EdgeInsets.all(0),
+                          //   rating: trip.tripRating,
+                          //   itemBuilder: (context, index) => Icon(
+                          //     Icons.star,
+                          //     color: Colors.amber,
+                          //   ),
+                          //   itemCount: 5,
+                          //   itemSize: 22.0,
+                          // ),
                           Text(
                             '(1.460)',
                             style: TextStyle(
@@ -151,7 +153,7 @@ class TripCard extends StatelessWidget {
                         ],
                       ),
                       Flag(
-                        trip.language.toUpperCase(),
+                        trip.languageFlagId.toUpperCase(),
                         height: 20,
                         width: 35,
                         fit: BoxFit.fill,

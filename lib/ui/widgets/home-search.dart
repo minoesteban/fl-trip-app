@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:tripit/core/models/trip-model.dart';
-import 'package:tripit/credentials.dart';
+import 'package:tripit/core/models/trip.model.dart';
+import 'package:tripit/config.dart';
 
 final places = GoogleMapsPlaces(apiKey: PLACES_API_KEY);
 
@@ -66,8 +66,8 @@ class HomeSearch extends SearchDelegate<Geometry> {
 
   _buildResponses() {
     if (query.length > 2) {
-      List<Map<String, String>> _countries = getCountries(_trips, query);
-      List<Map<String, String>> _cities = getCities(_trips, query);
+      List<Map<String, String>> _countries = []; //getCountries(_trips, query);
+      List<Map<String, String>> _cities = []; //getCities(_trips, query);
       List<Map<String, String>> _tripNames = getTrips(_trips, query);
       List<Map<String, String>> _places = getPlaces(_trips, query);
 
@@ -227,44 +227,44 @@ class HomeSearch extends SearchDelegate<Geometry> {
   }
 }
 
-getCountries(List<Trip> _trips, String searchValue) {
-  List<Map<String, String>> _countries = [];
-  _trips
-      .where((trip) =>
-          trip.country.toLowerCase().contains(searchValue.toLowerCase()))
-      .toList()
-      .forEach((trip) {
-    if (_countries.firstWhere(
-            (e) =>
-                e['name'].toLowerCase() == trip.country.toLowerCase() &&
-                e['id'] == trip.placeId,
-            orElse: () => null) ==
-        null) _countries.add({'name': trip.country, 'id': trip.placeId});
-  });
-  _countries = _countries.toSet().toList();
-  return _countries;
-}
+// getCountries(List<Trip> _trips, String searchValue) {
+//   List<Map<String, String>> _countries = [];
+//   _trips
+//       .where((trip) =>
+//           trip.country.toLowerCase().contains(searchValue.toLowerCase()))
+//       .toList()
+//       .forEach((trip) {
+//     if (_countries.firstWhere(
+//             (e) =>
+//                 e['name'].toLowerCase() == trip.country.toLowerCase() &&
+//                 e['id'] == trip.googlePlaceId,
+//             orElse: () => null) ==
+//         null) _countries.add({'name': trip.country, 'id': trip.googlePlaceId});
+//   });
+//   _countries = _countries.toSet().toList();
+//   return _countries;
+// }
 
-getCities(List<Trip> _trips, String searchValue) {
-  List<Map<String, String>> _cities = [];
-  _trips
-      .where(
-          (trip) => trip.city.toLowerCase().contains(searchValue.toLowerCase()))
-      .toList()
-      .forEach((trip) {
-    if (_cities.firstWhere(
-            (e) =>
-                e['name'].toLowerCase() ==
-                    '${trip.city}, ${trip.country}'.toLowerCase() &&
-                e['id'] == trip.placeId,
-            orElse: () => null) ==
-        null)
-      _cities
-          .add({'name': '${trip.city}, ${trip.country}', 'id': trip.placeId});
-  });
-  _cities = _cities.toSet().toList();
-  return _cities;
-}
+// getCities(List<Trip> _trips, String searchValue) {
+//   List<Map<String, String>> _cities = [];
+//   _trips
+//       .where(
+//           (trip) => trip.city.toLowerCase().contains(searchValue.toLowerCase()))
+//       .toList()
+//       .forEach((trip) {
+//     if (_cities.firstWhere(
+//             (e) =>
+//                 e['name'].toLowerCase() ==
+//                     '${trip.city}, ${trip.country}'.toLowerCase() &&
+//                 e['id'] == trip.googlePlaceId,
+//             orElse: () => null) ==
+//         null)
+//       _cities.add(
+//           {'name': '${trip.city}, ${trip.country}', 'id': trip.googlePlaceId});
+//   });
+//   _cities = _cities.toSet().toList();
+//   return _cities;
+// }
 
 getTrips(List<Trip> _trips, String searchValue) {
   List<Map<String, String>> _tripNames = [];
@@ -276,9 +276,9 @@ getTrips(List<Trip> _trips, String searchValue) {
     if (_tripNames.firstWhere(
             (e) =>
                 e['name'].toLowerCase() == trip.name.toLowerCase() &&
-                e['id'] == trip.placeId,
+                e['id'] == trip.googlePlaceId,
             orElse: () => null) ==
-        null) _tripNames.add({'name': trip.name, 'id': trip.placeId});
+        null) _tripNames.add({'name': trip.name, 'id': trip.googlePlaceId});
   });
   _tripNames = _tripNames.toSet().toList();
   return _tripNames;
@@ -294,9 +294,9 @@ getPlaces(List<Trip> _trips, String searchValue) {
         if (_places.firstWhere(
                 (e) =>
                     e['name'].toLowerCase() == place.name.toLowerCase() ||
-                    e['id'] == place.placeId,
+                    e['id'] == place.googlePlaceId,
                 orElse: () => null) ==
-            null) _places.add({'name': place.name, 'id': place.placeId});
+            null) _places.add({'name': place.name, 'id': place.googlePlaceId});
       }));
   _places = _places.toSet().toList();
   return _places;

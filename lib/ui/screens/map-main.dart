@@ -6,10 +6,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:tripit/providers/filters-provider.dart';
-import 'package:tripit/providers/user-position-provider.dart';
-import 'package:tripit/core/models/trip-model.dart';
-import 'package:tripit/providers/trips-provider.dart';
+import 'package:tripit/providers/filters.provider.dart';
+import 'package:tripit/providers/user-position.provider.dart';
+import 'package:tripit/core/models/trip.model.dart';
+import 'package:tripit/providers/trip.provider.dart';
 import 'filters.dart';
 import '../widgets/map-search.dart';
 import '../widgets/map-places-list.dart';
@@ -23,7 +23,7 @@ class MapMain extends StatefulWidget {
 
 class _MapState extends State<MapMain> {
   Completer<GoogleMapController> _controller = Completer();
-  bool _loaded = false;
+  // bool _loaded = false;
   PanelController _pc = new PanelController();
   PageController _pvc = new PageController();
   Trip _selectedTrip;
@@ -48,13 +48,13 @@ class _MapState extends State<MapMain> {
                 //     duration: Duration(milliseconds: 300),
                 //     curve: Curves.easeIn);
                 setState(() {
-                  _selectedPlaceId = t.placeId;
+                  _selectedPlaceId = t.googlePlaceId;
                   _selectedPlaceName = t.name;
                   _selectedTrip = null;
                 });
               },
               icon: BitmapDescriptor.defaultMarker,
-              markerId: MarkerId(('${t.id};${t.placeId}')),
+              markerId: MarkerId(('${t.id};${t.googlePlaceId}')),
               draggable: false,
               position: LatLng(t.coordinates.latitude, t.coordinates.longitude),
               infoWindow:
@@ -69,17 +69,15 @@ class _MapState extends State<MapMain> {
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _loaded = true;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    var _trips = Provider.of<Trips>(context).trips;
+    print('build MAP');
+    var _trips = Provider.of<TripProvider>(context).trips;
     var _userPosition = Provider.of<UserPosition>(context).getPosition;
     var _mq = MediaQuery.of(context);
-    var _filters = Provider.of<Filters>(context, listen: false);
+    var _filters = Provider.of<Filters>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -119,55 +117,44 @@ class _MapState extends State<MapMain> {
               }),
         ],
       ),
-      body: _loaded //&& _userPosition.latitude != null
-          ? SlidingUpPanel(
-              controller: _pc,
-              parallaxEnabled: true,
-              parallaxOffset: .5,
-              renderPanelSheet: false,
-              maxHeight: _mq.size.height / 3,
-              minHeight: 0,
-              panelBuilder: (ScrollController sc) {
-                return Center(
-                  child: Consumer<Filters>(
-                    builder: (context, value, child) => PlaceList(
-                      trips: _trips,
-                      userPosition: _userPosition,
-                      selectedTrip: _selectedTrip,
-                      selectedPlaceId: _selectedPlaceId,
-                      selectedPlaceName: _selectedPlaceName,
-                      mapController: _controller.future,
-                    ),
-                  ),
-                );
-              },
-              body: GoogleMap(
-                trafficEnabled: false,
-                compassEnabled: true,
-                mapToolbarEnabled: false,
-                myLocationButtonEnabled: false,
-                myLocationEnabled: true,
-                mapType: MapType.normal,
-                initialCameraPosition: CameraPosition(
-                  target:
-                      LatLng(_userPosition.latitude, _userPosition.longitude),
-                  zoom: 14,
-                ),
-                markers: _loadMarkers(_trips),
-                onMapCreated: (GoogleMapController controller) {
-                  _controller.complete(controller);
-                },
-              ),
-            )
-          : Container(
-              color: Colors.white,
-              child: Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.red[800]),
-                ),
+      body: SlidingUpPanel(
+        controller: _pc,
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        renderPanelSheet: false,
+        maxHeight: _mq.size.height / 3,
+        minHeight: 0,
+        panelBuilder: (ScrollController sc) {
+          return Center(
+            child: Consumer<Filters>(
+              builder: (context, value, child) => PlaceList(
+                trips: _trips,
+                userPosition: _userPosition,
+                selectedTrip: _selectedTrip,
+                selectedPlaceId: _selectedPlaceId,
+                selectedPlaceName: _selectedPlaceName,
+                mapController: _controller.future,
               ),
             ),
+          );
+        },
+        body: GoogleMap(
+          trafficEnabled: false,
+          compassEnabled: true,
+          mapToolbarEnabled: false,
+          myLocationButtonEnabled: false,
+          myLocationEnabled: true,
+          mapType: MapType.normal,
+          initialCameraPosition: CameraPosition(
+            target: LatLng(_userPosition.latitude, _userPosition.longitude),
+            zoom: 14,
+          ),
+          markers: _loadMarkers(_trips),
+          onMapCreated: (GoogleMapController controller) {
+            _controller.complete(controller);
+          },
+        ),
+      ),
     );
   }
 }

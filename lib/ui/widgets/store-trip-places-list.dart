@@ -1,28 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:tripit/core/models/place-model.dart';
+import 'package:tripit/core/models/place.model.dart';
 import '../screens/place-dialog.dart';
 
 class PlacesList extends StatefulWidget {
   final List<Place> places;
-  final Function _handleSelectMarker;
 
-  PlacesList(this.places, this._handleSelectMarker);
+  PlacesList(this.places);
 
   @override
   _PlacesListState createState() => _PlacesListState();
 }
 
 class _PlacesListState extends State<PlacesList> with TickerProviderStateMixin {
-  // AnimationController _playPauseController;
-
-  @override
-  void initState() {
-    super.initState();
-    // _playPauseController = AnimationController(
-    //     duration: const Duration(milliseconds: 200), vsync: this);
-  }
-
   @override
   Widget build(BuildContext context) {
     List<AnimationController> _playPauseControllers = [];
@@ -38,9 +28,6 @@ class _PlacesListState extends State<PlacesList> with TickerProviderStateMixin {
         shrinkWrap: true,
         itemCount: widget.places.length,
         itemBuilder: (context, index) {
-          // _playPauseController = AnimationController(
-          //     duration: const Duration(milliseconds: 200), vsync: this);
-
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5),
             child: ListTile(
@@ -57,7 +44,6 @@ class _PlacesListState extends State<PlacesList> with TickerProviderStateMixin {
                       ),
                     ),
                   );
-                  widget._handleSelectMarker(widget.places[index].id);
                 },
                 leading: Container(
                   width: 50,
@@ -68,7 +54,7 @@ class _PlacesListState extends State<PlacesList> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.all(Radius.circular(5)),
                       child: CachedNetworkImage(
                         fit: BoxFit.cover,
-                        imageUrl: '${widget.places[index].imageUrl}',
+                        imageUrl: '${widget.places[index].pictureUrl1}',
                         placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 0.5,
@@ -94,9 +80,10 @@ class _PlacesListState extends State<PlacesList> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-                subtitle: Text(widget.places[index].distanceFromUser > 1000
-                    ? '${(widget.places[index].distanceFromUser / 1000).toStringAsFixed(2)} Km'
-                    : '${(widget.places[index].distanceFromUser).toStringAsFixed(2)} m'),
+                //TODO:obtener distancia del usuario al place
+                // subtitle: Text(widget.places[index].distanceFromUser > 1000
+                //     ? '${(widget.places[index].distanceFromUser / 1000).toStringAsFixed(2)} Km'
+                //     : '${(widget.places[index].distanceFromUser).toStringAsFixed(2)} m'),
                 trailing: LayoutBuilder(builder: (ctx, cns) {
                   return Container(
                     // width: cns.maxWidth / 3,
@@ -109,7 +96,8 @@ class _PlacesListState extends State<PlacesList> with TickerProviderStateMixin {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '${widget.places[index].rating}',
+                              //TODO: obtener rating del place
+                              '7.6',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 18,

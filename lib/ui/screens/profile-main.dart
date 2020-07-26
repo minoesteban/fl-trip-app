@@ -1,8 +1,8 @@
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/models/trip-model.dart';
-import 'package:tripit/providers/trips-provider.dart';
+import 'package:tripit/core/models/trip.model.dart';
+import 'package:tripit/providers/trip.provider.dart';
 import 'package:tripit/ui/screens/trip-new.dart';
 import '../widgets/profile-trips-list.dart';
 
@@ -26,23 +26,27 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     String _userId = 'giorgio';
+    int _ownerId = 8;
     String _userDescription =
         'Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.';
-    var _tripsProvider = Provider.of<Trips>(context, listen: false);
-    var _trips = _tripsProvider.findByGuide(_userId);
-    var _languages = _trips.map((e) => e.language).toSet();
-    var _countries = _trips.map((e) => e.country).toSet();
-    var _cities = _trips.map((e) => e.city).toSet();
+    var _tripsProvider = Provider.of<TripProvider>(context, listen: false);
+    var _trips = _tripsProvider.findByGuide(_ownerId);
+    var _languages = _trips.map((e) => e.languageFlagId).toSet();
+    var _countries = _trips.map((e) => e.countryId).toSet();
+    //TODO: ciudad del trip, agregando att en trip? o cityId? como lo hago traducible?
+    List<int> _cities = [];
     var _places = _trips
-        .map((e) => e.places.map((e) => e.placeId).toList())
+        .map((e) => e.places.map((e) => e.googlePlaceId).toList())
         .toList()
         .expand((element) => element)
         .toList();
 
-    var _rating = _trips.map((e) => e.tripRating) == null
-        ? 0.0
-        : _trips.map((e) => e.tripRating).reduce((a, b) => a + b) /
-            _trips.length;
+    //TODO: obtener rating del trip a partir de la tabla de ratings
+    var _rating = 0;
+    // _trips.map((e) => e.tripRating) == null
+    //     ? 0.0
+    //     : _trips.map((e) => e.tripRating).reduce((a, b) => a + b) /
+    //         _trips.length;
 
     List<Widget> buildAvatar() {
       return [
@@ -226,7 +230,7 @@ class _ProfileState extends State<Profile> {
               icon: const Icon(Icons.add),
               onPressed: () {
                 Navigator.of(context).pushNamed(TripNew.routeName, arguments: {
-                  'userId': _userId
+                  'ownerId': _ownerId
                 }).then((_newTrip) => _addNewTrip(_newTrip));
               }),
         ],

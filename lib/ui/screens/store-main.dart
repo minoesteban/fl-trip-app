@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/filters-provider.dart';
-import 'package:tripit/providers/trips-provider.dart';
+import 'package:tripit/providers/filters.provider.dart';
+import 'package:tripit/providers/trip.provider.dart';
 import '../widgets/home-search.dart';
 import 'filters.dart';
 
@@ -16,7 +16,7 @@ class _StoreState extends State<Store> {
   @override
   Widget build(BuildContext context) {
     var _filters = Provider.of<Filters>(context, listen: false);
-    var _trips = Provider.of<Trips>(context).trips;
+    var _trips = Provider.of<TripProvider>(context).trips;
     return Scaffold(
       appBar: AppBar(
         title: Text('tripit',

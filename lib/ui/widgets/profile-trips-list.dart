@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/user-position-provider.dart';
-import 'package:tripit/core/models/trip-model.dart';
+import 'package:tripit/providers/user-position.provider.dart';
+import 'package:tripit/core/models/trip.model.dart';
 import 'package:tripit/ui/screens/trip-main.dart';
 
 class ProfileTripsList extends StatelessWidget {
@@ -43,7 +43,7 @@ class ProfileTripsList extends StatelessWidget {
                         ),
                       ),
                       child: CachedNetworkImage(
-                        imageUrl: '${_trips[i].imageUrl}',
+                        imageUrl: '${_trips[i].pictureUrl}',
                         fit: BoxFit.cover,
                       ),
                     ),

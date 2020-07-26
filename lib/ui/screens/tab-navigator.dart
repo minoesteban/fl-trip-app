@@ -11,9 +11,10 @@ class TabNavigator extends StatefulWidget {
 
 class _TabNavigatorState extends State<TabNavigator> {
   int _currentIndex = 1;
-  // PageController _pvc = PageController();
+
   @override
   Widget build(BuildContext context) {
+    print('build TABS');
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,

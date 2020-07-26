@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:tripit/core/models/place-model.dart';
+import 'package:tripit/core/models/place.model.dart';
 
 class PlaceDialog extends StatefulWidget {
   static const routeName = '/trip/place-dialog';
@@ -37,9 +37,15 @@ class _PlaceDialogState extends State<PlaceDialog>
   }
 
   @override
+  void dispose() {
+    _audioController.dispose();
+    _playPauseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      useMaterialBorderRadius: true,
       scrollable: true,
       titlePadding: EdgeInsets.all(0),
       title: Stack(alignment: Alignment.bottomCenter, children: [
@@ -50,7 +56,7 @@ class _PlaceDialogState extends State<PlaceDialog>
                 topLeft: Radius.circular(4), topRight: Radius.circular(4)),
             child: CachedNetworkImage(
               fit: BoxFit.cover,
-              imageUrl: '${widget._place.imageUrl}',
+              imageUrl: '${widget._place.pictureUrl1}',
               placeholder: (context, url) => Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 0.5,
@@ -93,7 +99,8 @@ class _PlaceDialogState extends State<PlaceDialog>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${widget._place.rating}',
+                    //TODO: obtener rating del place
+                    '7.6',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 28,
@@ -110,6 +117,7 @@ class _PlaceDialogState extends State<PlaceDialog>
               VerticalDivider(),
               Column(
                 children: [
+                  //TODO: obtener cantidad de descargas (compras?)
                   Text(
                     '18.6k',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -123,6 +131,7 @@ class _PlaceDialogState extends State<PlaceDialog>
               VerticalDivider(),
               Column(
                 children: [
+                  //TODO: obtener duracion del audio principal
                   Text(
                     '17min',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -189,7 +198,7 @@ class _PlaceDialogState extends State<PlaceDialog>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: Text(
-                '${widget._place.description}',
+                '${widget._place.about}',
                 maxLines: _maxLines,
                 textAlign: TextAlign.justify,
                 overflow: _overflow,

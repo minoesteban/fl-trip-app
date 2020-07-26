@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/core/models/trip-model.dart';
+import '../../core/models/trip.model.dart';
 
 class HomeTripList extends StatefulWidget {
   final List<Trip> _trips;
