@@ -36,7 +36,7 @@ class Country {
     if (map == null) return null;
 
     return Country(
-      code: map['code'],
+      code: map['alpha2Code'],
       name: map['name'],
       translations: Map<String, String>.from(map['translations']),
     );

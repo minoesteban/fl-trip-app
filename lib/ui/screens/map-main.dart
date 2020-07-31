@@ -2,17 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:tripit/providers/filters.provider.dart';
-import 'package:tripit/providers/user-position.provider.dart';
-import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/providers/trip.provider.dart';
-import 'filters.dart';
+import '../../providers/filters.provider.dart';
+import '../../providers/user.provider.dart';
+import '../../core/models/trip.model.dart';
+import '../../providers/trip.provider.dart';
 import '../widgets/map-search.dart';
 import '../widgets/map-places-list.dart';
+import 'filters.dart';
 
 class MapMain extends StatefulWidget {
   static const routeName = '/map';
@@ -23,46 +24,32 @@ class MapMain extends StatefulWidget {
 
 class _MapState extends State<MapMain> {
   Completer<GoogleMapController> _controller = Completer();
-  // bool _loaded = false;
   PanelController _pc = new PanelController();
-  PageController _pvc = new PageController();
-  Trip _selectedTrip;
+  TripProvider _tripProvider = TripProvider();
   String _selectedPlaceId;
-  String _selectedPlaceName;
-
-  handleChangeSlidePanelViewItemType(String type) {
-    _pvc.animateToPage(0,
-        duration: Duration(milliseconds: 300), curve: Curves.easeIn);
-  }
 
   Set<Marker> _loadMarkers(List<Trip> trips) {
     Set<Marker> _markers = Set<Marker>();
-    int _tripCount = 0;
-    for (var trip in trips) {
+    trips.forEach((trip) {
       _markers.addAll(trip.places
           .map(
             (t) => Marker(
               onTap: () {
                 _pc.open();
-                // _pvc.animateToPage(1,
-                //     duration: Duration(milliseconds: 300),
-                //     curve: Curves.easeIn);
                 setState(() {
                   _selectedPlaceId = t.googlePlaceId;
-                  _selectedPlaceName = t.name;
-                  _selectedTrip = null;
                 });
               },
               icon: BitmapDescriptor.defaultMarker,
               markerId: MarkerId(('${t.id};${t.googlePlaceId}')),
               draggable: false,
               position: LatLng(t.coordinates.latitude, t.coordinates.longitude),
-              infoWindow:
-                  InfoWindow(title: t.name, snippet: '$_tripCount trips'),
+              infoWindow: InfoWindow(title: t.name),
             ),
           )
           .toSet());
-    }
+    });
+
     return _markers;
   }
 
@@ -73,10 +60,10 @@ class _MapState extends State<MapMain> {
 
   @override
   Widget build(BuildContext context) {
-    print('build MAP');
-    var _trips = Provider.of<TripProvider>(context).trips;
-    var _userPosition = Provider.of<UserPosition>(context).getPosition;
-    var _mq = MediaQuery.of(context);
+    Position _userPosition = Provider.of<UserProvider>(context).user.position;
+    _tripProvider = Provider.of<TripProvider>(context);
+    List<Trip> _trips = _tripProvider.trips;
+    Size _deviceSize = MediaQuery.of(context).size;
     var _filters = Provider.of<Filters>(context);
 
     return Scaffold(
@@ -92,7 +79,9 @@ class _MapState extends State<MapMain> {
           onPressed: () async {
             _pc.close();
             Geometry result = await showSearch(
-                context: context, delegate: MapSearch(_trips, _userPosition));
+              context: context,
+              delegate: MapSearch(_trips, _userPosition),
+            );
             if (result != null)
               _controller.future.then(
                 (value) => value.animateCamera(
@@ -105,16 +94,20 @@ class _MapState extends State<MapMain> {
         ),
         actions: [
           IconButton(
-              icon: Icon(Icons.tune),
-              onPressed: () async {
-                await showDialog(
-                    barrierDismissible: true,
-                    context: context,
-                    builder: (_) {
-                      return ChangeNotifierProvider.value(
-                          value: _filters, child: FiltersScreen());
-                    });
-              }),
+            icon: Icon(Icons.tune),
+            onPressed: () async {
+              await showDialog(
+                barrierDismissible: true,
+                context: context,
+                builder: (_) {
+                  return ChangeNotifierProvider.value(
+                    value: _filters,
+                    child: FiltersScreen(),
+                  );
+                },
+              );
+            },
+          ),
         ],
       ),
       body: SlidingUpPanel(
@@ -122,37 +115,32 @@ class _MapState extends State<MapMain> {
         parallaxEnabled: true,
         parallaxOffset: .5,
         renderPanelSheet: false,
-        maxHeight: _mq.size.height / 3,
+        maxHeight: _deviceSize.height / 3,
         minHeight: 0,
         panelBuilder: (ScrollController sc) {
           return Center(
-            child: Consumer<Filters>(
-              builder: (context, value, child) => PlaceList(
-                trips: _trips,
-                userPosition: _userPosition,
-                selectedTrip: _selectedTrip,
-                selectedPlaceId: _selectedPlaceId,
-                selectedPlaceName: _selectedPlaceName,
-                mapController: _controller.future,
-              ),
+            child: PlaceList(
+              selectedPlaceId: _selectedPlaceId,
             ),
           );
         },
-        body: GoogleMap(
-          trafficEnabled: false,
-          compassEnabled: true,
-          mapToolbarEnabled: false,
-          myLocationButtonEnabled: false,
-          myLocationEnabled: true,
-          mapType: MapType.normal,
-          initialCameraPosition: CameraPosition(
-            target: LatLng(_userPosition.latitude, _userPosition.longitude),
-            zoom: 14,
+        body: Consumer<Filters>(
+          builder: (context, filters, _) => GoogleMap(
+            trafficEnabled: false,
+            compassEnabled: true,
+            mapToolbarEnabled: false,
+            myLocationButtonEnabled: false,
+            myLocationEnabled: true,
+            mapType: MapType.normal,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(_userPosition.latitude, _userPosition.longitude),
+              zoom: 14,
+            ),
+            markers: _loadMarkers(_trips),
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
           ),
-          markers: _loadMarkers(_trips),
-          onMapCreated: (GoogleMapController controller) {
-            _controller.complete(controller);
-          },
         ),
       ),
     );

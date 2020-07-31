@@ -16,8 +16,6 @@ class PlaceNewSearch extends SearchDelegate<PlaceDetails> {
 
   PlaceNewSearch(this._userPosition, this._countryCode, this._caller);
 
-  var recentResults = [];
-
   @override
   ThemeData appBarTheme(BuildContext context) {
     final ThemeData theme = Theme.of(context);

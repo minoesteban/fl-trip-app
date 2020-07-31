@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 
 class User {
   int id;
@@ -13,12 +14,14 @@ class User {
   String languageId3;
   String languageId4;
   String languageId5;
+  String about;
   List<int> favouriteTrips;
   List<int> favouritePlaces;
   List<int> purchasedTrips;
   List<int> purchasedPlaces;
   List<int> downloadedTrips;
   List<int> downloadedPlaces;
+  Position position;
   bool onlyNearest;
   bool onlyFavourites;
   bool onlyPurchased;
@@ -37,12 +40,14 @@ class User {
     this.languageId3,
     this.languageId4,
     this.languageId5,
+    this.about,
     this.favouriteTrips,
     this.favouritePlaces,
     this.purchasedTrips,
     this.purchasedPlaces,
     this.downloadedTrips,
     this.downloadedPlaces,
+    this.position,
     this.onlyNearest,
     this.onlyFavourites,
     this.onlyPurchased,
@@ -63,12 +68,14 @@ class User {
     String languageId3,
     String languageId4,
     String languageId5,
+    String about,
     List<int> favouriteTrips,
     List<int> favouritePlaces,
     List<int> purchasedTrips,
     List<int> purchasedPlaces,
     List<int> downloadedTrips,
     List<int> downloadedPlaces,
+    Position position,
     bool onlyNearest,
     bool onlyFavourites,
     bool onlyPurchased,
@@ -88,6 +95,7 @@ class User {
       languageId3: languageId3 ?? this.languageId3,
       languageId4: languageId4 ?? this.languageId4,
       languageId5: languageId5 ?? this.languageId5,
+      about: about ?? this.about,
       favouriteTrips: favouriteTrips ?? this.favouriteTrips,
       favouritePlaces: favouritePlaces ?? this.favouritePlaces,
       purchasedTrips: purchasedTrips ?? this.purchasedTrips,
@@ -97,6 +105,7 @@ class User {
       onlyNearest: onlyNearest ?? this.onlyNearest,
       onlyFavourites: onlyFavourites ?? this.onlyFavourites,
       onlyPurchased: onlyPurchased ?? this.onlyPurchased,
+      position: position ?? this.position,
       active: active ?? this.active,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -116,19 +125,21 @@ class User {
       'languageId3': languageId3,
       'languageId4': languageId4,
       'languageId5': languageId5,
+      'about': about,
       'favouriteTrips': favouriteTrips,
       'favouritePlaces': favouritePlaces,
       'purchasedTrips': purchasedTrips,
       'purchasedPlaces': purchasedPlaces,
       'downloadedTrips': downloadedTrips,
       'downloadedPlaces': downloadedPlaces,
+      'position': position,
       'onlyNearest': onlyNearest,
       'onlyFavourites': onlyFavourites,
       'onlyPurchased': onlyPurchased,
       'active': active,
-      'createdAt': createdAt?.millisecondsSinceEpoch,
-      'updatedAt': updatedAt?.millisecondsSinceEpoch,
-      'deletedAt': deletedAt?.millisecondsSinceEpoch,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -146,19 +157,34 @@ class User {
       languageId3: map['languageId3'],
       languageId4: map['languageId4'],
       languageId5: map['languageId5'],
-      favouriteTrips: List<int>.from(map['favouriteTrips']),
-      favouritePlaces: List<int>.from(map['favouritePlaces']),
-      purchasedTrips: List<int>.from(map['purchasedTrips']),
-      purchasedPlaces: List<int>.from(map['purchasedPlaces']),
-      downloadedTrips: List<int>.from(map['downloadedTrips']),
-      downloadedPlaces: List<int>.from(map['downloadedPlaces']),
+      about: map['about'],
+      favouriteTrips: map['favouriteTrips'] != null
+          ? List<int>.from(map['favouriteTrips'])
+          : [],
+      favouritePlaces: map['favouritePlaces'] != null
+          ? List<int>.from(map['favouritePlaces'])
+          : [],
+      purchasedTrips: map['purchasedTrips'] != null
+          ? List<int>.from(map['purchasedTrips'])
+          : [],
+      purchasedPlaces: map['purchasedPlaces'] != null
+          ? List<int>.from(map['purchasedPlaces'])
+          : [],
+      downloadedTrips: map['downloadedTrips'] != null
+          ? List<int>.from(map['downloadedTrips'])
+          : [],
+      downloadedPlaces: map['downloadedPlaces'] != null
+          ? List<int>.from(map['downloadedPlaces'])
+          : [],
+      position:
+          map['position'] != null ? Position.fromMap(map['position']) : null,
       onlyNearest: map['onlyNearest'],
       onlyFavourites: map['onlyFavourites'],
       onlyPurchased: map['onlyPurchased'],
       active: map['active'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt']),
-      deletedAt: DateTime.fromMillisecondsSinceEpoch(map['deletedAt']),
+      createdAt: map['createdAt'],
+      updatedAt: map['updatedAt'],
+      deletedAt: map['deletedAt'],
     );
   }
 
@@ -168,7 +194,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, username: $username, password: $password, firstName: $firstName, lastName: $lastName, languageId1: $languageId1, languageId2: $languageId2, languageId3: $languageId3, languageId4: $languageId4, languageId5: $languageId5, favouriteTrips: $favouriteTrips, favouritePlaces: $favouritePlaces, purchasedTrips: $purchasedTrips, purchasedPlaces: $purchasedPlaces, downloadedTrips: $downloadedTrips, downloadedPlaces: $downloadedPlaces, onlyNearest: $onlyNearest, onlyFavourites: $onlyFavourites, onlyPurchased: $onlyPurchased, active: $active, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'User(id: $id, username: $username, password: $password, firstName: $firstName, lastName: $lastName, languageId1: $languageId1, languageId2: $languageId2, languageId3: $languageId3, languageId4: $languageId4, languageId5: $languageId5, about: $about, favouriteTrips: $favouriteTrips, favouritePlaces: $favouritePlaces, purchasedTrips: $purchasedTrips, purchasedPlaces: $purchasedPlaces, downloadedTrips: $downloadedTrips, downloadedPlaces: $downloadedPlaces, position: $position, onlyNearest: $onlyNearest, onlyFavourites: $onlyFavourites, onlyPurchased: $onlyPurchased, active: $active, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -186,12 +212,14 @@ class User {
         o.languageId3 == languageId3 &&
         o.languageId4 == languageId4 &&
         o.languageId5 == languageId5 &&
+        o.about == about &&
         listEquals(o.favouriteTrips, favouriteTrips) &&
         listEquals(o.favouritePlaces, favouritePlaces) &&
         listEquals(o.purchasedTrips, purchasedTrips) &&
         listEquals(o.purchasedPlaces, purchasedPlaces) &&
         listEquals(o.downloadedTrips, downloadedTrips) &&
         listEquals(o.downloadedPlaces, downloadedPlaces) &&
+        o.position == position &&
         o.onlyNearest == onlyNearest &&
         o.onlyFavourites == onlyFavourites &&
         o.onlyPurchased == onlyPurchased &&
@@ -213,12 +241,14 @@ class User {
         languageId3.hashCode ^
         languageId4.hashCode ^
         languageId5.hashCode ^
+        about.hashCode ^
         favouriteTrips.hashCode ^
         favouritePlaces.hashCode ^
         purchasedTrips.hashCode ^
         purchasedPlaces.hashCode ^
         downloadedTrips.hashCode ^
         downloadedPlaces.hashCode ^
+        position.hashCode ^
         onlyNearest.hashCode ^
         onlyFavourites.hashCode ^
         onlyPurchased.hashCode ^

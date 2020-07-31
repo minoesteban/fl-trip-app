@@ -2,12 +2,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/core/models/place.model.dart';
-import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/ui/widgets/image-list.dart';
+import 'package:provider/provider.dart';
+import '../../providers/cart.provider.dart';
+import '../../providers/language.provider.dart';
+import '../../providers/country.provider.dart';
+import '../../providers/user.provider.dart';
+import '../../providers/trip.provider.dart';
+import '../../core/models/place.model.dart';
+import '../../core/models/trip.model.dart';
+import '../../ui/widgets/image-list.dart';
 import '../widgets/store-trip-places-list.dart';
-import '../widgets/rating-overview.dart';
 import '../widgets/store-trip-map.dart';
+import 'cart-main.dart';
 
 class TripMain extends StatefulWidget {
   static const routeName = '/trip';
@@ -16,22 +22,17 @@ class TripMain extends StatefulWidget {
 }
 
 class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
-  Map _args = {};
-  bool _ordered = false;
   TextOverflow _overflow = TextOverflow.ellipsis;
   int _maxLines = 5;
   AnimationController _audioController;
   AnimationController _playPauseController;
-
-  void orderPlaces(List<Place> _places, Position _userPosition) {
-    _places.sort((a, b) {
-      return a.order.compareTo(b.order);
-    });
-    setState(() {
-      _places = _places;
-      _ordered = true;
-    });
-  }
+  bool _loadingRating = true;
+  double _rating = 0.0;
+  CountryProvider _countryProvider;
+  UserProvider _userProvider;
+  TripProvider _tripProvider;
+  LanguageProvider _languageProvider;
+  CartProvider _cart;
 
   void _toggleShowDescription() {
     setState(() {
@@ -48,6 +49,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
     _audioController.addListener(() => setState(() {}));
     _playPauseController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
+    _countryProvider = Provider.of<CountryProvider>(context, listen: false);
   }
 
   @override
@@ -59,12 +61,24 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    _args = ModalRoute.of(context).settings.arguments;
-    Position _userPosition = _args['userPosition'];
+    Map _args = ModalRoute.of(context).settings.arguments;
     Trip _trip = _args['trip'];
     List<Place> _places = _trip.places;
 
-    if (!_ordered) orderPlaces(_places, _userPosition);
+    _userProvider = Provider.of<UserProvider>(context);
+    _tripProvider = Provider.of<TripProvider>(context);
+    _languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    _cart = Provider.of<CartProvider>(context, listen: false);
+
+    Position _userPosition = _userProvider.user.position;
+
+    if (_loadingRating)
+      _tripProvider.getAndSetTripRatings(_trip.id).then((rating) {
+        setState(() {
+          _rating = rating;
+          _loadingRating = false;
+        });
+      });
 
     String audioTime() {
       int duration = 75;
@@ -85,14 +99,16 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
             ),
             IconButton(
               iconSize: 30,
-              icon: false
+              icon: _userProvider.tripIsFavourite(_trip.id)
                   ? Icon(
                       Icons.favorite,
                     )
                   : Icon(
                       Icons.favorite_border,
                     ),
-              onPressed: () {},
+              onPressed: () {
+                _userProvider.toggleFavouriteTrip(_trip.id);
+              },
             ),
           ],
           expandedHeight: MediaQuery.of(context).size.height / 3.5,
@@ -131,7 +147,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                     //location & purchase
                     ListTile(
                       title: Text(
-                        '${_trip.countryId}',
+                        '${_countryProvider.getName(_trip.countryId)}',
                         softWrap: true,
                         style: _titleStyle,
                       ),
@@ -141,40 +157,42 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                       ),
                       trailing: Builder(
                         builder: (ctx) => RaisedButton(
-                            color: false ? Colors.grey[400] : Colors.green[700],
+                            color: Colors.green[700],
                             child: Text(
-                              false
+                              _userProvider.tripIsPurchased(_trip.id)
                                   ? 'purchased'
-                                  : 'add to cart (\$${_trip.price})',
+                                  : 'add to cart \$${_trip.price}',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
                                   letterSpacing: 1.5),
                             ),
-                            onPressed: () {
-                              // _trip.toggleSaved();
-                              // _trip.togglePurchased();
-                              Scaffold.of(ctx).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    true
-                                        ? 'trip added to cart!'
-                                        : 'trip removed!',
-                                  ),
-                                  action: SnackBarAction(
-                                      label: 'DISMISS',
-                                      onPressed: () {
-                                        Scaffold.of(ctx).hideCurrentSnackBar();
-                                      }),
-                                ),
-                              );
-                              setState(() {
-                                _trip = _trip;
-                              });
-                            }),
+                            onPressed: _userProvider.tripIsPurchased(_trip.id)
+                                ? null
+                                : () {
+                                    _cart.addItem(_trip, null);
+                                    _userProvider.togglePurchasedTrip(_trip.id);
+                                    Scaffold.of(ctx).showSnackBar(
+                                      SnackBar(
+                                        duration: Duration(seconds: 1),
+                                        content: Text(
+                                          'trip added to cart!',
+                                        ),
+                                        action: SnackBarAction(
+                                            label: 'GO TO CART',
+                                            onPressed: () {
+                                              Scaffold.of(ctx)
+                                                  .hideCurrentSnackBar();
+                                              Navigator.pushNamed(
+                                                  context, CartMain.routeName);
+                                            }),
+                                      ),
+                                    );
+                                  }),
                       ),
                     ),
+
                     Divider(
                       height: 30,
                     ),
@@ -187,6 +205,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
+                              //TODO: obtener cantidad de purchases? o de ratings
                               '15.6k',
                               style: _titleBigStyle,
                             ),
@@ -201,7 +220,23 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            RatingOverview(_trip),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${_rating.toStringAsPrecision(2)}',
+                                  style: TextStyle(
+                                      color: Colors.amber[500],
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 30),
+                                ),
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.amber[500],
+                                  size: 15,
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                         VerticalDivider(),
@@ -215,7 +250,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                               width: 50,
                             ),
                             Text(
-                              'language',
+                              '${_languageProvider.getNativeName(_trip.languageNameId)}',
                               style: _subtitleStyle,
                             ),
                           ],
@@ -348,11 +383,11 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                             title: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                //TODO: obtener distancia total del trip (lineas con geometry?)
                                 Text(
                                   'total distance',
                                   style: _titleStyle,
                                 ),
-                                //TODO: obtener distancia total del trip (lineas con geometry?)
                                 Text(
                                   '15.6 Km',
                                   style: _subtitleStyle,
@@ -369,28 +404,6 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                         ],
                       ),
                     ),
-                    Divider(),
-                    //creator info
-                    // Center(
-                    //   child: Column(
-                    //     children: [
-                    //       CircleAvatar(
-                    //         radius: 50,
-                    //         backgroundImage:
-                    //             AssetImage('assets/images/avatar.png'),
-                    //       ),
-                    //       SizedBox(height: 10),
-                    //       Text(
-                    //         '${_trip.creator}',
-                    //         style: _titleStyle,
-                    //       ),
-                    //       Text(
-                    //         '15 trips',
-                    //         style: _subtitleStyle,
-                    //       ),
-                    //     ],
-                    //   ),
-                    // )
                   ],
                 ),
               ),

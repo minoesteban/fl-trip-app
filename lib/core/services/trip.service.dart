@@ -5,16 +5,54 @@ import 'package:tripit/config.dart';
 import 'package:http/http.dart' as http;
 
 class TripService {
-  Future<List<Trip>> getAllTrips() async {
-    print('llamo API get all trips');
+  Map<String, String> _headers = {'content-type': 'application/json'};
+
+  Future<List<Trip>> getAll() async {
     final res = await http.get('$API_ENDPOINT/trip/all');
     if (res.statusCode == HttpStatus.ok)
-      return await parseTrips(res.body);
+      return await parseList(res.body);
     else
-      throw Exception('Error ${res.statusCode} : ${res.body}');
+      throw HttpException(res.body);
   }
 
-  Future<List<Trip>> parseTrips(String data) async {
+  Future<Trip> create(Trip trip) async {
+    String url = '$API_ENDPOINT/trip';
+    final res = await http.post(url,
+        headers: _headers, body: json.encode(trip.toMap()));
+    if (res.statusCode == HttpStatus.ok)
+      return await parse(res.body);
+    else
+      throw HttpException(res.body);
+  }
+
+  Future<Trip> submit(int id) async {
+    String url = '$API_ENDPOINT/trip/$id';
+    final res = await http.patch(url,
+        headers: _headers, body: json.encode({'submitted': true}));
+    if (res.statusCode == HttpStatus.ok) {
+      return json.decode(res.body)['item'][1];
+    } else {
+      throw HttpException(res.body);
+    }
+  }
+
+  Future<Trip> update(Trip trip) async {
+    String url = '$API_ENDPOINT/trip/${trip.id}';
+    final res = await http.patch(url,
+        headers: _headers, body: json.encode(trip.toMap()));
+    if (res.statusCode == HttpStatus.ok) {
+      return json.decode(res.body)['item'][1];
+    } else {
+      throw HttpException(res.body);
+    }
+  }
+
+  Future<Trip> parse(String data) async {
+    final decoded = json.decode(data);
+    return Trip.fromMap(decoded['trip']);
+  }
+
+  Future<List<Trip>> parseList(String data) async {
     final decoded = json.decode(data);
     List<Trip> _trips = [];
 
@@ -24,3 +62,22 @@ class TripService {
     return _trips;
   }
 }
+
+// Future<ServiceResponse> submitTrip(Trip newTrip) async {
+//   String url = '$API_ENDPOINT/trip';
+//   try {
+//     final res = await http.post(url,
+//         headers: _headers, body: json.encode(newTrip.toMap()));
+//     Trip createdTrip = await parse(res.body);
+//     if (newTrip.places.length > 0) {
+//       ServiceResponse response =
+//           await _placeService.createMulti(newTrip.places);
+//       createdTrip.places = response.hasItems ? response.items : [];
+//       return ServiceResponse(
+//           [createdTrip], response.hasErrors ? response.errors : []);
+//     } else
+//       return ServiceResponse([createdTrip], []);
+//   } catch (e) {
+//     throw e;
+//   }
+// }

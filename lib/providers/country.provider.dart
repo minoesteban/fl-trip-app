@@ -6,18 +6,27 @@ class CountryProvider with ChangeNotifier {
   CountryController _controller = CountryController();
   List<Country> _countries;
 
-  Future loadCountries() async {
-    await _controller.getCountries().then((res) => _countries = res);
+  Future<List<Country>> loadCountries() async {
+    await _controller.getCountries().then((res) {
+      _countries = res;
+      notifyListeners();
+    }).catchError((err) => throw err);
+    return _countries;
   }
 
   String getName(String code) {
-    final result = _countries.firstWhere((cty) => cty.code == code).name;
-    return result;
+    return _countries
+        .firstWhere((cty) => cty.code.toLowerCase() == code.toLowerCase())
+        .name;
   }
 
   List<Country> getByName(String name) {
     final result = _countries
         .where((cty) => cty.name.toLowerCase().contains(name.toLowerCase()));
     return result.toList();
+  }
+
+  List<Country> get countries {
+    return _countries;
   }
 }

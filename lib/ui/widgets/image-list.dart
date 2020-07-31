@@ -9,9 +9,11 @@ class ImageList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 10),
       child: Hero(
         tag: _pictureUrl,
         child: CachedNetworkImage(
+          width: MediaQuery.of(context).size.width - 10,
           fit: BoxFit.cover,
           imageUrl: '$_pictureUrl',
           placeholder: (context, url) => Center(

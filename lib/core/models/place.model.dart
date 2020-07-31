@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:geojson/geojson.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../core/models/rating.model.dart';
+
 class Place {
   int id;
   String name;
@@ -16,6 +18,7 @@ class Place {
   double price = 0;
   int order = 0;
   int tripId;
+  Rating rating;
   DateTime createdAt;
   DateTime updatedAt;
   DateTime deletedAt;
@@ -32,6 +35,7 @@ class Place {
     this.price,
     this.order,
     this.tripId,
+    this.rating,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
@@ -50,6 +54,7 @@ class Place {
     double price,
     int order,
     int tripId,
+    Rating rating,
     DateTime createdAt,
     DateTime updatedAt,
     DateTime deletedAt,
@@ -67,6 +72,7 @@ class Place {
       price: price ?? this.price,
       order: order ?? this.order,
       tripId: tripId ?? this.tripId,
+      rating: rating ?? this.rating,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -87,9 +93,10 @@ class Place {
       'price': price,
       'order': order,
       'tripId': tripId,
-      'createdAt': createdAt?.millisecondsSinceEpoch,
-      'updatedAt': updatedAt?.millisecondsSinceEpoch,
-      'deletedAt': deletedAt?.millisecondsSinceEpoch,
+      'rating': rating,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -110,6 +117,7 @@ class Place {
       price: map['price'].toDouble(),
       order: map['order'],
       tripId: map['tripId'],
+      rating: map['rating'],
       createdAt: map['createdAt'],
       updatedAt: map['updatedAt'],
       deletedAt: map['deletedAt'],
@@ -122,7 +130,7 @@ class Place {
 
   @override
   String toString() {
-    return 'Place(id: $id, name: $name, about: $about, googlePlaceId: $googlePlaceId, coordinates: $coordinates, audioUrl: $audioUrl, audioPreviewUrl: $audioPreviewUrl, pictureUrl1: $pictureUrl1, pictureUrl2: $pictureUrl2, price: $price, order: $order, tripId: $tripId, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Place(id: $id, name: $name, about: $about, googlePlaceId: $googlePlaceId, coordinates: $coordinates, audioUrl: $audioUrl, audioPreviewUrl: $audioPreviewUrl, pictureUrl1: $pictureUrl1, pictureUrl2: $pictureUrl2, price: $price, order: $order, tripId: $tripId, rating: $rating, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -142,6 +150,7 @@ class Place {
         o.price == price &&
         o.order == order &&
         o.tripId == tripId &&
+        o.rating == rating &&
         o.createdAt == createdAt &&
         o.updatedAt == updatedAt &&
         o.deletedAt == deletedAt;
@@ -161,6 +170,7 @@ class Place {
         price.hashCode ^
         order.hashCode ^
         tripId.hashCode ^
+        rating.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
         deletedAt.hashCode;

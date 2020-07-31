@@ -2,17 +2,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:provider/provider.dart';
 import 'package:tripit/core/models/trip.model.dart';
 import 'package:tripit/config.dart';
+import 'package:tripit/providers/trip.provider.dart';
 
 final places = GoogleMapsPlaces(apiKey: PLACES_API_KEY);
 
 class HomeSearch extends SearchDelegate<Geometry> {
   List<Trip> _trips = [];
 
-  HomeSearch(this._trips);
-
-  var recentResults = [];
+  HomeSearch();
 
   @override
   ThemeData appBarTheme(BuildContext context) {
@@ -44,13 +44,29 @@ class HomeSearch extends SearchDelegate<Geometry> {
 
   @override
   Widget buildLeading(BuildContext context) {
-    return IconButton(
-        icon: AnimatedIcon(
-          icon: AnimatedIcons.menu_arrow,
-          progress: transitionAnimation,
-        ),
-        onPressed: () {
-          close(context, null);
+    if (_trips.length > 0) {
+      return IconButton(
+          icon: AnimatedIcon(
+            icon: AnimatedIcons.menu_arrow,
+            progress: transitionAnimation,
+          ),
+          onPressed: () {
+            close(context, null);
+          });
+    }
+
+    return FutureBuilder(
+        future: Provider.of<TripProvider>(context).loadTrips(),
+        builder: (context, dataSnapshot) {
+          _trips = dataSnapshot.data != null ? dataSnapshot.data : [];
+          return IconButton(
+              icon: AnimatedIcon(
+                icon: AnimatedIcons.menu_arrow,
+                progress: transitionAnimation,
+              ),
+              onPressed: () {
+                close(context, null);
+              });
         });
   }
 

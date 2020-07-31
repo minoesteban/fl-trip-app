@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripit/core/models/place.model.dart';
 import 'package:tripit/core/models/trip.model.dart';
 
 class TripMap extends StatefulWidget {
@@ -27,10 +26,7 @@ class _TripMapState extends State<TripMap> {
             markerId: MarkerId(t.id.toString()),
             draggable: false,
             position: LatLng(t.coordinates.latitude, t.coordinates.longitude),
-            infoWindow: InfoWindow(
-                //TODO: obtener rating del place
-                title: t.name,
-                snippet: 'Rating 7.6'),
+            infoWindow: InfoWindow(title: t.name),
           ),
         )
         .toSet();

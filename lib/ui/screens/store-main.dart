@@ -1,22 +1,15 @@
+import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/filters.provider.dart';
-import 'package:tripit/providers/trip.provider.dart';
+import '../../providers/cart.provider.dart';
 import '../widgets/home-search.dart';
-import 'filters.dart';
+import 'cart-main.dart';
 
-class Store extends StatefulWidget {
+class Store extends StatelessWidget {
   static const routeName = '/store';
 
   @override
-  _StoreState createState() => _StoreState();
-}
-
-class _StoreState extends State<Store> {
-  @override
   Widget build(BuildContext context) {
-    var _filters = Provider.of<Filters>(context, listen: false);
-    var _trips = Provider.of<TripProvider>(context).trips;
     return Scaffold(
       appBar: AppBar(
         title: Text('tripit',
@@ -26,22 +19,30 @@ class _StoreState extends State<Store> {
         leading: IconButton(
           icon: Icon(Icons.search),
           onPressed: () async {
-            await showSearch(context: context, delegate: HomeSearch(_trips));
+            await showSearch(context: context, delegate: HomeSearch());
           },
         ),
         actions: [
-          IconButton(
-              icon: Icon(Icons.tune),
-              onPressed: () async {
-                await showDialog(
-                    barrierDismissible: true,
-                    context: context,
-                    builder: (_) {
-                      return ChangeNotifierProvider.value(
-                          value: _filters, child: FiltersScreen());
-                    });
-              }),
-          IconButton(icon: Icon(Icons.shopping_cart), onPressed: () {})
+          Consumer<CartProvider>(
+            builder: (context, cartData, _) => Center(
+              child: Badge(
+                showBadge: cartData.items.length > 0,
+                badgeContent: Text(
+                  '${cartData.items.length}',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+                animationDuration: Duration(milliseconds: 300),
+                animationType: BadgeAnimationType.scale,
+                position: BadgePosition.topRight(top: 2, right: 2),
+                badgeColor: Colors.white,
+                child: IconButton(
+                    icon: Icon(Icons.shopping_cart),
+                    onPressed: () {
+                      Navigator.pushNamed(context, CartMain.routeName);
+                    }),
+              ),
+            ),
+          ),
         ],
       ),
       body: SafeArea(

@@ -1,6 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:tripit/core/models/place.model.dart';
+import 'package:provider/provider.dart';
+import 'package:tripit/providers/trip.provider.dart';
+import '../../core/models/place.model.dart';
+import '../../providers/cart.provider.dart';
+import '../../providers/user.provider.dart';
 
 class PlaceDialog extends StatefulWidget {
   static const routeName = '/trip/place-dialog';
@@ -18,6 +22,7 @@ class _PlaceDialogState extends State<PlaceDialog>
   int _maxLines = 5;
   AnimationController _audioController;
   AnimationController _playPauseController;
+  CartProvider _cart;
 
   void _toggleShowDescription() {
     setState(() {
@@ -34,6 +39,7 @@ class _PlaceDialogState extends State<PlaceDialog>
     _audioController.addListener(() => setState(() {}));
     _playPauseController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
+    _cart = Provider.of<CartProvider>(context, listen: false);
   }
 
   @override
@@ -47,24 +53,20 @@ class _PlaceDialogState extends State<PlaceDialog>
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      titlePadding: EdgeInsets.all(0),
+      titlePadding: const EdgeInsets.all(0),
       title: Stack(alignment: Alignment.bottomCenter, children: [
         Hero(
           tag: '${widget._place.id}_image',
-          child: ClipRRect(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(4), topRight: Radius.circular(4)),
-            child: CachedNetworkImage(
-              fit: BoxFit.cover,
-              imageUrl: '${widget._place.pictureUrl1}',
-              placeholder: (context, url) => Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 0.5,
-                  valueColor: AlwaysStoppedAnimation(Colors.grey[100]),
-                ),
+          child: CachedNetworkImage(
+            fit: BoxFit.fitWidth,
+            imageUrl: '${widget._place.pictureUrl1}',
+            placeholder: (context, url) => Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 0.5,
+                valueColor: AlwaysStoppedAnimation(Colors.grey[100]),
               ),
-              errorWidget: (context, url, error) => Icon(Icons.error),
             ),
+            errorWidget: (context, url, error) => Icon(Icons.error),
           ),
         ),
         Container(
@@ -79,10 +81,16 @@ class _PlaceDialogState extends State<PlaceDialog>
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                IconButton(
-                  icon: Icon(Icons.favorite),
-                  onPressed: () {},
-                  color: Colors.white,
+                Consumer<UserProvider>(
+                  builder: (_, user, __) => IconButton(
+                    icon: user.placeIsFavourite(widget._place.id)
+                        ? Icon(Icons.favorite)
+                        : Icon(Icons.favorite_border),
+                    onPressed: () {
+                      user.toggleFavouritePlace(widget._place.id);
+                    },
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
@@ -91,40 +99,40 @@ class _PlaceDialogState extends State<PlaceDialog>
       ]),
       content: Column(
         children: [
+          //stats
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Column(
+                children: [
+                  //TODO: obtener cantidad de descargas (compras? o ratings?)
+                  Text(
+                    '${widget._place.rating.count}',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  Text(
+                    'ratings',
+                    style: TextStyle(color: Colors.black38, fontSize: 12),
+                  ),
+                ],
+              ),
+              VerticalDivider(),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    //TODO: obtener rating del place
-                    '7.6',
+                    '${widget._place.rating.rating.toStringAsPrecision(2)}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 26,
                         color: Colors.amber[500],
                         fontWeight: FontWeight.bold),
                   ),
                   Icon(
                     Icons.star,
                     color: Colors.amber[500],
-                    size: 20,
-                  ),
-                ],
-              ),
-              VerticalDivider(),
-              Column(
-                children: [
-                  //TODO: obtener cantidad de descargas (compras?)
-                  Text(
-                    '18.6k',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  Text(
-                    'downloads',
-                    style: TextStyle(color: Colors.black38, fontSize: 12),
+                    size: 18,
                   ),
                 ],
               ),
@@ -133,11 +141,11 @@ class _PlaceDialogState extends State<PlaceDialog>
                 children: [
                   //TODO: obtener duracion del audio principal
                   Text(
-                    '17min',
+                    '17\'',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    'audio length',
+                    'audio',
                     style: TextStyle(color: Colors.black38, fontSize: 12),
                   ),
                 ],
@@ -147,6 +155,7 @@ class _PlaceDialogState extends State<PlaceDialog>
           SizedBox(
             height: 10,
           ),
+          //preview audio
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -186,13 +195,9 @@ class _PlaceDialogState extends State<PlaceDialog>
                 ),
               ),
               SizedBox(width: 10),
-              // Text(
-              //   '1:00',
-              //   style: TextStyle(color: Colors.black38, fontSize: 12),
-              // ),
-              // SizedBox(width: 10),
             ],
           ),
+          //about
           InkWell(
             onTap: () => _toggleShowDescription(),
             child: Padding(
@@ -214,38 +219,37 @@ class _PlaceDialogState extends State<PlaceDialog>
             child: SizedBox(
               height: 40,
               width: MediaQuery.of(context).size.width - 40,
-              child: RaisedButton(
-                  color: Colors.green[400],
-                  child: Text(
-                    'purchase place (\$${widget._place.price})',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 1.2),
-                  ),
-                  onPressed: () {}),
-            ),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: SizedBox(
-              height: 40,
-              width: MediaQuery.of(context).size.width - 40,
-              child: RaisedButton(
-                  color: Colors.green[700],
-                  child: Text(
-                    'purchase full trip (\$${widget._place.price})',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        letterSpacing: 1.2),
-                  ),
-                  onPressed: () {}),
+              child: Builder(
+                builder: (ctx) => Consumer2<UserProvider, TripProvider>(
+                  builder: (context, user, trips, _) {
+                    return RaisedButton(
+                      color: Colors.green[700],
+                      child: Text(
+                        user.placeIsPurchased(widget._place.id) ||
+                                user.tripIsPurchased(
+                                    trips.findById(widget._place.tripId).id)
+                            ? 'purchased'
+                            : 'add to cart (\$${widget._place.price.toStringAsPrecision(2)})',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            letterSpacing: 1.5),
+                      ),
+                      onPressed: user.placeIsPurchased(widget._place.id) ||
+                              user.tripIsPurchased(
+                                  trips.findById(widget._place.tripId).id)
+                          ? null
+                          : () {
+                              _cart.addItem(null, widget._place);
+                              user.togglePurchasedPlace(widget._place.id);
+                              Navigator.pop(context,
+                                  user.placeIsPurchased(widget._place.id));
+                            },
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ],

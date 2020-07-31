@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/providers/cart.provider.dart';
+import 'package:tripit/providers/language.provider.dart';
+import 'package:tripit/ui/screens/cart-main.dart';
+import 'package:tripit/ui/screens/login.dart';
 
 import 'providers/country.provider.dart';
-import 'providers/user-position.provider.dart';
+import 'providers/user.provider.dart';
 import 'ui/screens/home-main.dart';
 import 'ui/screens/map-main.dart';
 import 'ui/screens/trip-new.dart';
@@ -21,14 +25,19 @@ void main() async {
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
 
-  UserPosition _userPosition = UserPosition();
-  await _userPosition.getUserPosition();
+  UserProvider _userProvider = UserProvider();
+  //TODO: hacer el get dinamico segun login?
+  await _userProvider.getUser(8);
+  await _userProvider.getUserPosition();
 
   TripProvider _trips = TripProvider();
   await _trips.loadTrips();
 
   CountryProvider _countries = CountryProvider();
   await _countries.loadCountries();
+
+  LanguageProvider _languages = LanguageProvider();
+  await _languages.loadLanguages();
 
   runApp(
     MultiProvider(
@@ -39,8 +48,14 @@ void main() async {
         ChangeNotifierProvider<TripProvider>.value(
           value: _trips,
         ),
-        ChangeNotifierProvider<UserPosition>.value(
-          value: _userPosition,
+        ChangeNotifierProvider<UserProvider>.value(
+          value: _userProvider,
+        ),
+        ChangeNotifierProvider<LanguageProvider>.value(
+          value: _languages,
+        ),
+        ChangeNotifierProvider<CartProvider>(
+          create: (_) => CartProvider(),
         ),
         ChangeNotifierProvider<Filters>(
           create: (_) => Filters(),
@@ -50,14 +65,16 @@ void main() async {
         title: 'tripit',
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => TabNavigator(),
-          Home.routeName: (_) => Home(),
-          MapMain.routeName: (_) => MapMain(),
-          Store.routeName: (_) => Store(),
-          Profile.routeName: (_) => Profile(),
-          TripMain.routeName: (_) => TripMain(),
-          PlaceDialog.routeName: (_) => PlaceDialog(new Place()),
-          TripNew.routeName: (_) => TripNew(),
+          '/': (context) => LoginMain(),
+          TabNavigator.routeName: (context) => TabNavigator(),
+          Home.routeName: (context) => Home(),
+          MapMain.routeName: (context) => MapMain(),
+          Store.routeName: (context) => Store(),
+          Profile.routeName: (context) => Profile(),
+          TripMain.routeName: (context) => TripMain(),
+          PlaceDialog.routeName: (context) => PlaceDialog(new Place()),
+          TripNew.routeName: (context) => TripNew(),
+          CartMain.routeName: (context) => CartMain(),
         },
         theme: ThemeData(
           fontFamily: 'Nunito',

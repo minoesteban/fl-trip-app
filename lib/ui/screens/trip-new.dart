@@ -9,7 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
 
-import '../../providers/user-position.provider.dart';
+import '../../providers/user.provider.dart';
 import '../../core/models/place.model.dart';
 import '../../core/models/trip.model.dart';
 import '../../ui/screens/place-new.dart';
@@ -25,6 +25,7 @@ class TripNew extends StatefulWidget {
 class _TripNewState extends State<TripNew> {
   Completer<GoogleMapController> _controller = Completer();
   final _form = GlobalKey<FormState>();
+  UserProvider _userProvider;
   Trip _newTrip = Trip();
   bool _selectedCountry = false;
   List<Place> _newPlaces = [];
@@ -46,6 +47,7 @@ class _TripNewState extends State<TripNew> {
   void initState() {
     super.initState();
     _imageFocus.addListener(_updateImage);
+    _userProvider = Provider.of<UserProvider>(context, listen: false);
   }
 
   @override
@@ -131,8 +133,7 @@ class _TripNewState extends State<TripNew> {
   Widget build(BuildContext context) {
     Map _args = ModalRoute.of(context).settings.arguments;
     int _ownerId = _args['ownerId'];
-    var _userPosition =
-        Provider.of<UserPosition>(context, listen: false).getPosition;
+    var _userPosition = _userProvider.user.position;
     _initialPosition = _initialPosition.target.latitude == 0
         ? CameraPosition(
             target: LatLng(_userPosition.latitude, _userPosition.longitude),
@@ -217,6 +218,8 @@ class _TripNewState extends State<TripNew> {
                 : double.parse(_priceController.text);
             _newTrip.ownerId = _ownerId;
             _newTrip.places = _newPlaces;
+            _newTrip.createdAt = DateTime.now();
+            _newTrip.updatedAt = DateTime.now();
           },
           child: SingleChildScrollView(
             child: Column(
@@ -311,6 +314,7 @@ class _TripNewState extends State<TripNew> {
                                     14.5),
                               ),
                             );
+                            //TODO: resolver ciudad del trip
                             // _newTrip.city = result.name;
                             _newTrip.googlePlaceId = result.placeId;
 

@@ -5,6 +5,8 @@ import 'profile-main.dart';
 import 'store-main.dart';
 
 class TabNavigator extends StatefulWidget {
+  static const routeName = '/tabs';
+
   @override
   _TabNavigatorState createState() => _TabNavigatorState();
 }
@@ -14,7 +16,6 @@ class _TabNavigatorState extends State<TabNavigator> {
 
   @override
   Widget build(BuildContext context) {
-    print('build TABS');
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -40,19 +41,19 @@ class _TabNavigatorState extends State<TabNavigator> {
         },
         items: [
           BottomNavigationBarItem(
-              backgroundColor: Colors.red[800],
+              backgroundColor: Colors.red[900],
               title: Text('map'),
               icon: Icon(Icons.location_on)),
           BottomNavigationBarItem(
-              backgroundColor: Colors.red[800],
+              backgroundColor: Colors.red[900],
               title: Text('home'),
               icon: Icon(Icons.home)),
           BottomNavigationBarItem(
-              backgroundColor: Colors.red[800],
+              backgroundColor: Colors.red[900],
               title: Text('store'),
               icon: Icon(Icons.shop)),
           BottomNavigationBarItem(
-            backgroundColor: Colors.red[800],
+            backgroundColor: Colors.red[900],
             title: Text('profile'),
             icon: Icon(Icons.person),
           ),
