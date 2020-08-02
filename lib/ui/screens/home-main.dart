@@ -21,7 +21,7 @@ class Home extends StatelessWidget {
           height: MediaQuery.of(context).size.height / 6,
           child: Consumer<TripProvider>(
             builder: (context, tripsData, _) {
-              _ts = tripsData.trips;
+              _ts = tripsData.trips.where((trip) => trip.published).toList();
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
                 shrinkWrap: true,
@@ -49,7 +49,6 @@ class Home extends StatelessWidget {
                                   '${_ts[index].name}',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                      // color: Colors.white,
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 1.2),
@@ -120,39 +119,39 @@ class Home extends StatelessWidget {
                   height: 20,
                 ),
                 buildTripList(),
-                Divider(
-                  height: 20,
-                ),
-                Text(
-                  'my trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                buildTripList(),
-                Divider(
-                  height: 20,
-                ),
-                Text(
-                  'recommended trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                buildTripList(),
-                Divider(
-                  height: 20,
-                ),
-                Text(
-                  'new trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                buildTripList(),
+                // Divider(
+                //   height: 20,
+                // ),
+                // Text(
+                //   'my trips',
+                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                // ),
+                // Divider(
+                //   height: 20,
+                // ),
+                // buildTripList(),
+                // Divider(
+                //   height: 20,
+                // ),
+                // Text(
+                //   'recommended trips',
+                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                // ),
+                // Divider(
+                //   height: 20,
+                // ),
+                // buildTripList(),
+                // Divider(
+                //   height: 20,
+                // ),
+                // Text(
+                //   'new trips',
+                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                // ),
+                // Divider(
+                //   height: 20,
+                // ),
+                // buildTripList(),
               ],
             ),
           ),

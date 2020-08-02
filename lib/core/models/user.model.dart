@@ -21,7 +21,7 @@ class User {
   List<int> purchasedPlaces;
   List<int> downloadedTrips;
   List<int> downloadedPlaces;
-  Position position;
+  Position position; // not in DB model
   bool onlyNearest;
   bool onlyFavourites;
   bool onlyPurchased;

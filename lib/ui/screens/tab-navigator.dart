@@ -13,12 +13,13 @@ class TabNavigator extends StatefulWidget {
 
 class _TabNavigatorState extends State<TabNavigator> {
   int _currentIndex = 1;
-
+  PageController _pc = PageController(initialPage: 1);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
+      body: PageView(
+        physics: NeverScrollableScrollPhysics(),
+        controller: _pc,
         children: [
           MapMain(),
           Home(),
@@ -35,6 +36,8 @@ class _TabNavigatorState extends State<TabNavigator> {
         unselectedItemColor: Colors.grey[300],
         currentIndex: _currentIndex,
         onTap: (index) {
+          _pc.animateToPage(index,
+              duration: Duration(milliseconds: 200), curve: Curves.easeIn);
           setState(() {
             _currentIndex = index;
           });

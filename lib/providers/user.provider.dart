@@ -29,7 +29,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.favouriteTrips.add(id);
 
-    _userController.update(_user).catchError((err) => print(err));
+    _userController.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -39,7 +39,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.favouritePlaces.add(id);
 
-    _userController.update(_user).catchError((err) => print(err));
+    _userController.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -49,7 +49,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.purchasedTrips.add(id);
 
-    _userController.update(_user).catchError((err) => print(err));
+    _userController.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -59,7 +59,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.purchasedPlaces.add(id);
 
-    _userController.update(_user).catchError((err) => print(err));
+    _userController.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -80,7 +80,10 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<int> update(User newUser) async {
-    return await _userController.update(newUser).catchError((err) => throw err);
+    return await _userController.update(newUser).then((v) {
+      _user = newUser;
+      notifyListeners();
+    }).catchError((err) => throw err);
   }
 
   User get user {

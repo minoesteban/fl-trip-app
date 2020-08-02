@@ -29,28 +29,30 @@ class _MapState extends State<MapMain> {
   String _selectedPlaceId;
 
   Set<Marker> _loadMarkers(List<Trip> trips) {
-    Set<Marker> _markers = Set<Marker>();
+    Set<Marker> markers = Set<Marker>();
     trips.forEach((trip) {
-      _markers.addAll(trip.places
-          .map(
-            (t) => Marker(
-              onTap: () {
-                _pc.open();
-                setState(() {
-                  _selectedPlaceId = t.googlePlaceId;
-                });
-              },
-              icon: BitmapDescriptor.defaultMarker,
-              markerId: MarkerId(('${t.id};${t.googlePlaceId}')),
-              draggable: false,
-              position: LatLng(t.coordinates.latitude, t.coordinates.longitude),
-              infoWindow: InfoWindow(title: t.name),
-            ),
-          )
-          .toSet());
+      if (trip.places != null) if (trip.places.length > 1)
+        markers.addAll(trip.places
+            .map(
+              (t) => Marker(
+                onTap: () {
+                  _pc.open();
+                  setState(() {
+                    _selectedPlaceId = t.googlePlaceId;
+                  });
+                },
+                icon: BitmapDescriptor.defaultMarker,
+                markerId: MarkerId(('${t.id};${t.googlePlaceId}')),
+                draggable: false,
+                position:
+                    LatLng(t.coordinates.latitude, t.coordinates.longitude),
+                infoWindow: InfoWindow(title: t.name),
+              ),
+            )
+            .toSet());
     });
 
-    return _markers;
+    return markers;
   }
 
   @override
@@ -60,11 +62,13 @@ class _MapState extends State<MapMain> {
 
   @override
   Widget build(BuildContext context) {
-    Position _userPosition = Provider.of<UserProvider>(context).user.position;
+    Filters filters = Provider.of<Filters>(context);
+    Position userPosition = Provider.of<UserProvider>(context).user.position;
+    // int ownerId =
     _tripProvider = Provider.of<TripProvider>(context);
-    List<Trip> _trips = _tripProvider.trips;
-    Size _deviceSize = MediaQuery.of(context).size;
-    var _filters = Provider.of<Filters>(context);
+    List<Trip> trips =
+        _tripProvider.trips.where((trip) => trip.published).toList();
+    Size deviceSize = MediaQuery.of(context).size;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -80,7 +84,7 @@ class _MapState extends State<MapMain> {
             _pc.close();
             Geometry result = await showSearch(
               context: context,
-              delegate: MapSearch(_trips, _userPosition),
+              delegate: MapSearch(trips, userPosition),
             );
             if (result != null)
               _controller.future.then(
@@ -101,7 +105,7 @@ class _MapState extends State<MapMain> {
                 context: context,
                 builder: (_) {
                   return ChangeNotifierProvider.value(
-                    value: _filters,
+                    value: filters,
                     child: FiltersScreen(),
                   );
                 },
@@ -115,7 +119,7 @@ class _MapState extends State<MapMain> {
         parallaxEnabled: true,
         parallaxOffset: .5,
         renderPanelSheet: false,
-        maxHeight: _deviceSize.height / 3,
+        maxHeight: deviceSize.height / 3,
         minHeight: 0,
         panelBuilder: (ScrollController sc) {
           return Center(
@@ -133,10 +137,10 @@ class _MapState extends State<MapMain> {
             myLocationEnabled: true,
             mapType: MapType.normal,
             initialCameraPosition: CameraPosition(
-              target: LatLng(_userPosition.latitude, _userPosition.longitude),
+              target: LatLng(userPosition.latitude, userPosition.longitude),
               zoom: 14,
             ),
-            markers: _loadMarkers(_trips),
+            markers: _loadMarkers(trips),
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
             },

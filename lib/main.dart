@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/cart.provider.dart';
-import 'package:tripit/providers/language.provider.dart';
-import 'package:tripit/ui/screens/cart-main.dart';
-import 'package:tripit/ui/screens/login.dart';
-
+import 'core/models/place.model.dart';
+import 'core/models/trip.model.dart';
+import 'providers/cart.provider.dart';
+import 'providers/language.provider.dart';
 import 'providers/country.provider.dart';
 import 'providers/user.provider.dart';
+import 'providers/filters.provider.dart';
+import 'providers/trip.provider.dart';
+import 'ui/screens/cart-main.dart';
+import 'ui/screens/login.dart';
 import 'ui/screens/home-main.dart';
 import 'ui/screens/map-main.dart';
 import 'ui/screens/trip-new.dart';
 import 'ui/screens/store-main.dart';
-import 'providers/filters.provider.dart';
-import 'core/models/place.model.dart';
-import 'providers/trip.provider.dart';
 import 'ui/screens/profile-main.dart';
 import 'ui/screens/tab-navigator.dart';
 import 'ui/screens/place-dialog.dart';
@@ -73,8 +73,17 @@ void main() async {
           Profile.routeName: (context) => Profile(),
           TripMain.routeName: (context) => TripMain(),
           PlaceDialog.routeName: (context) => PlaceDialog(new Place()),
-          TripNew.routeName: (context) => TripNew(),
+          // TripNew.routeName: (context) => TripNew(),
           CartMain.routeName: (context) => CartMain(),
+        },
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            case TripNew.routeName:
+              return MaterialPageRoute<Map<String, dynamic>>(
+                  builder: (context) => TripNew(), settings: settings);
+            default:
+              return MaterialPageRoute<void>(builder: (context) => LoginMain());
+          }
         },
         theme: ThemeData(
           fontFamily: 'Nunito',

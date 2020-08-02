@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:geojson/geojson.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -100,16 +101,46 @@ class Place {
     };
   }
 
+  Map<String, dynamic> toMapForDB() {
+    String point;
+    if (coordinates != null)
+      point = json.encode({
+        'type': 'Point',
+        'coordinates': coordinates?.toJson(),
+      });
+
+    return {
+      // 'id': id,
+      'name': name,
+      'about': about,
+      'googlePlaceId': googlePlaceId,
+      'coordinates': point,
+      'audioUrl': audioUrl,
+      'audioPreviewUrl': audioPreviewUrl,
+      'pictureUrl1': pictureUrl1,
+      'pictureUrl2': pictureUrl2,
+      'price': price,
+      'order': order,
+      'tripId': tripId ?? 0,
+      // 'rating': rating,
+      // 'createdAt': createdAt,
+      // 'updatedAt': updatedAt,
+      // 'deletedAt': deletedAt,
+    };
+  }
+
   static Future<Place> fromMap(Map<String, dynamic> map) async {
-    if (map == null) return null;
+    if (map == null) throw HttpException('can\'t parse place from null map');
+
+    if (map['id'] == null) throw HttpException('no place id found on map');
 
     return Place(
       id: map['id'],
       name: map['name'],
       about: map['about'],
       googlePlaceId: map['googlePlaceId'],
-      coordinates: LatLng(map['coordinates']['coordinates'][0],
-          map['coordinates']['coordinates'][1]),
+      coordinates: LatLng(map['coordinates']['coordinates'][0].toDouble(),
+          map['coordinates']['coordinates'][1].toDouble()),
       audioUrl: map['audioUrl'],
       audioPreviewUrl: map['audioPreviewUrl'],
       pictureUrl1: map['pictureUrl1'],

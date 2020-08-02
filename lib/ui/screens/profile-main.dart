@@ -22,13 +22,12 @@ class _ProfileState extends State<Profile> {
   int _ownerId;
   LanguageProvider _languages;
   List<Trip> _trips;
-  Set<String> _languageFlags;
-  Set<String> _languageNames;
+  Set<String> _userLanguages;
   Set<String> _countries;
-  List<int> _cities = [];
-  List<String> _places;
-  double _rating;
-  double _ratingAcum;
+  Set<String> _cities;
+  int _places = 0;
+  double _rating = 0;
+  double _ratingAcum = 0;
   TextOverflow _overflow = TextOverflow.ellipsis;
   int _maxLines = 5;
   void _toggleShowDescription() {
@@ -41,59 +40,84 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     super.initState();
-    // _tripsData = Provider.of<TripProvider>(context, listen: false);
     _languages = Provider.of<LanguageProvider>(context, listen: false);
   }
 
   @override
   Widget build(BuildContext context) {
-    Future<void> initializeData(
+    print('build profile');
+    Future<double> initializeData(
         UserProvider userProvider, TripProvider tripsProvider) async {
       _ownerId = userProvider.user.id;
       _trips = tripsProvider.findByGuide(userProvider.user.id);
-      _languageFlags = _trips.map((e) => e.languageFlagId).toSet();
-      _languageNames = _trips.map((e) => e.languageNameId).toSet();
-      _countries = _trips.map((e) => e.countryId).toSet();
-      //TODO: obtener ciudad del trip, agregando att en trip? o cityId? como lo hago traducible?
-      _places = _trips
-          .map((e) => e.places.map((e) => e.googlePlaceId).toList())
-          .toList()
-          .expand((element) => element)
-          .toList();
+      _userLanguages = _userLanguages ??
+          _trips
+              .where((t) => t.languageFlagId != null)
+              .map((e) => '${e.languageFlagId},${e.languageNameId}')
+              .toSet();
 
-      _rating = 0;
-      _ratingAcum = 0;
-      _trips.forEach((trip) {
-        tripsProvider.getAndSetTripRatings(trip.id).then((rat) {
-          _ratingAcum += rat;
-        }).then((_) {
-          _rating = _ratingAcum /
-              _trips
-                  .map((trip) =>
-                      trip.places.map((place) => place.rating != null))
-                  .toList()
-                  .length;
+      _countries = _countries ?? _trips.map((e) => e.countryId).toSet();
+
+      _cities = _cities ?? _trips.map((trip) => trip.googlePlaceId).toSet();
+
+      if (_places == 0)
+        _trips.forEach((trip) {
+          _places += trip.places?.length;
         });
-      });
+
+      if (_rating == 0) {
+        _trips.forEach((trip) async {
+          await tripsProvider.getAndSetTripRatings(trip.id).then((rat) {
+            _ratingAcum += rat;
+          }).then((_) {
+            _rating = _ratingAcum /
+                _trips
+                    .where((trip) => trip.places
+                        .where((place) => place.rating == null
+                            ? false
+                            : place.rating.rating > 0)
+                        .isNotEmpty)
+                    .length;
+          });
+        });
+      }
+
+      return _rating;
     }
 
-    List<Widget> buildAvatar(String firstName, String lastName) {
-      return [
-        CircleAvatar(
-          radius: 60,
-          backgroundImage: AssetImage('assets/images/avatar.png'),
+    void _showMessage(dynamic e) {
+      print(e.toString());
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text('error! ${e.toString()}'),
+          action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {
+                Scaffold.of(context).hideCurrentSnackBar();
+              }),
         ),
-        SizedBox(
-          height: 10,
-        ),
-        Text(
-          '${toBeginningOfSentenceCase(firstName)} ${toBeginningOfSentenceCase(lastName)}',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-        ),
-        Divider(
-          height: 30,
-        ),
-      ];
+      );
+    }
+
+    Widget buildAvatar(String firstName, String lastName) {
+      return Column(
+        children: <Widget>[
+          CircleAvatar(
+            radius: 60,
+            backgroundImage: AssetImage('assets/images/avatar.png'),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Text(
+            '${toBeginningOfSentenceCase(firstName)} ${toBeginningOfSentenceCase(lastName)}',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+          ),
+          Divider(
+            height: 30,
+          ),
+        ],
+      );
     }
 
     List<Widget> buildStats() {
@@ -107,7 +131,7 @@ class _ProfileState extends State<Profile> {
               Column(
                 children: [
                   Text(
-                    '${_trips.length}',
+                    '${_trips?.length}',
                     style: _statNumber,
                   ),
                   Text(
@@ -119,7 +143,7 @@ class _ProfileState extends State<Profile> {
               Column(
                 children: [
                   Text(
-                    '${_countries.length}',
+                    '${_countries?.length}',
                     style: _statNumber,
                   ),
                   Text(
@@ -152,7 +176,7 @@ class _ProfileState extends State<Profile> {
               Column(
                 children: [
                   Text(
-                    '${_cities.length}',
+                    '${_cities?.length}',
                     style: _statNumber,
                   ),
                   Text(
@@ -164,7 +188,7 @@ class _ProfileState extends State<Profile> {
               Column(
                 children: [
                   Text(
-                    '${_places.length}',
+                    '$_places',
                     style: _statNumber,
                   ),
                   Text(
@@ -219,24 +243,23 @@ class _ProfileState extends State<Profile> {
         Container(
           height: 70,
           width: MediaQuery.of(context).size.width - 40,
-          child: Center(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              itemCount: _languageFlags.length,
-              itemBuilder: (ctx, i) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: <Widget>[
-                    Flag(
-                      _languageFlags.toList()[i],
-                      width: 75,
-                      height: 45,
-                      fit: BoxFit.cover,
-                    ),
-                    Text(_languages.getNativeName(_languageNames.toList()[i]))
-                  ],
-                ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: _userLanguages.length,
+            itemBuilder: (ctx, i) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: <Widget>[
+                  Flag(
+                    _userLanguages.elementAt(i).split(',')[0],
+                    width: 75,
+                    height: 45,
+                    fit: BoxFit.cover,
+                  ),
+                  Text(_languages
+                      .getNativeName(_userLanguages.elementAt(i).split(',')[1]))
+                ],
               ),
             ),
           ),
@@ -256,7 +279,90 @@ class _ProfileState extends State<Profile> {
         SizedBox(
           height: 10,
         ),
-        ProfileTripsList(_trips)
+        // ProfileTripsList(_trips)
+        Container(
+          width: MediaQuery.of(context).size.width,
+          child: Consumer<TripProvider>(
+            builder: (context, tripsProvider, _) => ListView.builder(
+                physics: ClampingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _trips.length,
+                itemBuilder: (ctx, i) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                      child: Container(
+                        height: 150,
+                        child: InkWell(
+                          onTap: () => _trips[i].submitted == true
+                              ? Navigator.pushNamed(
+                                  context,
+                                  TripMain.routeName,
+                                  arguments: {
+                                    'trip': _trips[i],
+                                  },
+                                )
+                              : Navigator.pushNamed<Map<String, dynamic>>(
+                                  context,
+                                  TripNew.routeName,
+                                  arguments: {'trip': _trips[i]},
+                                ).then((res) {
+                                  if (res != null) {
+                                    if (res['action'] == 'delete')
+                                      tripsProvider.delete(res['item'].id);
+                                    else
+                                      tripsProvider
+                                          .update(res['item'])
+                                          .catchError((e) => _showMessage(e));
+                                  }
+                                }).catchError((e) => _showMessage(e)),
+                          child: GridTile(
+                            header: _trips[i].submitted == true
+                                ? null
+                                : Align(
+                                    alignment: Alignment.topRight,
+                                    child: IconButton(
+                                        icon: Icon(
+                                          Icons.edit,
+                                          color: Colors.black38,
+                                        ),
+                                        onPressed: null),
+                                  ),
+                            footer: GridTileBar(
+                              backgroundColor: Colors.black38,
+                              title: Text(
+                                _trips[i].name,
+                                softWrap: true,
+                                overflow: TextOverflow.fade,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 18),
+                              ),
+                            ),
+                            child: Opacity(
+                              opacity: _trips[i].published == true
+                                  ? 1
+                                  : _trips[i].submitted == true ? 0.7 : 0.4,
+                              child: CachedNetworkImage(
+                                imageUrl: '${_trips[i].pictureUrl}',
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) => Container(
+                                  height: 150,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+          ),
+        )
       ];
     }
 
@@ -274,50 +380,59 @@ class _ProfileState extends State<Profile> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: null,
         backgroundColor: Colors.red[800],
         child: Consumer2<UserProvider, TripProvider>(
-          builder: (_, user, trips, __) => IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                Navigator.of(context).pushNamed(TripNew.routeName,
-                    arguments: {'ownerId': _ownerId}).then((_newTrip) {
-                  if (_newTrip != null) {
-                    trips.addTrip(_newTrip);
-                  }
-                });
-              }),
+          builder: (_, user, tripsProvider, __) => IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              Navigator.of(context).pushNamed<Map<String, dynamic>>(
+                TripNew.routeName,
+                arguments: {'ownerId': _ownerId},
+              ).then((res) {
+                if (res != null) {
+                  if (res['action'] == 'delete')
+                    tripsProvider
+                        .delete(res['item'].id)
+                        .catchError((e) => _showMessage(e));
+                  else
+                    tripsProvider
+                        .create(res['item'])
+                        .catchError((e) => _showMessage(e));
+                }
+              }).catchError((e) => _showMessage(e));
+            },
+          ),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Center(
-            child: Consumer2<UserProvider, TripProvider>(
-              builder: (_, userProvider, tripsProvider, __) {
-                return FutureBuilder(
-                  future: initializeData(userProvider, tripsProvider),
-                  builder: (context, snapshot) {
-                    return Column(
-                      children: [
-                        //avatar & name
-                        ...buildAvatar(userProvider.user.firstName,
-                            userProvider.user.lastName),
-                        //stats
-                        ...buildStats(),
-                        //about
-                        if (userProvider.user.about != null)
-                          ...buildDescription(userProvider.user.about),
-                        //languages
-                        ...buildLanguages(),
-                        //trips
-                        ...buildTrips(),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
+          child: Consumer2<UserProvider, TripProvider>(
+            builder: (_, userProvider, tripsProvider, __) {
+              return FutureBuilder(
+                future: initializeData(userProvider, tripsProvider),
+                builder: (context, snapshot) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      //avatar & name
+                      buildAvatar(userProvider.user.firstName,
+                          userProvider.user.lastName),
+                      //stats
+                      ...buildStats(),
+                      //about
+                      if (userProvider.user.about != null)
+                        ...buildDescription(userProvider.user.about),
+                      //languages
+                      ...buildLanguages(),
+                      //trips
+                      ...buildTrips(),
+                    ],
+                  );
+                },
+              );
+            },
           ),
         ),
       ),
@@ -337,57 +452,108 @@ class _ProfileState extends State<Profile> {
   );
 }
 
-class ProfileTripsList extends StatelessWidget {
-  final List<Trip> _trips;
+// class ProfileTripsList extends StatelessWidget {
+//   final List<Trip> _trips;
 
-  ProfileTripsList(this._trips);
+//   ProfileTripsList(this._trips);
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      child: ListView.builder(
-          physics: ClampingScrollPhysics(),
-          shrinkWrap: true,
-          itemCount: _trips.length,
-          itemBuilder: (ctx, i) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                child: Container(
-                  height: 200,
-                  child: InkWell(
-                    onTap: () => Navigator.pushNamed(
-                        context, TripMain.routeName,
-                        arguments: {
-                          'trip': _trips[i],
-                        }),
-                    child: GridTile(
-                      footer: GridTileBar(
-                        title: Text(
-                          _trips[i].name,
-                          softWrap: true,
-                          overflow: TextOverflow.fade,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
-                        ),
-                      ),
-                      child: CachedNetworkImage(
-                        imageUrl: '${_trips[i].pictureUrl}',
-                        fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) => Expanded(
-                          child: Container(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     void _showMessage(String e) {
+//       print(e);
+//       Scaffold.of(context).showSnackBar(
+//         SnackBar(
+//           content: Text('error! $e'),
+//           action: SnackBarAction(
+//               label: 'OK',
+//               onPressed: () {
+//                 Scaffold.of(context).hideCurrentSnackBar();
+//               }),
+//         ),
+//       );
+//     }
+
+//     return Container(
+//       width: MediaQuery.of(context).size.width,
+//       child: Consumer<TripProvider>(
+//         builder: (context, tripsProvider, _) => ListView.builder(
+//             physics: ClampingScrollPhysics(),
+//             shrinkWrap: true,
+//             itemCount: _trips.length,
+//             itemBuilder: (ctx, i) {
+//               return Padding(
+//                 padding:
+//                     const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+//                 child: ClipRRect(
+//                   borderRadius: const BorderRadius.all(
+//                     Radius.circular(10),
+//                   ),
+//                   child: Container(
+//                     height: 150,
+//                     child: InkWell(
+//                       onTap: () => _trips[i].submitted == true
+//                           ? Navigator.pushNamed(
+//                               context,
+//                               TripMain.routeName,
+//                               arguments: {
+//                                 'trip': _trips[i],
+//                               },
+//                             )
+//                           : Navigator.pushNamed<Map<String, dynamic>>(
+//                               context,
+//                               TripNew.routeName,
+//                               arguments: {'trip': _trips[i]},
+//                             ).then((res) {
+//                               if (res != null) {
+//                                 if (res['action'] == 'delete')
+//                                   tripsProvider.delete(res['item'].id);
+//                                 else
+//                                   tripsProvider.update(res['item']).catchError(
+//                                       (e) => _showMessage(e.toString()));
+//                               }
+//                             }).catchError((e) => _showMessage(e.toString())),
+//                       child: GridTile(
+//                         header: _trips[i].submitted == true
+//                             ? null
+//                             : Align(
+//                                 alignment: Alignment.topRight,
+//                                 child: IconButton(
+//                                     icon: Icon(
+//                                       Icons.edit,
+//                                       color: Colors.black38,
+//                                     ),
+//                                     onPressed: null),
+//                               ),
+//                         footer: GridTileBar(
+//                           backgroundColor: Colors.black38,
+//                           title: Text(
+//                             _trips[i].name,
+//                             softWrap: true,
+//                             overflow: TextOverflow.fade,
+//                             style: TextStyle(
+//                                 fontWeight: FontWeight.bold, fontSize: 18),
+//                           ),
+//                         ),
+//                         child: Opacity(
+//                           opacity: _trips[i].published == true
+//                               ? 1
+//                               : _trips[i].submitted == true ? 0.7 : 0.4,
+//                           child: CachedNetworkImage(
+//                             imageUrl: '${_trips[i].pictureUrl}',
+//                             fit: BoxFit.cover,
+//                             errorWidget: (_, __, ___) => Container(
+//                               height: 150,
+//                               color: Colors.grey,
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               );
+//             }),
+//       ),
+//     );
+//   }
+// }

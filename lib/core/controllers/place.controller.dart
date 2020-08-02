@@ -12,6 +12,20 @@ class PlaceController {
     return await _service.create(place).catchError((err) => throw err);
   }
 
+  Future<Place> update(Place place) async {
+    return await _service.update(place).catchError((err) => throw err);
+  }
+
+  Future<void> order(Place place) async {
+    await _service.order(place).catchError((err) => throw err);
+  }
+
+  Future<void> delete(int tripId, int placeId) async {
+    return await _service
+        .delete(tripId, placeId)
+        .catchError((err) => throw err);
+  }
+
   Future<ServiceResponse> createMulti(List<Place> places) async {
     List<Place> createdPlaces = [];
     List<HttpException> errs = [];
@@ -25,10 +39,6 @@ class PlaceController {
               HttpException(json.encode({'placeId': place.id, 'error': err}))));
     });
     return ServiceResponse(createdPlaces, errs);
-  }
-
-  Future<Place> update(Place place) async {
-    return await _service.update(place).catchError((err) => throw err);
   }
 
   Future<ServiceResponse> updateMulti(List<Place> places) async {

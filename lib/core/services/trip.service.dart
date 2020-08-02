@@ -6,9 +6,10 @@ import 'package:http/http.dart' as http;
 
 class TripService {
   Map<String, String> _headers = {'content-type': 'application/json'};
+  String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
 
   Future<List<Trip>> getAll() async {
-    final res = await http.get('$API_ENDPOINT/trip/all');
+    final res = await http.get('$_endpoint/trip/all');
     if (res.statusCode == HttpStatus.ok)
       return await parseList(res.body);
     else
@@ -16,9 +17,9 @@ class TripService {
   }
 
   Future<Trip> create(Trip trip) async {
-    String url = '$API_ENDPOINT/trip';
+    String url = '$_endpoint/trip';
     final res = await http.post(url,
-        headers: _headers, body: json.encode(trip.toMap()));
+        headers: _headers, body: json.encode(trip.toMapForDB()));
     if (res.statusCode == HttpStatus.ok)
       return await parse(res.body);
     else
@@ -26,23 +27,31 @@ class TripService {
   }
 
   Future<Trip> submit(int id) async {
-    String url = '$API_ENDPOINT/trip/$id';
+    String url = '$_endpoint/trip/$id';
     final res = await http.patch(url,
         headers: _headers, body: json.encode({'submitted': true}));
     if (res.statusCode == HttpStatus.ok) {
-      return json.decode(res.body)['item'][1];
+      return await parse(res.body);
     } else {
       throw HttpException(res.body);
     }
   }
 
   Future<Trip> update(Trip trip) async {
-    String url = '$API_ENDPOINT/trip/${trip.id}';
+    String url = '$_endpoint/trip/${trip.id}';
     final res = await http.patch(url,
-        headers: _headers, body: json.encode(trip.toMap()));
+        headers: _headers, body: json.encode(trip.toMapForDB()));
     if (res.statusCode == HttpStatus.ok) {
-      return json.decode(res.body)['item'][1];
+      return await parse(res.body);
     } else {
+      throw HttpException(res.body);
+    }
+  }
+
+  Future<void> delete(int id) async {
+    String url = '$_endpoint/trip/$id';
+    final res = await http.delete(url);
+    if (res.statusCode != HttpStatus.ok) {
       throw HttpException(res.body);
     }
   }
@@ -64,7 +73,7 @@ class TripService {
 }
 
 // Future<ServiceResponse> submitTrip(Trip newTrip) async {
-//   String url = '$API_ENDPOINT/trip';
+//   String url = '$_endpoint/trip';
 //   try {
 //     final res = await http.post(url,
 //         headers: _headers, body: json.encode(newTrip.toMap()));

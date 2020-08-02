@@ -7,27 +7,39 @@ import '../../core/models/place.model.dart';
 
 class PlaceService {
   Map<String, String> _headers = {'content-type': 'application/json'};
+  String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
 
   Future<Place> create(Place place) async {
-    String url = '$API_ENDPOINT/trip/${place.tripId}/place';
+    String url = '$_endpoint/trip/${place.tripId}/place';
     final res = await http.post(url,
-        headers: _headers, body: json.encode(place.toMap()));
-    if (res.statusCode == HttpStatus.ok) {
+        headers: _headers, body: json.encode(place.toMapForDB()));
+    if (res.statusCode == HttpStatus.ok)
       return await parsePlace(res.body);
-    } else {
+    else
       throw HttpException(res.body);
-    }
   }
 
   Future<Place> update(Place place) async {
-    String url = '$API_ENDPOINT/trip/${place.id}';
+    String url = '$_endpoint/trip/${place.tripId}/place/${place.id}';
     final res = await http.patch(url,
-        headers: _headers, body: json.encode(place.toMap()));
-    if (res.statusCode == HttpStatus.ok) {
-      return json.decode(res.body)['item'][1];
-    } else {
+        headers: _headers, body: json.encode(place.toMapForDB()));
+    if (res.statusCode == HttpStatus.ok)
+      return await parsePlace(res.body);
+    else
       throw HttpException(res.body);
-    }
+  }
+
+  Future<void> delete(int tripId, int placeId) async {
+    String url = '$_endpoint/trip/$tripId/place/$placeId';
+    final res = await http.delete(url);
+    if (res.statusCode != HttpStatus.ok) throw HttpException(res.body);
+  }
+
+  Future<void> order(Place place) async {
+    String url = '$_endpoint/trip/${place.tripId}/place/${place.id}';
+    final res = await http.patch(url,
+        headers: _headers, body: json.encode({'order': place.order}));
+    if (res.statusCode != HttpStatus.ok) throw HttpException(res.body);
   }
 
   Future<Place> parsePlace(String data) async {

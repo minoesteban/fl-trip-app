@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -18,7 +19,7 @@ class Trip {
   bool submitted = false;
   bool published = false;
   String pictureUrl;
-  List<Place> places;
+  List<Place> places = []; //not in DB model
   DateTime createdAt;
   DateTime updatedAt;
   DateTime deletedAt;
@@ -61,6 +62,7 @@ class Trip {
     DateTime updatedAt,
     DateTime deletedAt,
   }) {
+    print('copying with $places');
     return Trip(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -104,13 +106,38 @@ class Trip {
     };
   }
 
+  Map<String, dynamic> toMapForDB() {
+    return {
+      // 'id': id,
+      'name': name,
+      'ownerId': ownerId,
+      'googlePlaceId': googlePlaceId,
+      'countryId': countryId,
+      'previewAudioUrl': previewAudioUrl,
+      'languageNameId': languageNameId,
+      'languageFlagId': languageFlagId,
+      'price': price,
+      'about': about,
+      // 'submitted': submitted,
+      // 'published': published,
+      'pictureUrl': pictureUrl,
+      'Places': places?.map((x) => x?.toMapForDB())?.toList(),
+      // 'createdAt': createdAt?.millisecondsSinceEpoch,
+      // 'updatedAt': updatedAt?.millisecondsSinceEpoch,
+      // 'deletedAt': deletedAt?.millisecondsSinceEpoch,
+    };
+  }
+
   static Future<Trip> fromMap(Map<String, dynamic> map) async {
-    if (map == null) return null;
+    if (map == null) throw HttpException('can\'t parse trip from null map');
+
+    if (map['id'] == null) throw HttpException('no trip id found on map');
 
     List<Place> _places = [];
 
-    await map['Places']
-        ?.forEach((x) => Place.fromMap(x).then((place) => _places.add(place)));
+    await map['Places']?.forEach((x) => Place.fromMap(x)
+        .then((place) => _places.add(place))
+        .catchError((err) => throw err));
 
     return Trip(
       id: map['id'],

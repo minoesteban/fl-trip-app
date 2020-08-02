@@ -8,8 +8,10 @@ import '../../core/models/user.model.dart';
 class UserService {
   Map<String, String> _headers = {'content-type': 'application/json'};
 
+  String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
+
   Future<User> getUser(int userId) async {
-    String url = '$API_ENDPOINT/user/$userId';
+    String url = '$_endpoint/user/$userId';
     final res = await http.get(url);
     if (res.statusCode == HttpStatus.ok)
       return await parseUser(res.body);
@@ -23,12 +25,12 @@ class UserService {
   }
 
   Future<int> update(User newUser) async {
-    String url = '$API_ENDPOINT/user/${newUser.id}';
+    String url = '$_endpoint/user/${newUser.id}';
     final res = await http.patch(url,
         headers: _headers, body: json.encode(newUser.toMap()));
     if (res.statusCode == HttpStatus.ok) {
       //json.decode(res.body)['item'][1] --> updated record
-      return json.decode(res.body)['item'][0]; //# updated records
+      return json.decode(res.body)[0]; //# updated records
     } else {
       throw HttpException(res.body);
     }
