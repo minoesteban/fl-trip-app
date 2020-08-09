@@ -11,7 +11,7 @@ class UserService {
   String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
 
   Future<User> getUser(int userId) async {
-    String url = '$_endpoint/user/$userId';
+    String url = '$_endpoint/users/$userId';
     final res = await http.get(url);
     if (res.statusCode == HttpStatus.ok)
       return await parseUser(res.body);
@@ -25,7 +25,7 @@ class UserService {
   }
 
   Future<int> update(User newUser) async {
-    String url = '$_endpoint/user/${newUser.id}';
+    String url = '$_endpoint/users/${newUser.id}';
     final res = await http.patch(url,
         headers: _headers, body: json.encode(newUser.toMap()));
     if (res.statusCode == HttpStatus.ok) {

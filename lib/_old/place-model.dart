@@ -11,7 +11,7 @@
 //   String _googlePlaceId;
 //   double _price = 0;
 //   double _distanceFromUser;
-//   String _pictureUrl;
+//   String _imageUrl;
 //   Coordinates _coordinates;
 
 //   Place(
@@ -21,7 +21,7 @@
 //       this._order,
 //       this._googlePlaceId,
 //       this._price,
-//       this._pictureUrl,
+//       this._imageUrl,
 //       this._rating,
 //       this._coordinates]);
 
@@ -33,7 +33,7 @@
 //       json['order'] == null ? null : json['order'],
 //       json['googlePlaceId'] == null ? null : json['googlePlaceId'],
 //       json['price'] == null ? null : json['price'],
-//       json['pictureUrl1'] == null ? null : json['pictureUrl1'],
+//       json['imageUrl'] == null ? null : json['imageUrl'],
 //       json['rating'] == null ? null : json['rating'],
 //       json['coordinates'] == null
 //           ? null
@@ -98,12 +98,12 @@
 //   //   _price = price;
 //   // }
 
-//   String get pictureUrl {
-//     return _pictureUrl;
+//   String get imageUrl {
+//     return _imageUrl;
 //   }
 
-//   // set pictureUrl(String pictureUrl) {
-//   //   _pictureUrl = pictureUrl;
+//   // set imageUrl(String imageUrl) {
+//   //   _imageUrl = imageUrl;
 //   // }
 
 //   Coordinates get coordinates {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/models/place.model.dart';
-import 'core/models/trip.model.dart';
 import 'providers/cart.provider.dart';
 import 'providers/language.provider.dart';
 import 'providers/country.provider.dart';

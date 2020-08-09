@@ -10,7 +10,7 @@ class ServiceResponse {
   ServiceResponse(this.items, this.errors) {
     hasItems = false;
     hasErrors = false;
-    if (items != null) if (items.length > 0) hasItems = true;
-    if (errors != null) if (errors.length > 0) hasErrors = true;
+    if (items != null && items.length > 0) hasItems = true;
+    if (errors != null && errors.length > 0) hasErrors = true;
   }
 }

@@ -9,6 +9,7 @@ class User {
   String password;
   String firstName;
   String lastName;
+  String imageUrl;
   String languageId1;
   String languageId2;
   String languageId3;
@@ -35,6 +36,7 @@ class User {
     this.password,
     this.firstName,
     this.lastName,
+    this.imageUrl,
     this.languageId1,
     this.languageId2,
     this.languageId3,
@@ -63,6 +65,7 @@ class User {
     String password,
     String firstName,
     String lastName,
+    String imageUrl,
     String languageId1,
     String languageId2,
     String languageId3,
@@ -90,6 +93,7 @@ class User {
       password: password ?? this.password,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      imageUrl: imageUrl ?? this.imageUrl,
       languageId1: languageId1 ?? this.languageId1,
       languageId2: languageId2 ?? this.languageId2,
       languageId3: languageId3 ?? this.languageId3,
@@ -120,6 +124,7 @@ class User {
       'password': password,
       'firstName': firstName,
       'lastName': lastName,
+      'imageUrl': imageUrl,
       'languageId1': languageId1,
       'languageId2': languageId2,
       'languageId3': languageId3,
@@ -152,6 +157,7 @@ class User {
       password: map['password'],
       firstName: map['firstName'],
       lastName: map['lastName'],
+      imageUrl: map['imageUrl'],
       languageId1: map['languageId1'],
       languageId2: map['languageId2'],
       languageId3: map['languageId3'],
@@ -194,7 +200,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, username: $username, password: $password, firstName: $firstName, lastName: $lastName, languageId1: $languageId1, languageId2: $languageId2, languageId3: $languageId3, languageId4: $languageId4, languageId5: $languageId5, about: $about, favouriteTrips: $favouriteTrips, favouritePlaces: $favouritePlaces, purchasedTrips: $purchasedTrips, purchasedPlaces: $purchasedPlaces, downloadedTrips: $downloadedTrips, downloadedPlaces: $downloadedPlaces, position: $position, onlyNearest: $onlyNearest, onlyFavourites: $onlyFavourites, onlyPurchased: $onlyPurchased, active: $active, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'User(id: $id, username: $username, password: $password, firstName: $firstName, lastName: $lastName, imageUrl: $imageUrl, languageId1: $languageId1, languageId2: $languageId2, languageId3: $languageId3, languageId4: $languageId4, languageId5: $languageId5, about: $about, favouriteTrips: $favouriteTrips, favouritePlaces: $favouritePlaces, purchasedTrips: $purchasedTrips, purchasedPlaces: $purchasedPlaces, downloadedTrips: $downloadedTrips, downloadedPlaces: $downloadedPlaces, position: $position, onlyNearest: $onlyNearest, onlyFavourites: $onlyFavourites, onlyPurchased: $onlyPurchased, active: $active, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -207,6 +213,7 @@ class User {
         o.password == password &&
         o.firstName == firstName &&
         o.lastName == lastName &&
+        o.imageUrl == imageUrl &&
         o.languageId1 == languageId1 &&
         o.languageId2 == languageId2 &&
         o.languageId3 == languageId3 &&
@@ -236,6 +243,7 @@ class User {
         password.hashCode ^
         firstName.hashCode ^
         lastName.hashCode ^
+        imageUrl.hashCode ^
         languageId1.hashCode ^
         languageId2.hashCode ^
         languageId3.hashCode ^

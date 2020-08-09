@@ -123,7 +123,7 @@ class _PlaceCardState extends State<PlaceCard>
               child: Stack(fit: StackFit.expand, children: [
                 CachedNetworkImage(
                   fit: BoxFit.cover,
-                  imageUrl: '${_place.pictureUrl1}',
+                  imageUrl: '${_place.imageUrl}',
                   placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(
                       strokeWidth: 0.5,

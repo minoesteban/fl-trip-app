@@ -1,26 +1,35 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:tripit/core/models/language.model.dart';
 
 class Country {
   String code;
   String name;
   Map<String, String> translations;
+  List<Language> languages;
+  String flagUrl;
   Country({
     this.code,
     this.name,
     this.translations,
+    this.languages,
+    this.flagUrl,
   });
 
   Country copyWith({
     String code,
     String name,
     Map<String, String> translations,
+    List<Language> languages,
+    String flagUrl,
   }) {
     return Country(
       code: code ?? this.code,
       name: name ?? this.name,
       translations: translations ?? this.translations,
+      languages: languages ?? this.languages,
+      flagUrl: flagUrl ?? this.flagUrl,
     );
   }
 
@@ -29,16 +38,24 @@ class Country {
       'code': code,
       'name': name,
       'translations': translations,
+      'languages': languages?.map((x) => x?.toMap())?.toList(),
+      'flag': flagUrl,
     };
   }
 
   static Country fromMap(Map<String, dynamic> map) {
     if (map == null) return null;
 
+    List<Language> langs = [];
+    langs =
+        map['languages']?.map<Language>((x) => Language.fromMap(x))?.toList();
+
     return Country(
-      code: map['alpha2Code'],
-      name: map['name'],
+      code: map['alpha2Code'] ?? '',
+      name: map['name'] ?? '',
       translations: Map<String, String>.from(map['translations']),
+      languages: langs,
+      flagUrl: map['flag'] ?? '',
     );
   }
 
@@ -48,7 +65,7 @@ class Country {
 
   @override
   String toString() =>
-      'Country(code: $code, name: $name, translations: $translations)';
+      'Country(code: $code, name: $name, translations: $translations, languages: $languages)';
 
   @override
   bool operator ==(Object o) {

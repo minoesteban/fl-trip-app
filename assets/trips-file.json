@@ -2,7 +2,7 @@
         "id": "1",
         "name": "l'eterna roma",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://media.wsimag.com/attachments/b2fcaada5050ece15ad5a0492fb8236b1096aa9c/store/fill/1860/1046/7579b0d37101d1b49624dc9a052e62a5e072eb410b99cd1d8808996a2357/La-capital-italiana-esta-plagada-de-arte-historia-y-belleza.jpg",
+        "imageUrl": "https://media.wsimag.com/attachments/b2fcaada5050ece15ad5a0492fb8236b1096aa9c/store/fill/1860/1046/7579b0d37101d1b49624dc9a052e62a5e072eb410b99cd1d8808996a2357/La-capital-italiana-esta-plagada-de-arte-historia-y-belleza.jpg",
         "city": "Roma",
         "countryId": "IT",
         "googlePlaceId": "ChIJu46S-ZZhLxMROG5lkwZ3D7k",
@@ -25,7 +25,7 @@
                 "rating": 4.1,
                 "googlePlaceId": "ChIJrRMgU7ZhLxMRxAOFkC7I8Sg",
                 "price": 0.0,
-                "pictureUrl1": "https://www.amoromadomus.com/images/dintorni-large-colosseo.jpg",
+                "imageUrl": "https://www.amoromadomus.com/images/dintorni-large-colosseo.jpg",
                 "coordinates": {
                     "latitude": 41.89020210802678,
                     "longitude": 12.492227554321289
@@ -39,7 +39,7 @@
                 "rating": 4.2,
                 "googlePlaceId": "ChIJXRn8xopgLxMRxZ78rxjWwO8",
                 "price": 0.0,
-                "pictureUrl1": "http://www.bb-roma.com/upload/CONF25/20150709/gli_effetti_ottici_di_piazza_san_pietro-tSa-720X400.jpg",
+                "imageUrl": "http://www.bb-roma.com/upload/CONF25/20150709/gli_effetti_ottici_di_piazza_san_pietro-tSa-720X400.jpg",
                 "coordinates": {
                     "latitude": 41.902221143756634,
                     "longitude": 12.456725835800171
@@ -53,7 +53,7 @@
                 "rating": 4.3,
                 "googlePlaceId": "ChIJKcGbg2NgLxMRthZkUqDs4M8",
                 "price": 0.0,
-                "pictureUrl1": "https://www.vaticanstate.va/media/k2/items/cache/98786352ab62965a07c516ba5d449e8a_XL.jpg",
+                "imageUrl": "https://www.vaticanstate.va/media/k2/items/cache/98786352ab62965a07c516ba5d449e8a_XL.jpg",
                 "coordinates": {
                     "latitude": 41.90649314638965,
                     "longitude": 12.453646659851074
@@ -67,7 +67,7 @@
                 "rating": 4.4,
                 "googlePlaceId": "ChIJq-bXVgRhLxMRv3vgOXaktBs",
                 "price": 0.0,
-                "pictureUrl1": "https://cdn1.guias-viajar.com/italia/wp-content/uploads/2017/06/roma-galeria-borghese-003.jpg",
+                "imageUrl": "https://cdn1.guias-viajar.com/italia/wp-content/uploads/2017/06/roma-galeria-borghese-003.jpg",
                 "coordinates": {
                     "latitude": 41.91422194991033,
                     "longitude": 12.492141723632812
@@ -81,7 +81,7 @@
                 "rating": 4.5,
                 "googlePlaceId": "ChIJ1UCDJ1NgLxMRtrsCzOHxdvY",
                 "price": 0.0,
-                "pictureUrl1": "https://www.audioguiaroma.com/imagenes/fontana-trevi.jpg",
+                "imageUrl": "https://www.audioguiaroma.com/imagenes/fontana-trevi.jpg",
                 "coordinates": {
                     "latitude": 41.90093549448897,
                     "longitude": 12.483301162719727
@@ -93,7 +93,7 @@
         "id": "2",
         "name": "lights of paris",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://travelfeatured.com/wp-content/uploads/2014/07/Paris-City-of-Lights-at-night.jpg",
+        "imageUrl": "https://travelfeatured.com/wp-content/uploads/2014/07/Paris-City-of-Lights-at-night.jpg",
         "city": "Paris",
         "countryId": "FR",
         "googlePlaceId": "ChIJD7fiBh9u5kcRYJSMaMOCCwQ",
@@ -116,7 +116,7 @@
                 "rating": 4.3,
                 "googlePlaceId": "ChIJD3uTd9hx5kcR1IQvGfr8dbk",
                 "price": 0.0,
-                "pictureUrl1": "https://s1.eestatic.com/2019/12/16/actualidad/Actualidad_452466185_140642490_1706x960.jpg",
+                "imageUrl": "https://s1.eestatic.com/2019/12/16/actualidad/Actualidad_452466185_140642490_1706x960.jpg",
                 "coordinates": {
                     "latitude": 48.86066691898782,
                     "longitude": 2.337629310786724
@@ -130,7 +130,7 @@
                 "rating": 4.3,
                 "googlePlaceId": "ChIJLU7jZClu5kcR4PcOOO6p3I0",
                 "price": 0.0,
-                "pictureUrl1": "https://i.pinimg.com/474x/20/62/4f/20624f77705e469f2e0398cd9deec52e.jpg",
+                "imageUrl": "https://i.pinimg.com/474x/20/62/4f/20624f77705e469f2e0398cd9deec52e.jpg",
                 "coordinates": {
                     "latitude": 48.858352798373474,
                     "longitude": 2.2945386171340942
@@ -144,7 +144,7 @@
                 "rating": 4.3,
                 "googlePlaceId": "ChIJAVjEb9tx5kcRxWEv0cQd29s",
                 "price": 0.0,
-                "pictureUrl1": "https://cdn.pixabay.com/photo/2020/01/24/08/29/senate-4789641_1280.jpg",
+                "imageUrl": "https://cdn.pixabay.com/photo/2020/01/24/08/29/senate-4789641_1280.jpg",
                 "coordinates": {
                     "latitude": 48.84826727186008,
                     "longitude": 2.3372983932495117
@@ -156,7 +156,7 @@
         "id": "3",
         "name": "cultural berlin",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://www.bthetravelbrand.com/dondear/wp-content/uploads/2016/04/Berlin_Culutra_TTstudio.jpg",
+        "imageUrl": "https://www.bthetravelbrand.com/dondear/wp-content/uploads/2016/04/Berlin_Culutra_TTstudio.jpg",
         "city": "Berlin",
         "countryId": "DE",
         "googlePlaceId": "ChIJAVkDPzdOqEcRcDteW0YgIQQ",
@@ -180,7 +180,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJbygR2x5OqEcRbhbkZsMB_DA",
                 "price": 0.0,
-                "pictureUrl1": "https://berlin.capribyfraser.com/d/capriberlin/media/Images/Blog_images/__thumbs_1050_567_crop/Alexanderplatz.jpg",
+                "imageUrl": "https://berlin.capribyfraser.com/d/capriberlin/media/Images/Blog_images/__thumbs_1050_567_crop/Alexanderplatz.jpg",
                 "coordinates": {
                     "latitude": 52.5219136885478,
                     "longitude": 13.413233757019043
@@ -194,7 +194,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJzdgmXNFRqEcRyIl9R0IApSM",
                 "price": 0.0,
-                "pictureUrl1": "https://www.dw.com/image/47065823_303.jpg",
+                "imageUrl": "https://www.dw.com/image/47065823_303.jpg",
                 "coordinates": {
                     "latitude": 52.50744515744915,
                     "longitude": 13.390402793884277
@@ -208,7 +208,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJ-UrRPdVRqEcRTzDm7VTSLEw",
                 "price": 0.0,
-                "pictureUrl1": "https://www.berlin.de/binaries/asset/image_assets/3896054/source/1520345915/624x468/",
+                "imageUrl": "https://www.berlin.de/binaries/asset/image_assets/3896054/source/1520345915/624x468/",
                 "coordinates": {
                     "latitude": 52.50229906218524,
                     "longitude": 13.395466804504395
@@ -220,7 +220,7 @@
         "id": "4",
         "name": "to prague beer!",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://www.roughguides.com/wp-content/uploads/2015/02/beer-prague-czech-shutterstock_583848034-660x420.jpg",
+        "imageUrl": "https://www.roughguides.com/wp-content/uploads/2015/02/beer-prague-czech-shutterstock_583848034-660x420.jpg",
         "city": "Prague",
         "countryId": "CZ",
         "googlePlaceId": "ChIJi3lwCZyTC0cRkEAWZg-vAAQ",
@@ -244,7 +244,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJn7WO5eWUC0cRJrHT0TiXIHU",
                 "price": 0.0,
-                "pictureUrl1": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Karl%C5%AFv_most-2.jpg",
+                "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Karl%C5%AFv_most-2.jpg",
                 "coordinates": {
                     "latitude": 50.08648026273381,
                     "longitude": 14.411433935165403
@@ -258,7 +258,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJw7ckbB6VC0cRnyUSr4g8zyo",
                 "price": 0.0,
-                "pictureUrl1": "https://www.kudyznudy.cz/getattachment/e35d2613-502e-4d3b-901d-eb7490aa95ca/prazsky-hrda-shutterstock-476595580.jpg.aspx?height=608",
+                "imageUrl": "https://www.kudyznudy.cz/getattachment/e35d2613-502e-4d3b-901d-eb7490aa95ca/prazsky-hrda-shutterstock-476595580.jpg.aspx?height=608",
                 "coordinates": {
                     "latitude": 50.091071637395345,
                     "longitude": 14.401617050170898
@@ -272,7 +272,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJFz83wvaUC0cRRDMLBTdlAZM",
                 "price": 0.0,
-                "pictureUrl1": "https://www.kudyznudy.cz/getattachment/7f006bce-e13a-4d71-b7ad-2e21c188678d/shutterstock-1448763995.jpg.aspx?height=608",
+                "imageUrl": "https://www.kudyznudy.cz/getattachment/7f006bce-e13a-4d71-b7ad-2e21c188678d/shutterstock-1448763995.jpg.aspx?height=608",
                 "coordinates": {
                     "latitude": 50.07540270745859,
                     "longitude": 14.414191246032715
@@ -284,7 +284,7 @@
         "id": "5",
         "name": "red amsterdam",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://media.timeout.com/images/105302939/1372/772/image.jpg",
+        "imageUrl": "https://media.timeout.com/images/105302939/1372/772/image.jpg",
         "city": "Amsterdam",
         "countryId": "NL",
         "googlePlaceId": "ChIJVXealLU_xkcRja_At0z9AGY",
@@ -308,7 +308,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJSRE-IcUJxkcRCltjPmVdmtQ",
                 "price": 0.0,
-                "pictureUrl1": "https://www.public-transport-holland.com/wp-content/uploads/2018/03/annefrankhuis_1.jpg",
+                "imageUrl": "https://www.public-transport-holland.com/wp-content/uploads/2018/03/annefrankhuis_1.jpg",
                 "coordinates": {
                     "latitude": 52.3752061888951,
                     "longitude": 4.883980751037598
@@ -322,7 +322,7 @@
                 "rating": 4.0,
                 "googlePlaceId": "ChIJEUO-OccJxkcR4VAAGRIGuKA",
                 "price": 0.0,
-                "pictureUrl1": "https://upload.wikimedia.org/wikipedia/commons/5/50/Amsterdam%2C_Nationaal_Monument_op_de_Dam_RM530906_foto2_2014-01-12_11.19.jpg",
+                "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/50/Amsterdam%2C_Nationaal_Monument_op_de_Dam_RM530906_foto2_2014-01-12_11.19.jpg",
                 "coordinates": {
                     "latitude": 52.37282198816532,
                     "longitude": 4.893701076507568
@@ -334,7 +334,7 @@
         "id": "6",
         "name": "della nostra storia",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://a0.muscache.com/im/pictures/a9acedec-d741-4a85-a515-fca446f17f31.jpg",
+        "imageUrl": "https://a0.muscache.com/im/pictures/a9acedec-d741-4a85-a515-fca446f17f31.jpg",
         "city": "Roma",
         "countryId": "IT",
         "googlePlaceId": "ChIJu46S-ZZhLxMROG5lkwZ3D7k",
@@ -357,7 +357,7 @@
                 "rating": 3.1,
                 "googlePlaceId": "ChIJrRMgU7ZhLxMRxAOFkC7I8Sg",
                 "price": 0.0,
-                "pictureUrl1": "https://www.ticketsnet.es/imagesRecintos/coliseo%20recinto%201.jpg",
+                "imageUrl": "https://www.ticketsnet.es/imagesRecintos/coliseo%20recinto%201.jpg",
                 "coordinates": {
                     "latitude": 41.89020210802678,
                     "longitude": 12.492227554321289
@@ -371,7 +371,7 @@
                 "rating": 3.2,
                 "googlePlaceId": "ChIJXRn8xopgLxMRxZ78rxjWwO8",
                 "price": 0.0,
-                "pictureUrl1": "https://besthqwallpapers.com/Uploads/12-9-2018/65493/thumb2-vatican-st-peters-square-piazza-san-pietro-summer-rome.jpg",
+                "imageUrl": "https://besthqwallpapers.com/Uploads/12-9-2018/65493/thumb2-vatican-st-peters-square-piazza-san-pietro-summer-rome.jpg",
                 "coordinates": {
                     "latitude": 41.902221143756634,
                     "longitude": 12.456725835800171
@@ -385,7 +385,7 @@
                 "rating": 3.3,
                 "googlePlaceId": "ChIJKcGbg2NgLxMRthZkUqDs4M8",
                 "price": 0.0,
-                "pictureUrl1": "https://www.carmavlc.com/wp-content/uploads/2017/03/RESIZE_138.jpg",
+                "imageUrl": "https://www.carmavlc.com/wp-content/uploads/2017/03/RESIZE_138.jpg",
                 "coordinates": {
                     "latitude": 41.90649314638965,
                     "longitude": 12.453646659851074
@@ -399,7 +399,7 @@
                 "rating": 3.4,
                 "googlePlaceId": "ChIJq-bXVgRhLxMRv3vgOXaktBs",
                 "price": 0.0,
-                "pictureUrl1": "https://www.latinitours.com/wp-content/uploads/2019/01/Galleria-Borghese-1.jpg",
+                "imageUrl": "https://www.latinitours.com/wp-content/uploads/2019/01/Galleria-Borghese-1.jpg",
                 "coordinates": {
                     "latitude": 41.91422194991033,
                     "longitude": 12.492141723632812
@@ -413,7 +413,7 @@
                 "rating": 3.5,
                 "googlePlaceId": "ChIJ1UCDJ1NgLxMRtrsCzOHxdvY",
                 "price": 0.0,
-                "pictureUrl1": "https://okdiario.com/img/2019/10/07/5-curiosidades-de-la-fontana-di-trevi-655x368.jpg",
+                "imageUrl": "https://okdiario.com/img/2019/10/07/5-curiosidades-de-la-fontana-di-trevi-655x368.jpg",
                 "coordinates": {
                     "latitude": 41.90093549448897,
                     "longitude": 12.483301162719727
@@ -425,7 +425,7 @@
         "id": "7",
         "name": "toujours paris",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://www.republica.com/wp-content/uploads/2016/06/eiffel.jpg",
+        "imageUrl": "https://www.republica.com/wp-content/uploads/2016/06/eiffel.jpg",
         "city": "Paris",
         "countryId": "FR",
         "googlePlaceId": "ChIJD7fiBh9u5kcRYJSMaMOCCwQ",
@@ -448,7 +448,7 @@
                 "rating": 3.8,
                 "googlePlaceId": "ChIJD3uTd9hx5kcR1IQvGfr8dbk",
                 "price": 0.0,
-                "pictureUrl1": "https://www.inexhibit.com/wp-content/uploads/2014/02/The-Louvre-museum-Paris-main-court-01.jpg",
+                "imageUrl": "https://www.inexhibit.com/wp-content/uploads/2014/02/The-Louvre-museum-Paris-main-court-01.jpg",
                 "coordinates": {
                     "latitude": 48.86066691898782,
                     "longitude": 2.337629310786724
@@ -462,7 +462,7 @@
                 "rating": 3.8,
                 "googlePlaceId": "ChIJLU7jZClu5kcR4PcOOO6p3I0",
                 "price": 0.0,
-                "pictureUrl1": "https://media.expedia.com/hotels/1000000/920000/911300/911232/bb186b19_z.jpg",
+                "imageUrl": "https://media.expedia.com/hotels/1000000/920000/911300/911232/bb186b19_z.jpg",
                 "coordinates": {
                     "latitude": 48.858352798373474,
                     "longitude": 2.2945386171340942
@@ -476,7 +476,7 @@
                 "rating": 3.7,
                 "googlePlaceId": "ChIJc8mX0udx5kcRWKcjTwDr5QA",
                 "price": 0.0,
-                "pictureUrl1": "https://www.101viajes.com/sites/default/files/panteon-paris-francia.jpg",
+                "imageUrl": "https://www.101viajes.com/sites/default/files/panteon-paris-francia.jpg",
                 "coordinates": {
                     "latitude": 48.846219781212476,
                     "longitude": 2.3464179039001465
@@ -490,7 +490,7 @@
                 "rating": 3.9,
                 "googlePlaceId": "ChIJR3122B9u5kcRaCck3PlB9DM",
                 "price": 0.0,
-                "pictureUrl1": "https://www.101viajes.com/sites/default/files/saint-chapelle.jpg",
+                "imageUrl": "https://www.101viajes.com/sites/default/files/saint-chapelle.jpg",
                 "coordinates": {
                     "latitude": 48.85542577069508,
                     "longitude": 2.344980239868164
@@ -502,7 +502,7 @@
         "id": "8",
         "name": "alchemist prague",
         "about": "Lorem ipsum dolor sit amet consectetur adipiscing elit sollicitudin, aptent pharetra volutpat ridiculus eu hendrerit magna, nunc auctor curabitur nullam orci feugiat parturient. Massa aliquam tincidunt ac neque tempus congue et dis, facilisis tempor tellus erat felis nisl nisi curabitur ad, purus laoreet ante sodales gravida sociosqu potenti. Habitant lobortis facilisis cursus litora orci praesent volutpat non congue, iaculis inceptos venenatis senectus a leo mus. Sociosqu penatibus pharetra litora feugiat tempor iaculis proin convallis volutpat duis, mus rutrum nec ligula sapien sagittis tincidunt vivamus nascetur donec, malesuada sodales fermentum semper quis dictum erat lacinia velit. Volutpat conubia senectus habitasse varius at libero rhoncus curae velit, sodales tristique condimentum felis vestibulum in sed rutrum, pharetra massa accumsan etiam platea mollis potenti vitae. Est ornare libero primis dui elementum luctus aenean tempus aptent, mus metus accumsan ridiculus magnis eleifend aliquam vel nulla donec, cras congue faucibus integer ante nascetur laoreet bibendum. Quisque quam ante libero ac sagittis vel et dis bibendum, varius taciti porttitor tortor urna metus montes est habitant, mus pulvinar ultrices tellus sem neque aenean rhoncus. Erat torquent vulputate pharetra tortor hendrerit purus praesent sollicitudin ultrices, sagittis tincidunt justo libero habitasse rutrum venenatis tellus leo, augue arcu montes molestie netus iaculis viverra vehicula.",
-        "pictureUrl": "https://travelpast50.com/wp-content/uploads/2014/03/alchemy-museum-prague-1.jpg",
+        "imageUrl": "https://travelpast50.com/wp-content/uploads/2014/03/alchemy-museum-prague-1.jpg",
         "city": "Prague",
         "countryId": "CZ",
         "googlePlaceId": "ChIJi3lwCZyTC0cRkEAWZg-vAAQ",
@@ -525,7 +525,7 @@
                 "rating": 4.1,
                 "googlePlaceId": "ChIJn7WO5eWUC0cRJrHT0TiXIHU",
                 "price": 0.0,
-                "pictureUrl1": "https://echo24.cz/img/59626dc4e4b05f244689744d/1040/540/FIT?_sig=-Giw4x3abmc_ELZaDiUNZ6cX--ToUW6IHYgC0C2o2Fc",
+                "imageUrl": "https://echo24.cz/img/59626dc4e4b05f244689744d/1040/540/FIT?_sig=-Giw4x3abmc_ELZaDiUNZ6cX--ToUW6IHYgC0C2o2Fc",
                 "coordinates": {
                     "latitude": 50.08648026273381,
                     "longitude": 14.411433935165403
@@ -539,7 +539,7 @@
                 "rating": 4.2,
                 "googlePlaceId": "ChIJw7ckbB6VC0cRnyUSr4g8zyo",
                 "price": 0.0,
-                "pictureUrl1": "https://www.hrad.cz/file/edee/public/2015/09/svatyvit-20150923-141311.jpg",
+                "imageUrl": "https://www.hrad.cz/file/edee/public/2015/09/svatyvit-20150923-141311.jpg",
                 "coordinates": {
                     "latitude": 50.091071637395345,
                     "longitude": 14.401617050170898
@@ -553,7 +553,7 @@
                 "rating": 4.3,
                 "googlePlaceId": "ChIJBfIPBeuUC0cRphNG7F-4SZM",
                 "price": 0.0,
-                "pictureUrl1": "https://www.informuji.cz/data/201687193451.jpg",
+                "imageUrl": "https://www.informuji.cz/data/201687193451.jpg",
                 "coordinates": {
                     "latitude": 50.08727191043621,
                     "longitude": 14.427795410156248

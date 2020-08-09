@@ -22,7 +22,6 @@ class _PlaceDialogState extends State<PlaceDialog>
   int _maxLines = 5;
   AnimationController _audioController;
   AnimationController _playPauseController;
-  CartProvider _cart;
 
   void _toggleShowDescription() {
     setState(() {
@@ -39,7 +38,6 @@ class _PlaceDialogState extends State<PlaceDialog>
     _audioController.addListener(() => setState(() {}));
     _playPauseController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
-    _cart = Provider.of<CartProvider>(context, listen: false);
   }
 
   @override
@@ -59,7 +57,7 @@ class _PlaceDialogState extends State<PlaceDialog>
           tag: '${widget._place.id}_image',
           child: CachedNetworkImage(
             fit: BoxFit.fitWidth,
-            imageUrl: '${widget._place.pictureUrl1}',
+            imageUrl: '${widget._place.imageUrl}',
             placeholder: (context, url) => Center(
               child: CircularProgressIndicator(
                 strokeWidth: 0.5,
@@ -241,7 +239,8 @@ class _PlaceDialogState extends State<PlaceDialog>
                                   trips.findById(widget._place.tripId).id)
                           ? null
                           : () {
-                              _cart.addItem(null, widget._place);
+                              Provider.of<CartProvider>(context, listen: false)
+                                  .addItem(null, widget._place);
                               user.togglePurchasedPlace(widget._place.id);
                               Navigator.pop(context,
                                   user.placeIsPurchased(widget._place.id));

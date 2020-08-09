@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tripit/ui/screens/tab-navigator.dart';
 
-class LoginMain extends StatefulWidget {
+class LoginMain extends StatelessWidget {
   static const routeName = '/login';
 
-  @override
-  _LoginMainState createState() => _LoginMainState();
-}
-
-class _LoginMainState extends State<LoginMain> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +12,7 @@ class _LoginMainState extends State<LoginMain> {
         child: Center(
           child: FlatButton(
               onPressed: () {
-                Navigator.pushNamed(context, TabNavigator.routeName);
+                Navigator.pushReplacementNamed(context, TabNavigator.routeName);
               },
               child: Text('LOGIN')),
         ),

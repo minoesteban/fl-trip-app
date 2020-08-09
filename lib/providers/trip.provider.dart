@@ -61,7 +61,6 @@ class TripProvider with ChangeNotifier {
   }
 
   Future<Trip> update(Trip trip) async {
-    orderPlaces(trip);
     return await _controller.update(trip).then((resultTrip) {
       _trips[_trips.indexWhere((e) => e.id == resultTrip.id)] = resultTrip;
       notifyListeners();
@@ -78,6 +77,17 @@ class TripProvider with ChangeNotifier {
     int tripIndex = _trips.indexWhere((trip) => trip.id == place.tripId);
     await _placeController.create(place).then((createdPlace) async {
       _trips[tripIndex].places.add(createdPlace);
+      await orderPlacesinDB(_trips[tripIndex]);
+      notifyListeners();
+    }).catchError((err) => throw err);
+  }
+
+  Future<void> updatePlace(Place place) async {
+    int tripIndex = _trips.indexWhere((trip) => trip.id == place.tripId);
+    int placeIndex =
+        _trips[tripIndex].places.indexWhere((p) => place.id == p.id);
+    await _placeController.update(place).then((updatedPlace) async {
+      _trips[tripIndex].places[placeIndex] = updatedPlace;
       await orderPlacesinDB(_trips[tripIndex]);
       notifyListeners();
     }).catchError((err) => throw err);

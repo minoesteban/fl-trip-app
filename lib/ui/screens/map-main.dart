@@ -31,7 +31,7 @@ class _MapState extends State<MapMain> {
   Set<Marker> _loadMarkers(List<Trip> trips) {
     Set<Marker> markers = Set<Marker>();
     trips.forEach((trip) {
-      if (trip.places != null) if (trip.places.length > 1)
+      if (trip.places != null && trip.places.length > 1)
         markers.addAll(trip.places
             .map(
               (t) => Marker(
@@ -62,9 +62,8 @@ class _MapState extends State<MapMain> {
 
   @override
   Widget build(BuildContext context) {
-    Filters filters = Provider.of<Filters>(context);
-    Position userPosition = Provider.of<UserProvider>(context).user.position;
-    // int ownerId =
+    Position userPosition =
+        Provider.of<UserProvider>(context, listen: false).user.position;
     _tripProvider = Provider.of<TripProvider>(context);
     List<Trip> trips =
         _tripProvider.trips.where((trip) => trip.published).toList();
@@ -104,10 +103,7 @@ class _MapState extends State<MapMain> {
                 barrierDismissible: true,
                 context: context,
                 builder: (_) {
-                  return ChangeNotifierProvider.value(
-                    value: filters,
-                    child: FiltersScreen(),
-                  );
+                  return FiltersScreen();
                 },
               );
             },

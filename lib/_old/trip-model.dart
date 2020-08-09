@@ -6,7 +6,7 @@
 //   String id;
 //   String name;
 //   String about;
-//   String pictureUrl;
+//   String imageUrl;
 //   String city;
 //   String country;
 //   String googlePlaceId;
@@ -22,7 +22,7 @@
 //     this.price,
 //     this.name,
 //     this.about,
-//     this.pictureUrl,
+//     this.imageUrl,
 //     this.id,
 //     this.city,
 //     this.country,
@@ -52,7 +52,7 @@
 //       price: json['price'] == null ? null : json['price'],
 //       name: json['name'] == null ? null : json['name'],
 //       about: json['about'] == null ? null : json['about'],
-//       pictureUrl: json['pictureUrl'] == null ? null : json['pictureUrl'],
+//       imageUrl: json['imageUrl'] == null ? null : json['imageUrl'],
 //       city: json['city'] == null ? null : json['city'],
 //       country: json['countryId'] == null ? null : json['countryId'],
 //       ownerId: json['ownerId'] == null ? null : json['ownerId'],

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:tripit/providers/language.provider.dart';
 import 'package:tripit/providers/user.provider.dart';
+import 'package:tripit/ui/utils/show-message.dart';
 
 import '../../ui/screens/trip-main.dart';
 import '../../core/models/trip.model.dart';
@@ -20,7 +21,6 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   int _ownerId;
-  LanguageProvider _languages;
   List<Trip> _trips;
   Set<String> _userLanguages;
   Set<String> _countries;
@@ -38,15 +38,9 @@ class _ProfileState extends State<Profile> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _languages = Provider.of<LanguageProvider>(context, listen: false);
-  }
-
-  @override
   Widget build(BuildContext context) {
     print('build profile');
-    Future<double> initializeData(
+    Future<void> initializeData(
         UserProvider userProvider, TripProvider tripsProvider) async {
       _ownerId = userProvider.user.id;
       _trips = tripsProvider.findByGuide(userProvider.user.id);
@@ -64,9 +58,11 @@ class _ProfileState extends State<Profile> {
         _trips.forEach((trip) {
           _places += trip.places?.length;
         });
+    }
 
+    Future<void> calculateRating(TripProvider tripsProvider) async {
       if (_rating == 0) {
-        _trips.forEach((trip) async {
+        for (Trip trip in _trips) {
           await tripsProvider.getAndSetTripRatings(trip.id).then((rat) {
             _ratingAcum += rat;
           }).then((_) {
@@ -79,24 +75,9 @@ class _ProfileState extends State<Profile> {
                         .isNotEmpty)
                     .length;
           });
-        });
+        }
+        return _rating;
       }
-
-      return _rating;
-    }
-
-    void _showMessage(dynamic e) {
-      print(e.toString());
-      Scaffold.of(context).showSnackBar(
-        SnackBar(
-          content: Text('error! ${e.toString()}'),
-          action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {
-                Scaffold.of(context).hideCurrentSnackBar();
-              }),
-        ),
-      );
     }
 
     Widget buildAvatar(String firstName, String lastName) {
@@ -120,7 +101,7 @@ class _ProfileState extends State<Profile> {
       );
     }
 
-    List<Widget> buildStats() {
+    List<Widget> buildStats(TripProvider tripsProvider) {
       return [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -152,27 +133,38 @@ class _ProfileState extends State<Profile> {
                   )
                 ],
               ),
-              Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${_rating.toStringAsPrecision(2)}',
-                        style: TextStyle(
-                            color: Colors.amber[500],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 30),
-                      ),
-                      Icon(
-                        Icons.star,
-                        color: Colors.amber[500],
-                        size: 15,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              FutureBuilder(
+                  future: calculateRating(tripsProvider),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(Colors.grey[300]),
+                        ),
+                      );
+                    }
+                    return Column(
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${_rating.toStringAsPrecision(2)}',
+                              style: TextStyle(
+                                  color: Colors.amber[500],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 30),
+                            ),
+                            Icon(
+                              Icons.star,
+                              color: Colors.amber[500],
+                              size: 15,
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }),
               Column(
                 children: [
                   Text(
@@ -257,7 +249,7 @@ class _ProfileState extends State<Profile> {
                     height: 45,
                     fit: BoxFit.cover,
                   ),
-                  Text(_languages
+                  Text(Provider.of<LanguageProvider>(context, listen: false)
                       .getNativeName(_userLanguages.elementAt(i).split(',')[1]))
                 ],
               ),
@@ -317,9 +309,11 @@ class _ProfileState extends State<Profile> {
                                     else
                                       tripsProvider
                                           .update(res['item'])
-                                          .catchError((e) => _showMessage(e));
+                                          .catchError((e) =>
+                                              showMessage(context, e, true));
                                   }
-                                }).catchError((e) => _showMessage(e)),
+                                }).catchError(
+                                  (e) => showMessage(context, e, true)),
                           child: GridTile(
                             header: _trips[i].submitted == true
                                 ? null
@@ -347,7 +341,7 @@ class _ProfileState extends State<Profile> {
                                   ? 1
                                   : _trips[i].submitted == true ? 0.7 : 0.4,
                               child: CachedNetworkImage(
-                                imageUrl: '${_trips[i].pictureUrl}',
+                                imageUrl: '${_trips[i].imageUrl}',
                                 fit: BoxFit.cover,
                                 errorWidget: (_, __, ___) => Container(
                                   height: 150,
@@ -383,7 +377,8 @@ class _ProfileState extends State<Profile> {
         onPressed: null,
         backgroundColor: Colors.red[800],
         child: Consumer2<UserProvider, TripProvider>(
-          builder: (_, user, tripsProvider, __) => IconButton(
+            builder: (_, user, tripsProvider, __) {
+          return IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.of(context).pushNamed<Map<String, dynamic>>(
@@ -394,16 +389,16 @@ class _ProfileState extends State<Profile> {
                   if (res['action'] == 'delete')
                     tripsProvider
                         .delete(res['item'].id)
-                        .catchError((e) => _showMessage(e));
+                        .catchError((e) => showMessage(context, e, true));
                   else
                     tripsProvider
                         .create(res['item'])
-                        .catchError((e) => _showMessage(e));
+                        .catchError((e) => showMessage(context, e, true));
                 }
-              }).catchError((e) => _showMessage(e));
+              }).catchError((e) => showMessage(context, e, true));
             },
-          ),
-        ),
+          );
+        }),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -413,6 +408,11 @@ class _ProfileState extends State<Profile> {
               return FutureBuilder(
                 future: initializeData(userProvider, tripsProvider),
                 builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -420,7 +420,7 @@ class _ProfileState extends State<Profile> {
                       buildAvatar(userProvider.user.firstName,
                           userProvider.user.lastName),
                       //stats
-                      ...buildStats(),
+                      ...buildStats(tripsProvider),
                       //about
                       if (userProvider.user.about != null)
                         ...buildDescription(userProvider.user.about),
@@ -451,109 +451,3 @@ class _ProfileState extends State<Profile> {
     letterSpacing: 1.1,
   );
 }
-
-// class ProfileTripsList extends StatelessWidget {
-//   final List<Trip> _trips;
-
-//   ProfileTripsList(this._trips);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     void _showMessage(String e) {
-//       print(e);
-//       Scaffold.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text('error! $e'),
-//           action: SnackBarAction(
-//               label: 'OK',
-//               onPressed: () {
-//                 Scaffold.of(context).hideCurrentSnackBar();
-//               }),
-//         ),
-//       );
-//     }
-
-//     return Container(
-//       width: MediaQuery.of(context).size.width,
-//       child: Consumer<TripProvider>(
-//         builder: (context, tripsProvider, _) => ListView.builder(
-//             physics: ClampingScrollPhysics(),
-//             shrinkWrap: true,
-//             itemCount: _trips.length,
-//             itemBuilder: (ctx, i) {
-//               return Padding(
-//                 padding:
-//                     const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-//                 child: ClipRRect(
-//                   borderRadius: const BorderRadius.all(
-//                     Radius.circular(10),
-//                   ),
-//                   child: Container(
-//                     height: 150,
-//                     child: InkWell(
-//                       onTap: () => _trips[i].submitted == true
-//                           ? Navigator.pushNamed(
-//                               context,
-//                               TripMain.routeName,
-//                               arguments: {
-//                                 'trip': _trips[i],
-//                               },
-//                             )
-//                           : Navigator.pushNamed<Map<String, dynamic>>(
-//                               context,
-//                               TripNew.routeName,
-//                               arguments: {'trip': _trips[i]},
-//                             ).then((res) {
-//                               if (res != null) {
-//                                 if (res['action'] == 'delete')
-//                                   tripsProvider.delete(res['item'].id);
-//                                 else
-//                                   tripsProvider.update(res['item']).catchError(
-//                                       (e) => _showMessage(e.toString()));
-//                               }
-//                             }).catchError((e) => _showMessage(e.toString())),
-//                       child: GridTile(
-//                         header: _trips[i].submitted == true
-//                             ? null
-//                             : Align(
-//                                 alignment: Alignment.topRight,
-//                                 child: IconButton(
-//                                     icon: Icon(
-//                                       Icons.edit,
-//                                       color: Colors.black38,
-//                                     ),
-//                                     onPressed: null),
-//                               ),
-//                         footer: GridTileBar(
-//                           backgroundColor: Colors.black38,
-//                           title: Text(
-//                             _trips[i].name,
-//                             softWrap: true,
-//                             overflow: TextOverflow.fade,
-//                             style: TextStyle(
-//                                 fontWeight: FontWeight.bold, fontSize: 18),
-//                           ),
-//                         ),
-//                         child: Opacity(
-//                           opacity: _trips[i].published == true
-//                               ? 1
-//                               : _trips[i].submitted == true ? 0.7 : 0.4,
-//                           child: CachedNetworkImage(
-//                             imageUrl: '${_trips[i].pictureUrl}',
-//                             fit: BoxFit.cover,
-//                             errorWidget: (_, __, ___) => Container(
-//                               height: 150,
-//                               color: Colors.grey,
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               );
-//             }),
-//       ),
-//     );
-//   }
-// }

@@ -9,7 +9,7 @@ class RatingService {
   String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
 
   Future<List<Rating>> getAllRatings() async {
-    final res = await http.get('$_endpoint/rating/all');
+    final res = await http.get('$_endpoint/ratings/all');
     if (res.statusCode == HttpStatus.ok)
       return parseRatings(res.body);
     else
@@ -17,7 +17,7 @@ class RatingService {
   }
 
   Future<List<Rating>> getRatingsBy(int tripId, int placeId) async {
-    String url = '$_endpoint/rating?';
+    String url = '$_endpoint/ratings?';
     if (tripId > 0) url += 'tripId=$tripId';
     if (placeId > 0) url += '&placeId=$placeId';
 

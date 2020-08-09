@@ -25,13 +25,9 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
   int _maxLines = 5;
   AnimationController _audioController;
   AnimationController _playPauseController;
-  bool _loadingRating = true;
+  bool _loadRating = true;
   double _rating = 0.0;
-  CountryProvider _countryProvider;
-  UserProvider _userProvider;
-  TripProvider _tripProvider;
-  LanguageProvider _languageProvider;
-  CartProvider _cart;
+  Position userPosition;
 
   void _toggleShowDescription() {
     setState(() {
@@ -44,13 +40,12 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _audioController =
-        AnimationController(duration: Duration(seconds: 10), vsync: this);
-    _audioController.addListener(() => setState(() {}));
+        AnimationController(duration: Duration(seconds: 10), vsync: this)
+          ..addListener(() => setState(() {}));
     _playPauseController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
-    _countryProvider = Provider.of<CountryProvider>(context, listen: false);
-    _languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-    _cart = Provider.of<CartProvider>(context, listen: false);
+    userPosition =
+        Provider.of<UserProvider>(context, listen: false).user.position;
   }
 
   @override
@@ -64,18 +59,14 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     Map args = ModalRoute.of(context).settings.arguments;
     Trip trip = args['trip'];
-    // List<Place> places = trip.places;
 
-    _userProvider = Provider.of<UserProvider>(context);
-    _tripProvider = Provider.of<TripProvider>(context);
-
-    Position _userPosition = _userProvider.user.position;
-
-    if (_loadingRating)
-      _tripProvider.getAndSetTripRatings(trip.id).then((rating) {
+    if (_loadRating)
+      Provider.of<TripProvider>(context, listen: false)
+          .getAndSetTripRatings(trip.id)
+          .then((rating) {
         setState(() {
           _rating = rating;
-          _loadingRating = false;
+          _loadRating = false;
         });
       });
 
@@ -96,18 +87,20 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
               icon: Icon(Icons.share),
               onPressed: () => print('share'),
             ),
-            IconButton(
-              iconSize: 30,
-              icon: _userProvider.tripIsFavourite(trip.id)
-                  ? Icon(
-                      Icons.favorite,
-                    )
-                  : Icon(
-                      Icons.favorite_border,
-                    ),
-              onPressed: () {
-                _userProvider.toggleFavouriteTrip(trip.id);
-              },
+            Consumer<UserProvider>(
+              builder: (_, user, __) => IconButton(
+                iconSize: 30,
+                icon: user.tripIsFavourite(trip.id)
+                    ? Icon(
+                        Icons.favorite,
+                      )
+                    : Icon(
+                        Icons.favorite_border,
+                      ),
+                onPressed: () {
+                  user.toggleFavouriteTrip(trip.id);
+                },
+              ),
             ),
           ],
           expandedHeight: MediaQuery.of(context).size.height / 3.5,
@@ -122,7 +115,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
             ),
             background: CachedNetworkImage(
               fit: BoxFit.cover,
-              imageUrl: '${trip.pictureUrl}',
+              imageUrl: '${trip.imageUrl}',
               placeholder: (context, url) => Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 0.5,
@@ -146,7 +139,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                     //location & purchase
                     ListTile(
                       title: Text(
-                        '${_countryProvider.getName(trip.countryId)}',
+                        '${Provider.of<CountryProvider>(context, listen: false).getName(trip.countryId)}',
                         softWrap: true,
                         style: _titleStyle,
                       ),
@@ -154,41 +147,45 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                         'location',
                         style: _subtitleStyle,
                       ),
-                      trailing: Builder(
-                        builder: (ctx) => RaisedButton(
-                            color: Colors.green[700],
-                            child: Text(
-                              _userProvider.tripIsPurchased(trip.id)
-                                  ? 'purchased'
-                                  : 'add to cart \$${trip.price}',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                  letterSpacing: 1.5),
-                            ),
-                            onPressed: _userProvider.tripIsPurchased(trip.id)
-                                ? null
-                                : () {
-                                    _cart.addItem(trip, null);
-                                    _userProvider.togglePurchasedTrip(trip.id);
-                                    Scaffold.of(ctx).showSnackBar(
-                                      SnackBar(
-                                        duration: Duration(seconds: 1),
-                                        content: Text(
-                                          'trip added to cart!',
+                      trailing: Consumer<UserProvider>(
+                        builder: (_, user, __) => Builder(
+                          builder: (ctx) => RaisedButton(
+                              color: Colors.green[700],
+                              child: Text(
+                                user.tripIsPurchased(trip.id)
+                                    ? 'purchased'
+                                    : 'add to cart \$${trip.price}',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    letterSpacing: 1.5),
+                              ),
+                              onPressed: user.tripIsPurchased(trip.id)
+                                  ? null
+                                  : () {
+                                      Provider.of<CartProvider>(context,
+                                              listen: false)
+                                          .addItem(trip, null);
+                                      user.togglePurchasedTrip(trip.id);
+                                      Scaffold.of(ctx).showSnackBar(
+                                        SnackBar(
+                                          duration: Duration(seconds: 1),
+                                          content: Text(
+                                            'trip added to cart!',
+                                          ),
+                                          action: SnackBarAction(
+                                              label: 'GO TO CART',
+                                              onPressed: () {
+                                                Scaffold.of(ctx)
+                                                    .hideCurrentSnackBar();
+                                                Navigator.pushNamed(context,
+                                                    CartMain.routeName);
+                                              }),
                                         ),
-                                        action: SnackBarAction(
-                                            label: 'GO TO CART',
-                                            onPressed: () {
-                                              Scaffold.of(ctx)
-                                                  .hideCurrentSnackBar();
-                                              Navigator.pushNamed(
-                                                  context, CartMain.routeName);
-                                            }),
-                                      ),
-                                    );
-                                  }),
+                                      );
+                                    }),
+                        ),
                       ),
                     ),
 
@@ -249,7 +246,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                               width: 50,
                             ),
                             Text(
-                              '${_languageProvider.getNativeName(trip.languageNameId)}',
+                              '${Provider.of<LanguageProvider>(context, listen: false).getNativeName(trip.languageNameId)}',
                               style: _subtitleStyle,
                             ),
                           ],
@@ -321,16 +318,16 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                                       barrierDismissible: true,
                                       // barrierColor: Colors.black87,
                                       context: context,
-                                      builder: (context) => ImageList(
-                                          trip.places[i].pictureUrl1));
+                                      builder: (context) =>
+                                          ImageList(trip.places[i].imageUrl));
                                 },
                                 child: Card(
                                   elevation: 1,
                                   child: Hero(
-                                    tag: '${trip.places[i].pictureUrl1}',
+                                    tag: '${trip.places[i].imageUrl}',
                                     child: CachedNetworkImage(
                                       fit: BoxFit.cover,
-                                      imageUrl: '${trip.places[i].pictureUrl1}',
+                                      imageUrl: '${trip.places[i].imageUrl}',
                                       placeholder: (context, url) => Center(
                                         child: CircularProgressIndicator(
                                           strokeWidth: 0.5,
@@ -375,7 +372,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                       child: Column(
                         children: [
                           Container(
-                            child: TripMap(trip, _userPosition),
+                            child: TripMap(trip, userPosition),
                           ),
                           ExpansionTile(
                             initiallyExpanded: true,
@@ -396,7 +393,8 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                             ),
                             children: [
                               Container(
-                                child: PlacesList(trip.places),
+                                child: PlacesList(trip.places
+                                  ..sort((a, b) => a.order.compareTo(b.order))),
                               )
                             ],
                           ),

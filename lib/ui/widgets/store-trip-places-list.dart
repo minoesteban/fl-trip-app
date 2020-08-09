@@ -87,7 +87,7 @@ class _PlacesListState extends State<PlacesList> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.all(Radius.circular(5)),
                   child: CachedNetworkImage(
                     fit: BoxFit.cover,
-                    imageUrl: '${widget.places[index].pictureUrl1}',
+                    imageUrl: '${widget.places[index].imageUrl}',
                     placeholder: (context, url) => Center(
                       child: CircularProgressIndicator(
                         strokeWidth: 0.5,

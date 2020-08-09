@@ -26,6 +26,30 @@ class CountryProvider with ChangeNotifier {
     return result.toList();
   }
 
+  List<Country> getByLanguage(String langCode, String locale) {
+    List<Country> result = [];
+
+    var filtered = _countries
+        .where((country) => country.languages.first.code == langCode)
+        // .where((country) =>
+        //     country.languages.where((lang) => lang.code == langCode).length > 0)
+        .toList();
+
+    result = filtered
+        .map((e) => Country(
+            code: e.code,
+            languages: e.languages,
+            flagUrl: e.flagUrl,
+            name: locale.toLowerCase() != 'en'
+                ? e.translations[locale.toLowerCase()] != null
+                    ? e.translations[locale.toLowerCase()]
+                    : e.name
+                : e.name))
+        .toList();
+
+    return result;
+  }
+
   List<Country> get countries {
     return _countries;
   }

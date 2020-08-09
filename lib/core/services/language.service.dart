@@ -15,6 +15,12 @@ class LanguageService {
     decoded.forEach((json) {
       languagesRaw.addAll(json['languages'].map((e) => e));
     });
+    languagesRaw = languagesRaw
+      ..removeWhere(
+          (lang) => lang['iso639_1'] == null || lang['iso639_1'].length < 2)
+      ..toSet()
+      ..toList();
+
     return languagesRaw.map((lang) => Language.fromMap(lang)).toList();
   }
 }

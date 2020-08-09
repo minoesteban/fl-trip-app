@@ -33,8 +33,10 @@ class Language {
   static Language fromMap(Map<String, dynamic> map) {
     if (map == null) return null;
 
+    // if (map['iso639_1'] == null) return null;
+
     return Language(
-      code: map['iso639_1'],
+      code: map['iso639_1'].toString().toUpperCase(),
       name: map['name'],
       nativeName: map['nativeName'],
     );

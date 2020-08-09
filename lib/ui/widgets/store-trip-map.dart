@@ -6,18 +6,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tripit/core/models/trip.model.dart';
 
-class TripMap extends StatefulWidget {
+class TripMap extends StatelessWidget {
   final Position userPosition;
   final Trip trip;
 
   TripMap(this.trip, this.userPosition);
-
-  @override
-  _TripMapState createState() => _TripMapState();
-}
-
-class _TripMapState extends State<TripMap> {
-  Completer<GoogleMapController> _controller = Completer();
 
   Set<Marker> _loadMarkers(Trip _trip) {
     Set<Marker> _markers = _trip.places
@@ -55,7 +48,7 @@ class _TripMapState extends State<TripMap> {
     Future.delayed(
         Duration(milliseconds: 200),
         () => controller.animateCamera(CameraUpdate.newLatLngBounds(
-            boundsFromLatLngList(widget.trip.places
+            boundsFromLatLngList(trip.places
                 .map((place) => LatLng(
                     place.coordinates.latitude, place.coordinates.longitude))
                 .toList()),
@@ -78,8 +71,8 @@ class _TripMapState extends State<TripMap> {
   @override
   Widget build(BuildContext context) {
     final CameraPosition _initialPosition = CameraPosition(
-      target: LatLng(widget.trip.places[0].coordinates.latitude,
-          widget.trip.places[0].coordinates.longitude),
+      target: LatLng(trip.places[0].coordinates.latitude,
+          trip.places[0].coordinates.longitude),
       zoom: 13,
     );
 
@@ -94,8 +87,9 @@ class _TripMapState extends State<TripMap> {
         myLocationEnabled: true,
         mapType: MapType.normal,
         initialCameraPosition: _initialPosition,
-        markers: _loadMarkers(widget.trip),
+        markers: _loadMarkers(trip),
         onMapCreated: (GoogleMapController controller) {
+          Completer<GoogleMapController> _controller = Completer();
           _controller.complete(controller);
           _centerMap(controller);
         },

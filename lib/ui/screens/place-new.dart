@@ -6,20 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:provider/provider.dart';
+import 'package:tripit/providers/user.provider.dart';
 
 import '../../core/models/place.model.dart';
 import '../../ui/widgets/place-new-search.dart';
 
 class PlaceNew extends StatefulWidget {
   static const routeName = '/profile/trip/new/place/new';
-
-  final CameraPosition _initialPosition;
-  final Position _userPosition;
   final String _countryCode;
-  final int _tripId;
+  final Place _place;
 
-  PlaceNew(this._userPosition, this._initialPosition, this._countryCode,
-      this._tripId);
+  PlaceNew(this._countryCode, this._place);
 
   @override
   _PlaceNewState createState() => _PlaceNewState();
@@ -27,6 +25,7 @@ class PlaceNew extends StatefulWidget {
 
 class _PlaceNewState extends State<PlaceNew> {
   Completer<GoogleMapController> _controller = Completer();
+  CameraPosition _initialPosition;
   final _form = GlobalKey<FormState>();
   Place _newPlace = Place();
   final _imageFocus = FocusNode();
@@ -48,6 +47,18 @@ class _PlaceNewState extends State<PlaceNew> {
   void initState() {
     super.initState();
     _imageFocus.addListener(_updateImage);
+    _newPlace = widget._place;
+    _initialPosition = CameraPosition(
+      target: LatLng(
+          _newPlace.coordinates.latitude, _newPlace.coordinates.longitude),
+      zoom: 14.5,
+    );
+    if (_newPlace.id > 0) {
+      _nameController.text = _newPlace.name ?? '';
+      _aboutController.text = _newPlace.about ?? '';
+      _priceController.text = _newPlace.price.toString() ?? '';
+      _imageController.text = _newPlace.imageUrl ?? '';
+    }
   }
 
   @override
@@ -79,7 +90,7 @@ class _PlaceNewState extends State<PlaceNew> {
   void _saveForm(BuildContext ctx) {
     if (_form.currentState.validate()) {
       _form.currentState.save();
-      Navigator.of(context).pop(_newPlace);
+      Navigator.of(context).pop({'action': 'create/update', 'item': _newPlace});
     } else {
       Scaffold.of(ctx).showSnackBar(
         SnackBar(
@@ -96,7 +107,22 @@ class _PlaceNewState extends State<PlaceNew> {
 
   @override
   Widget build(BuildContext context) {
-    print('build place new');
+    if (_locationController.text == '' && _newPlace.id > 0)
+      places
+          .getDetailsByPlaceId(
+            _newPlace.googlePlaceId,
+            language: Platform.localeName.split('_')[0],
+          )
+          .then((result) => result.result.addressComponents.forEach(
+                (comp) => comp.types.forEach(
+                  (type) {
+                    if (type == 'country')
+                      setState(() =>
+                          _locationController.text = '${result.result.name}');
+                  },
+                ),
+              ));
+
     return WillPopScope(
       onWillPop: () {
         return showDialog(
@@ -137,7 +163,39 @@ class _PlaceNewState extends State<PlaceNew> {
             IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text('are you sure?'),
+                        content: Text(
+                            'you are deleting ${_newPlace.name} from the places list'),
+                        actions: [
+                          FlatButton(
+                            child: Text(
+                              'NO',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                          ),
+                          FlatButton(
+                            child: Text('YES'),
+                            onPressed: () {
+                              Navigator.of(context).pop(true);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ).then((res) {
+                    if (res)
+                      Navigator.of(context)
+                          .pop({'action': 'delete', 'item': _newPlace});
+                  });
                 }),
             Builder(
               builder: (ctx) => IconButton(
@@ -152,10 +210,9 @@ class _PlaceNewState extends State<PlaceNew> {
           child: Form(
             key: _form,
             onChanged: () {
-              _newPlace.tripId = widget._tripId;
               _newPlace.name = _nameController.text;
               _newPlace.about = _aboutController.text;
-              _newPlace.pictureUrl1 = _imageController.text;
+              _newPlace.imageUrl = _imageController.text;
               _newPlace.price = _priceController.text.isEmpty
                   ? 0
                   : double.parse(_priceController.text);
@@ -239,7 +296,7 @@ class _PlaceNewState extends State<PlaceNew> {
                             myLocationButtonEnabled: false,
                             myLocationEnabled: false,
                             mapType: MapType.normal,
-                            initialCameraPosition: widget._initialPosition,
+                            initialCameraPosition: _initialPosition,
                             onMapCreated: (GoogleMapController controller) {
                               _controller.complete(controller);
                             },
@@ -249,8 +306,13 @@ class _PlaceNewState extends State<PlaceNew> {
                           onTap: () async {
                             PlaceDetails result = await showSearch(
                                 context: context,
-                                delegate: PlaceNewSearch(widget._userPosition,
-                                    widget._countryCode, Caller.PlaceNew));
+                                delegate: PlaceNewSearch(
+                                    Provider.of<UserProvider>(context,
+                                            listen: false)
+                                        .user
+                                        .position,
+                                    widget._countryCode,
+                                    Caller.PlaceNew));
                             if (result != null) {
                               _controller.future.then(
                                 (value) => value.animateCamera(

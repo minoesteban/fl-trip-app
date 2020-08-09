@@ -117,18 +117,20 @@ class CartMain extends StatelessWidget {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Consumer<UserProvider>(
-                            builder: (_, user, __) => IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () {
-                                cart.items[i].isTrip
-                                    ? user.togglePurchasedTrip(
-                                        cart.items[i].trip.id)
-                                    : user.togglePurchasedPlace(
-                                        cart.items[i].place.id);
-                                cart.removeItem(cart.items[i].id);
-                              },
-                            ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              cart.items[i].isTrip
+                                  ? Provider.of<UserProvider>(context,
+                                          listen: false)
+                                      .togglePurchasedTrip(
+                                          cart.items[i].trip.id)
+                                  : Provider.of<UserProvider>(context,
+                                          listen: false)
+                                      .togglePurchasedPlace(
+                                          cart.items[i].place.id);
+                              cart.removeItem(cart.items[i].id);
+                            },
                           ),
                         ],
                       ),

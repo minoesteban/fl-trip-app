@@ -43,7 +43,7 @@
 //                         ),
 //                       ),
 //                       child: CachedNetworkImage(
-//                         imageUrl: '${_trips[i].pictureUrl}',
+//                         imageUrl: '${_trips[i].imageUrl}',
 //                         fit: BoxFit.cover,
 //                       ),
 //                     ),

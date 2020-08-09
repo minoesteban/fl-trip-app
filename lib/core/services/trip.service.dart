@@ -5,19 +5,22 @@ import 'package:tripit/config.dart';
 import 'package:http/http.dart' as http;
 
 class TripService {
-  Map<String, String> _headers = {'content-type': 'application/json'};
+  Map<String, String> _headers = {
+    'content-type': 'application/json',
+    'charset': 'UTF-8'
+  };
   String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
 
   Future<List<Trip>> getAll() async {
-    final res = await http.get('$_endpoint/trip/all');
-    if (res.statusCode == HttpStatus.ok)
+    final res = await http.get('$_endpoint/trips/all', headers: _headers);
+    if (res.statusCode == HttpStatus.ok) {
       return await parseList(res.body);
-    else
+    } else
       throw HttpException(res.body);
   }
 
   Future<Trip> create(Trip trip) async {
-    String url = '$_endpoint/trip';
+    String url = '$_endpoint/trips';
     final res = await http.post(url,
         headers: _headers, body: json.encode(trip.toMapForDB()));
     if (res.statusCode == HttpStatus.ok)
@@ -27,7 +30,7 @@ class TripService {
   }
 
   Future<Trip> submit(int id) async {
-    String url = '$_endpoint/trip/$id';
+    String url = '$_endpoint/trips/$id';
     final res = await http.patch(url,
         headers: _headers, body: json.encode({'submitted': true}));
     if (res.statusCode == HttpStatus.ok) {
@@ -38,7 +41,7 @@ class TripService {
   }
 
   Future<Trip> update(Trip trip) async {
-    String url = '$_endpoint/trip/${trip.id}';
+    String url = '$_endpoint/trips/${trip.id}';
     final res = await http.patch(url,
         headers: _headers, body: json.encode(trip.toMapForDB()));
     if (res.statusCode == HttpStatus.ok) {
@@ -49,7 +52,7 @@ class TripService {
   }
 
   Future<void> delete(int id) async {
-    String url = '$_endpoint/trip/$id';
+    String url = '$_endpoint/trips/$id';
     final res = await http.delete(url);
     if (res.statusCode != HttpStatus.ok) {
       throw HttpException(res.body);
@@ -57,12 +60,12 @@ class TripService {
   }
 
   Future<Trip> parse(String data) async {
-    final decoded = json.decode(data);
+    final decoded = json.decode(json.encode(json.decode(data)));
     return Trip.fromMap(decoded['trip']);
   }
 
   Future<List<Trip>> parseList(String data) async {
-    final decoded = json.decode(data);
+    final decoded = json.decode(json.encode(json.decode(data)));
     List<Trip> _trips = [];
 
     await decoded['trips']?.forEach(

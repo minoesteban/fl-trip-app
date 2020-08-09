@@ -1,12 +1,8 @@
-import 'dart:io';
-
-import '../../core/controllers/place.controller.dart';
 import '../../core/services/trip.service.dart';
 import '../models/trip.model.dart';
 
 class TripController {
   TripService _service = TripService();
-  PlaceController _placeController = PlaceController();
 
   Future<List<Trip>> getAllTrips() async {
     return await _service.getAll().catchError((err) => throw err);

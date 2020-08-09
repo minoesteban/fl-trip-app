@@ -18,7 +18,7 @@ class Trip {
   String about;
   bool submitted = false;
   bool published = false;
-  String pictureUrl;
+  String imageUrl;
   List<Place> places = []; //not in DB model
   DateTime createdAt;
   DateTime updatedAt;
@@ -36,7 +36,7 @@ class Trip {
     this.about,
     this.submitted,
     this.published,
-    this.pictureUrl,
+    this.imageUrl,
     this.places,
     this.createdAt,
     this.updatedAt,
@@ -56,7 +56,7 @@ class Trip {
     String about,
     bool submitted,
     bool published,
-    String pictureUrl,
+    String imageUrl,
     List<Place> places,
     DateTime createdAt,
     DateTime updatedAt,
@@ -76,7 +76,7 @@ class Trip {
       about: about ?? this.about,
       submitted: submitted ?? this.submitted,
       published: published ?? this.published,
-      pictureUrl: pictureUrl ?? this.pictureUrl,
+      imageUrl: imageUrl ?? this.imageUrl,
       places: places ?? this.places,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -98,7 +98,7 @@ class Trip {
       'about': about,
       'submitted': submitted,
       'published': published,
-      'pictureUrl': pictureUrl,
+      'imageUrl': imageUrl,
       'places': places?.map((x) => x?.toMap())?.toList(),
       'createdAt': createdAt?.millisecondsSinceEpoch,
       'updatedAt': updatedAt?.millisecondsSinceEpoch,
@@ -120,7 +120,7 @@ class Trip {
       'about': about,
       // 'submitted': submitted,
       // 'published': published,
-      'pictureUrl': pictureUrl,
+      'imageUrl': imageUrl,
       'Places': places?.map((x) => x?.toMapForDB())?.toList(),
       // 'createdAt': createdAt?.millisecondsSinceEpoch,
       // 'updatedAt': updatedAt?.millisecondsSinceEpoch,
@@ -152,7 +152,7 @@ class Trip {
       about: map['about'],
       submitted: map['submitted'],
       published: map['published'],
-      pictureUrl: map['pictureUrl'],
+      imageUrl: map['imageUrl'],
       places: _places,
       createdAt: map['createdAt'],
       updatedAt: map['updatedAt'],
@@ -166,7 +166,7 @@ class Trip {
 
   @override
   String toString() {
-    return 'Trip(id: $id, name: $name, ownerId: $ownerId, googlePlaceId: $googlePlaceId, countryId: $countryId, previewAudioUrl: $previewAudioUrl, languageNameId: $languageNameId, languageFlagId: $languageFlagId, price: $price, about: $about, submitted: $submitted, published: $published, pictureUrl: $pictureUrl, places: $places, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Trip(id: $id, name: $name, ownerId: $ownerId, googlePlaceId: $googlePlaceId, countryId: $countryId, previewAudioUrl: $previewAudioUrl, languageNameId: $languageNameId, languageFlagId: $languageFlagId, price: $price, about: $about, submitted: $submitted, published: $published, imageUrl: $imageUrl, places: $places, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -186,7 +186,7 @@ class Trip {
         o.about == about &&
         o.submitted == submitted &&
         o.published == published &&
-        o.pictureUrl == pictureUrl &&
+        o.imageUrl == imageUrl &&
         listEquals(o.places, places) &&
         o.createdAt == createdAt &&
         o.updatedAt == updatedAt &&
@@ -207,7 +207,7 @@ class Trip {
         about.hashCode ^
         submitted.hashCode ^
         published.hashCode ^
-        pictureUrl.hashCode ^
+        imageUrl.hashCode ^
         places.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
