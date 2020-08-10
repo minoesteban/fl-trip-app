@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:tripit/core/utils/utils.dart';
 
 class User {
   int id;
@@ -10,6 +11,7 @@ class User {
   String firstName;
   String lastName;
   String imageUrl;
+  ImageOrigin imageOrigin;
   String languageId1;
   String languageId2;
   String languageId3;

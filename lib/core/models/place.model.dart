@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:geojson/geojson.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
+import '../../core/utils/utils.dart';
 import '../../core/models/rating.model.dart';
 
 class Place {
@@ -15,6 +14,7 @@ class Place {
   String fullAudioUrl;
   String previewAudioUrl;
   String imageUrl;
+  ImageOrigin imageOrigin;
   double price = 0;
   int order = 0;
   int tripId;

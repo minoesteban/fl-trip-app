@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/config.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import '../../core/models/trip.model.dart';
+import '../../config.dart';
 
 class TripService {
   Map<String, String> _headers = {
@@ -72,6 +75,39 @@ class TripService {
         (json) => Trip.fromMap(json).then((trip) => _trips.add(trip)));
 
     return _trips;
+  }
+
+  Future<String> uploadImage(int id, PickedFile pickedFile) async {
+    String fileExtension = path.extension(pickedFile.path).substring(1);
+    String url = '$_endpoint/trips/$id/files?type=$fileExtension';
+    var res = await http.put(url);
+    if (res.statusCode == HttpStatus.ok) {
+      String downloadUrl = json.decode(res.body)['downloadUrl'];
+      File file = File(pickedFile.path);
+
+      file = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path,
+        '${file.absolute.path.replaceAll('image_picker', 'compressed_image_picker')}',
+        minHeight: 1000,
+        minWidth: 1000,
+        quality: 88,
+      );
+
+      res = await http.put(json.decode(res.body)['uploadUrl'],
+          body: file.readAsBytesSync());
+      if (res.statusCode == HttpStatus.ok) {
+        String url = '$_endpoint/trips/$id';
+        final res = await http.patch(url,
+            headers: _headers, body: json.encode({'imageUrl': downloadUrl}));
+        if (res.statusCode == HttpStatus.ok) {
+          return json.decode(res.body)['item'][1][0]['imageUrl'];
+        } else {
+          throw HttpException(res.body);
+        }
+      } else
+        throw HttpException(res.body);
+    } else
+      throw HttpException(res.body);
   }
 }
 

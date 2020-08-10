@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
-
-import 'package:tripit/core/models/place.model.dart';
+import '../../core/models/place.model.dart';
+import '../../core/utils/utils.dart';
 
 class Trip {
   int id;
@@ -19,6 +18,7 @@ class Trip {
   bool submitted = false;
   bool published = false;
   String imageUrl;
+  ImageOrigin imageOrigin;
   List<Place> places = []; //not in DB model
   DateTime createdAt;
   DateTime updatedAt;

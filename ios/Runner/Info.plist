@@ -30,6 +30,16 @@
 	<string>Allow us to know where you are.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow us to know where you are.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow us to access your photos.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow us to access your camera.</string>
+	<!-- Permission options for the `mediaLibrary` group -->
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Allow us to access your music.</string>
+	<key>kTCCServiceMediaLibrary</key>
+	<string>media</string>
+	
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
@@ -55,5 +65,6 @@
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+	
 </dict>
 </plist>

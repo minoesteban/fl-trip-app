@@ -1,15 +1,20 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/language.provider.dart';
-import 'package:tripit/providers/user.provider.dart';
-import 'package:tripit/ui/utils/show-message.dart';
-
-import '../../ui/screens/trip-main.dart';
+import 'package:path/path.dart' as path;
+import 'package:tripit/core/utils/utils.dart';
 import '../../core/models/trip.model.dart';
+import '../../providers/language.provider.dart';
+import '../../providers/user.provider.dart';
 import '../../providers/trip.provider.dart';
+import '../../ui/utils/files-permission.dart';
+import '../../ui/utils/show-message.dart';
+import '../../ui/screens/trip-main.dart';
 import '../../ui/screens/trip-new.dart';
 
 class Profile extends StatefulWidget {
@@ -80,18 +85,47 @@ class _ProfileState extends State<Profile> {
       }
     }
 
-    Widget buildAvatar(String firstName, String lastName) {
+    Widget buildAvatar(UserProvider userProvider) {
       return Column(
         children: <Widget>[
-          CircleAvatar(
-            radius: 60,
-            backgroundImage: AssetImage('assets/images/avatar.png'),
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8, right: 8),
+                child: CircleAvatar(
+                  radius: 75,
+                  backgroundImage: userProvider.user.imageUrl != null
+                      ? userProvider.user.imageOrigin == ImageOrigin.Local
+                          ? AssetImage(userProvider.user.imageUrl)
+                          : CachedNetworkImageProvider(userProvider.getImage())
+                      : AssetImage('assets/images/avatar.png'),
+                ),
+              ),
+              IconButton(
+                padding: const EdgeInsets.all(0),
+                icon: Icon(Icons.camera_alt),
+                color: Colors.grey[400],
+                iconSize: 35,
+                onPressed: () async {
+                  if (await onAddFileClicked(context, FileType.Image)) {
+                    ImagePicker picker = ImagePicker();
+                    PickedFile image = await picker.getImage(
+                      source: ImageSource.gallery,
+                    );
+                    if (image != null) {
+                      userProvider.updateImage(image);
+                    }
+                  }
+                },
+              ),
+            ],
           ),
           SizedBox(
             height: 10,
           ),
           Text(
-            '${toBeginningOfSentenceCase(firstName)} ${toBeginningOfSentenceCase(lastName)}',
+            '${toBeginningOfSentenceCase(userProvider.user.firstName)} ${toBeginningOfSentenceCase(userProvider.user.lastName)}',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
           ),
           Divider(
@@ -417,8 +451,7 @@ class _ProfileState extends State<Profile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       //avatar & name
-                      buildAvatar(userProvider.user.firstName,
-                          userProvider.user.lastName),
+                      buildAvatar(userProvider),
                       //stats
                       ...buildStats(tripsProvider),
                       //about
