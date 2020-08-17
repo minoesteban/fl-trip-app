@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import '../../config.dart';
 import '../../core/models/place.model.dart';
 
@@ -45,5 +47,77 @@ class PlaceService {
   Future<Place> parsePlace(String data) async {
     final decoded = json.decode(json.encode(json.decode(data)));
     return Place.fromMap(decoded['place']);
+  }
+
+  Future<String> uploadImage(int tripId, int id, File image) async {
+    print('placeservice-uploadimage');
+    String fileExtension = path.extension(image.path).substring(1);
+    String fileName = path.basenameWithoutExtension(image.path);
+    String fileNameZipped = fileName + '_cmp';
+    String url =
+        '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension';
+    var res = await http.put(url);
+    if (res.statusCode == HttpStatus.ok) {
+      String downloadUrl = json.decode(res.body)['downloadUrl'];
+      File file = File(image.path);
+
+      file = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path,
+        '${file.absolute.path.replaceAll(fileName, fileNameZipped)}',
+        minHeight: 500,
+        minWidth: 500,
+        quality: 90,
+      );
+
+      res = await http.put(json.decode(res.body)['uploadUrl'],
+          body: file.readAsBytesSync());
+      if (res.statusCode == HttpStatus.ok) {
+        String url = '$_endpoint/trips/$tripId/places/$id';
+        final res = await http.patch(url,
+            headers: _headers, body: json.encode({'imageUrl': downloadUrl}));
+        if (res.statusCode == HttpStatus.ok) {
+          return json.decode(res.body)['place']['imageUrl'];
+        } else {
+          throw HttpException(res.body);
+        }
+      } else
+        throw HttpException(res.body);
+    } else
+      throw HttpException(res.body);
+  }
+
+  Future<String> uploadAudio(
+      int tripId, int id, File audio, bool isFullAudio) async {
+    print('placeservice-uploadaudio $isFullAudio');
+    String fileExtension = path.extension(audio.path).substring(1);
+    String url =
+        '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension;isFull=$isFullAudio';
+    var res = await http.put(url);
+    if (res.statusCode == HttpStatus.ok) {
+      String downloadUrl = json.decode(res.body)['downloadUrl'];
+      res = await http.put(json.decode(res.body)['uploadUrl'],
+          body: audio.readAsBytesSync());
+      if (res.statusCode == HttpStatus.ok) {
+        print('subio archivo . full ? $isFullAudio');
+        String url = '$_endpoint/trips/$tripId/places/$id';
+        res = await http.patch(
+          url,
+          headers: _headers,
+          body: isFullAudio
+              ? json.encode({'fullAudioUrl': downloadUrl})
+              : json.encode({'previewAudioUrl': downloadUrl}),
+        );
+        if (res.statusCode == HttpStatus.ok) {
+          print('actualizo place . full ? $isFullAudio');
+          return isFullAudio
+              ? json.decode(res.body)['place']['fullAudioUrl']
+              : json.decode(res.body)['place']['previewAudioUrl'];
+        } else {
+          throw HttpException(res.toString());
+        }
+      } else
+        throw HttpException(res.body);
+    } else
+      throw HttpException(res.body);
   }
 }

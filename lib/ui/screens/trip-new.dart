@@ -1,26 +1,35 @@
-import 'dart:async';
 import 'dart:io';
+import 'dart:async';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_webservice/places.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/country.provider.dart';
-import 'package:tripit/providers/language.provider.dart';
-import 'package:tripit/ui/utils/show-message.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:google_maps_webservice/places.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/utils/utils.dart';
+import '../../ui/screens/place-new.dart';
+import '../../ui/utils/show-message.dart';
+import '../../core/models/trip.model.dart';
 import '../../providers/trip.provider.dart';
 import '../../providers/user.provider.dart';
 import '../../core/models/place.model.dart';
-import '../../core/models/trip.model.dart';
-import '../../ui/screens/place-new.dart';
+import '../../ui/widgets/store-trip-map.dart';
+import '../../ui/utils/files-permission.dart';
+import '../../providers/country.provider.dart';
 import '../../ui/widgets/place-new-search.dart';
+import '../../providers/language.provider.dart';
+
+enum ListItemType { Error, Warning, Info }
 
 class TripNew extends StatefulWidget {
   static const routeName = '/profile/trip/new';
+  final Trip trip;
+
+  TripNew(this.trip);
 
   @override
   _TripNewState createState() => _TripNewState();
@@ -28,16 +37,14 @@ class TripNew extends StatefulWidget {
 
 class _TripNewState extends State<TripNew> {
   Completer<GoogleMapController> _controller = Completer();
-  Position _userPosition;
-  Map _args;
+  Trip _newTrip;
   String _localeName;
-  final _form = GlobalKey<FormState>();
-  Trip _newTrip = Trip(id: 0, name: '', countryId: '');
-  bool _selectedCountry = false;
+  Position _userPosition;
+  CountryProvider _countries;
+  LanguageProvider _languages;
   List<Place> _newPlaces = [];
   CameraPosition _initialPosition;
-  LanguageProvider _languages;
-  CountryProvider _countries;
+  final _form = GlobalKey<FormState>();
   final _imageFocus = FocusNode();
   final _imageController = TextEditingController();
   final _nameFocus = FocusNode();
@@ -50,13 +57,44 @@ class _TripNewState extends State<TripNew> {
   final _audioController = TextEditingController();
   final _aboutFocus = FocusNode();
   final _aboutController = TextEditingController();
-  // final _languageController = TextEditingController();
+  final _languageCodeFocus = FocusNode();
+  final _languageCodeController = TextEditingController();
+  final _languageFlagFocus = FocusNode();
+  final _languageFlagController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _imageFocus.addListener(_updateImage);
     _localeName = Platform.localeName;
+    print(_localeName);
+    _newTrip = widget.trip;
+    _newPlaces = _newTrip.places ?? [];
+    _nameController.text = _newTrip.name ?? '';
+    _aboutController.text = _newTrip.about ?? '';
+    _imageController.text = _newTrip.imageUrl ?? '';
+    _priceController.text = _newTrip.price.toString() ?? '';
+    _audioController.text = _newTrip.previewAudioUrl ?? '';
+    _locationController.text = _newTrip.locationName ?? '';
+    _languageCodeController.text = _newTrip.languageNameId != null
+        ? _newTrip.languageNameId.isNotEmpty
+            ? _newTrip.languageNameId
+            : _localeName.split('_')[0].toUpperCase()
+        : _localeName.split('_')[0].toUpperCase();
+    _languageFlagController.text = _newTrip.languageFlagId != null
+        ? _newTrip.languageFlagId.isNotEmpty
+            ? _newTrip.languageFlagId
+            : _localeName.split('_')[0].toUpperCase()
+        : _localeName.split('_')[0].toUpperCase();
+    if (_newTrip.imageUrl != null && _newTrip.imageUrl.length > 0)
+      _newTrip.imageOrigin = _newTrip.imageUrl.startsWith('http')
+          ? FileOrigin.Network
+          : FileOrigin.Local;
+    if (_newTrip.previewAudioUrl != null && _newTrip.previewAudioUrl.length > 0)
+      _newTrip.audioOrigin = _newTrip.previewAudioUrl.startsWith('http')
+          ? FileOrigin.Network
+          : FileOrigin.Local;
+
     _languages = Provider.of<LanguageProvider>(context, listen: false);
     _countries = Provider.of<CountryProvider>(context, listen: false);
     _userPosition =
@@ -82,14 +120,11 @@ class _TripNewState extends State<TripNew> {
     _audioController.dispose();
     _aboutFocus.dispose();
     _aboutController.dispose();
-    // _languageController.dispose();
+    _languageCodeController.dispose();
+    _languageCodeFocus.dispose();
+    _languageFlagController.dispose();
+    _languageFlagFocus.dispose();
     super.dispose();
-  }
-
-  void _updateImage() {
-    if (!_imageFocus.hasFocus) {
-      setState(() {});
-    }
   }
 
   void _saveForm(BuildContext ctx, Trip newTrip) {
@@ -110,91 +145,573 @@ class _TripNewState extends State<TripNew> {
     }
   }
 
+  void _updateImage() {
+    if (!_imageFocus.hasFocus) {
+      setState(() {});
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     print('build trip new');
 
-    Future _initialization() async {
-      if (_args == null) {
-        _args = ModalRoute.of(context).settings.arguments;
-        if (_args['trip'] != null) {
-          _newTrip = _args['trip'];
-          _newPlaces = _newTrip.places;
-          _nameController.text = _newTrip.name ?? '';
-          _aboutController.text = _newTrip.about ?? '';
-          _imageController.text = _newTrip.imageUrl ?? '';
-          _priceController.text = _newTrip.price.toString() ?? '';
-          // _languageController.text = _newTrip.languageNameId ?? '';
-
-          await places
-              .getDetailsByPlaceId(
+    //get location name
+    if (_locationController.text == '' && _newTrip.id > 0) {
+      print('obtengo location de places');
+      places
+          .getDetailsByPlaceId(
             _newTrip.googlePlaceId,
             language: _localeName.split('_')[0],
           )
-              .then((result) {
-            _controller.future.then(
-              (_gm) => _gm.animateCamera(
-                CameraUpdate.newLatLngZoom(
-                    LatLng(result.result.geometry.location.lat,
-                        result.result.geometry.location.lng),
-                    13.5),
-              ),
-            );
+          .then((result) => result.result.addressComponents.forEach(
+                (comp) => comp.types.forEach(
+                  (type) {
+                    if (type == 'country')
+                      setState(() => _locationController.text =
+                          '${result.result.name}, ${comp.longName}');
+                  },
+                ),
+              ));
+    }
 
-            result.result.addressComponents.forEach(
-              (comp) => comp.types.forEach(
-                (type) {
-                  if (type == 'country') {
-                    setState(
-                      () {
-                        _selectedCountry = true;
-                        _locationController.text =
-                            '${result.result.name}, ${comp.longName}';
-                      },
-                    );
+    List<Widget> buildCoverImage() {
+      return [
+        Consumer<TripProvider>(builder: (_, tripProvider, __) {
+          return Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Container(
+                color: Colors.grey[300],
+                height: MediaQuery.of(context).size.height / 3.5,
+                width: MediaQuery.of(context).size.width,
+                child: _newTrip.imageOrigin == FileOrigin.Local
+                    ? Image.asset(
+                        _imageController.text,
+                        fit: BoxFit.cover,
+                      )
+                    : CachedNetworkImage(
+                        imageUrl: _imageController.text,
+                        fit: BoxFit.cover,
+                        placeholder: (_, _a) => Icon(
+                          Icons.photo_camera,
+                          color: Colors.grey[600],
+                          size: 75,
+                        ),
+                        errorWidget: (_, _a, _b) => Icon(
+                          Icons.photo_camera,
+                          color: Colors.grey[600],
+                          size: 75,
+                        ),
+                      ),
+              ),
+              Container(
+                color: Colors.black38,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: TextFormField(
+                    onTap: () async {
+                      if (await onAddFileClicked(context, FileType.image)) {
+                        File file =
+                            await FilePicker.getFile(type: FileType.image);
+                        if (file != null) {
+                          setState(() {
+                            _newTrip.imageUrl = file.path;
+                            _imageController.text = file.path;
+                            _newTrip.imageOrigin = FileOrigin.Local;
+                          });
+                        }
+                      }
+                    },
+                    readOnly: true,
+                    style: TextStyle(color: Colors.white70),
+                    decoration: InputDecoration(
+                      labelText: 'cover image',
+                      labelStyle: TextStyle(
+                          color: Colors.white70, fontWeight: FontWeight.bold),
+                      suffixIcon: Icon(
+                        Icons.file_upload,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    focusNode: _imageFocus,
+                    controller: _imageController,
+                  ),
+                ),
+              )
+            ],
+          );
+        }),
+        const SizedBox(height: 20)
+      ];
+    }
+
+    List<Widget> buildName() {
+      return [
+        TextFormField(
+          decoration: InputDecoration(
+            labelText: 'trip name',
+          ),
+          textInputAction: TextInputAction.next,
+          controller: _nameController,
+          focusNode: _nameFocus,
+          onFieldSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_locationFocus),
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    List<Widget> buildPrice() {
+      return [
+        TextFormField(
+          decoration: InputDecoration(
+            labelText: 'price',
+            helperText: 'write 0 for free',
+            suffix: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Text('USD'),
+            ),
+          ),
+          validator: (value) =>
+              value.isEmpty ? 'input a valid price! insert 0 for free' : null,
+          keyboardType: TextInputType.numberWithOptions(decimal: true),
+          textInputAction: TextInputAction.next,
+          controller: _priceController,
+          focusNode: _priceFocus,
+          onFieldSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_aboutFocus),
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    List<Widget> buildDescription() {
+      return [
+        TextFormField(
+          maxLines: 5,
+          keyboardType: TextInputType.multiline,
+          decoration: InputDecoration(
+            labelText: 'about the trip',
+          ),
+          textInputAction: TextInputAction.newline,
+          controller: _aboutController,
+          focusNode: _aboutFocus,
+          onFieldSubmitted: (value) =>
+              FocusScope.of(context).requestFocus(_priceFocus),
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    List<Widget> buildLocation() {
+      return [
+        TextFormField(
+          onTap: () async {
+            PlaceDetails result = await showSearch(
+                context: context,
+                delegate: PlaceNewSearch(_userPosition, '', Caller.TripNew));
+            if (result != null) {
+              _controller.future.then(
+                (value) => value.animateCamera(
+                  CameraUpdate.newLatLngZoom(
+                      LatLng(result.geometry.location.lat,
+                          result.geometry.location.lng),
+                      14.5),
+                ),
+              );
+
+              _newTrip.googlePlaceId = result.placeId;
+
+              _initialPosition = CameraPosition(
+                target: LatLng(
+                    result.geometry.location.lat, result.geometry.location.lng),
+                zoom: 14.5,
+              );
+
+              var _countryName = '';
+              result.addressComponents
+                  .forEach((comp) => comp.types.forEach((type) {
+                        if (type == 'country') {
+                          _newTrip.countryId = comp.shortName;
+                          _countryName = comp.longName;
+                        }
+                      }));
+
+              setState(() {
+                _initialPosition = _initialPosition;
+                _newTrip = _newTrip;
+                _locationController.text = '${result.name}, $_countryName';
+              });
+            }
+          },
+          readOnly: true,
+          decoration: InputDecoration(
+            labelText: 'location',
+            helperText: 'trip\'s main city / location',
+            suffixIcon: const Icon(Icons.search),
+          ),
+          controller: _locationController,
+          focusNode: _locationFocus,
+          textInputAction: TextInputAction.next,
+          onFieldSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_aboutFocus),
+        ),
+        const SizedBox(
+          height: 30,
+        )
+      ];
+    }
+
+    List<Widget> buildLanguage() {
+      return [
+        DropdownButtonFormField(
+          decoration: InputDecoration(
+            labelText: 'language',
+          ),
+          value: _languageCodeController.text,
+          // _newTrip.languageNameId != null
+          //     ? _newTrip.languageNameId.isNotEmpty
+          //         ? _newTrip.languageNameId
+          //         : _localeName.split('_')[0].toUpperCase()
+          //     : _localeName.split('_')[0].toUpperCase(),
+          items: _languages.languages
+              .map((lang) => DropdownMenuItem<String>(
+                  value: lang.code,
+                  child: Text('${lang.nativeName} (${lang.code})')))
+              .toList(),
+          onChanged: (langCode) {
+            var filteredCountries =
+                _countries.getByLanguage(langCode, _localeName.split('_')[0]);
+            String flagId = filteredCountries
+                .firstWhere((c) => c.code == langCode,
+                    orElse: () => _countries
+                        .getByLanguage(langCode, _localeName.split('_')[0])
+                        .firstWhere((c) => c.code == _localeName.split('_')[1],
+                            orElse: () => _countries
+                                .getByLanguage(
+                                    langCode, _localeName.split('_')[0])
+                                .first))
+                .code;
+            setState(
+              () {
+                _newTrip.languageNameId = langCode;
+                _newTrip.languageFlagId = flagId;
+                _languageCodeController.text = langCode;
+                _languageFlagController.text = flagId;
+              },
+            );
+          },
+          validator: (value) =>
+              value.isEmpty ? 'input a valid price! insert 0 for free' : null,
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+        DropdownButtonFormField(
+          isExpanded: true,
+          decoration: InputDecoration(
+              labelText: 'language flag',
+              helperText:
+                  'choose a country flag to show with the selected language'),
+          value: _languageFlagController.text != null
+              ? _languageFlagController.text.isNotEmpty
+                  ? _languageFlagController.text
+                  : _localeName.split('_')[0].toUpperCase()
+              : _localeName.split('_')[0].toUpperCase(),
+          items: _countries
+              .getByLanguage(_newTrip.languageNameId, _localeName.split('_')[0])
+              .map(
+                (country) => DropdownMenuItem<String>(
+                  value: country.code,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Flag(
+                        country.code,
+                        fit: BoxFit.cover,
+                        height: 20,
+                        width: 30,
+                      ).build(context),
+                      SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          '${country.name} (${country.code})',
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (val) => setState(
+            () {
+              _newTrip.languageFlagId = val;
+              _languageFlagController.text = val;
+            },
+          ),
+        ),
+        const SizedBox(height: 30),
+      ];
+    }
+
+    List<Widget> buildPreviewAudio() {
+      return [
+        TextFormField(
+          onTap: () {},
+          decoration: InputDecoration(
+            labelText: 'preview audio',
+            helperText: 'upload preview audio. max length 2 minutes',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.file_upload),
+              onPressed: () async {
+                if (await onAddFileClicked(context, FileType.audio)) {
+                  File file = await FilePicker.getFile(
+                      type: FileType.custom,
+                      allowedExtensions: [
+                        'mpeg',
+                        'wav',
+                        'webm',
+                        'ogg',
+                        'mp3',
+                        'mp4',
+                        'm4a'
+                      ]);
+
+                  if (file != null) {
+                    setState(() {
+                      _audioController.text = file.absolute.path;
+                      _newTrip.previewAudioUrl = file.path;
+                      _newTrip.audioOrigin = FileOrigin.Local;
+                    });
                   }
+                }
+              },
+            ),
+          ),
+          readOnly: true,
+          textInputAction: TextInputAction.next,
+          controller: _audioController,
+          focusNode: _audioFocus,
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    Widget addPlaceButton(TripProvider tripProvider) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              _newTrip.countryId != null && _newTrip.countryId.length > 0
+                  ? Navigator.of(context)
+                      .push(
+                      MaterialPageRoute(
+                        builder: (_) => PlaceNew(
+                          _newTrip.countryId,
+                          Place(
+                            id: 0,
+                            tripId: _newTrip.id,
+                            coordinates: LatLng(
+                                _initialPosition.target.latitude,
+                                _initialPosition.target.longitude),
+                          ),
+                        ),
+                      ),
+                    )
+                      .then((res) {
+                      if (res != null) {
+                        if (res['item'].tripId > 0)
+                          tripProvider.createPlace(res['item']).catchError(
+                                (e) => showMessage(context, e, true),
+                              );
+                        else
+                          setState(() {
+                            _newPlaces.add(res['item']);
+                          });
+                      }
+                    })
+                  : showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text('no location selected'),
+                        content: Text(
+                            'places select a main location before adding places'),
+                        actions: [
+                          FlatButton(
+                            child: Text(
+                              'OK',
+                            ),
+                            onPressed: () => Navigator.of(ctx).pop(),
+                          ),
+                        ],
+                      ),
+                    ).then(
+                      (value) =>
+                          FocusScope.of(context).requestFocus(_locationFocus),
+                    );
+            },
+          ),
+        ],
+      );
+    }
+
+    Widget buildMap() {
+      return Container(
+        decoration: BoxDecoration(
+            border: Border.all(width: 1, color: Colors.grey[400]),
+            borderRadius: BorderRadius.all(Radius.circular(10))),
+        padding: const EdgeInsets.all(5),
+        height: 300,
+        child: TripMap(_newTrip, _userPosition),
+      );
+    }
+
+    Widget buildPlacesList() {
+      return Consumer<TripProvider>(
+        builder: (_, tripProvider, __) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+                contentPadding: const EdgeInsets.only(bottom: 0),
+                title: Text(
+                  'places',
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+                trailing: addPlaceButton(tripProvider)),
+            Container(
+              child: ListView.separated(
+                physics: ClampingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _newPlaces.length,
+                padding: const EdgeInsets.all(0),
+                separatorBuilder: (_, __) => Divider(
+                  height: 10,
+                ),
+                itemBuilder: (ctx, i) {
+                  return ListTile(
+                    contentPadding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                    leading: Container(
+                      width: 60,
+                      height: 50,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(5)),
+                        child: CachedNetworkImage(
+                          fit: BoxFit.cover,
+                          imageUrl: '${_newPlaces[i].imageUrl}',
+                          placeholder: (_, __) => const Icon(
+                            Icons.photo_camera,
+                            size: 30,
+                          ),
+                          errorWidget: (_, __, ___) => const Icon(
+                            Icons.camera_alt,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      '${i + 1}. ${_newPlaces[i].name}',
+                      style: _titleStyle,
+                    ),
+                    subtitle: Text(
+                      _newPlaces[i].price > 0
+                          ? _newPlaces[i].price != 99999
+                              ? '\$ ${_newPlaces[i].price}'
+                              : ''
+                          : 'free',
+                      style: _subtitleStyle,
+                    ),
+                    trailing: IconButton(
+                      padding: const EdgeInsets.all(0),
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('are you sure?'),
+                              content: Text(
+                                  'you are deleting ${_newPlaces[i].name} from the places list'),
+                              actions: [
+                                FlatButton(
+                                  child: const Text('NO'),
+                                  textColor: Colors.grey[600],
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                ),
+                                FlatButton(
+                                  child: const Text('YES'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop(true);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        ).then((res) async {
+                          if (res) {
+                            await tripProvider
+                                .deletePlace(_newPlaces[i])
+                                .catchError(
+                                  (e) => showMessage(context, e, true),
+                                );
+                          }
+                        });
+                      },
+                    ),
+                    onTap: () {
+                      Navigator.of(context)
+                          .push(
+                        MaterialPageRoute(
+                          builder: (_) => PlaceNew(
+                            _newTrip.countryId,
+                            _newPlaces[i],
+                          ),
+                        ),
+                      )
+                          .then((res) {
+                        if (res != null) {
+                          try {
+                            if (res['action'] == 'delete')
+                              tripProvider.deletePlace(
+                                res['item'],
+                              );
+                            else
+                              tripProvider.updatePlace(
+                                res['item'],
+                              );
+                          } catch (e) {
+                            showMessage(context, e, true);
+                          }
+                        }
+                      });
+                    },
+                  );
                 },
               ),
-            );
-          });
-        } else {
-          _newTrip.ownerId = _args['ownerId'];
-        }
-      }
+            )
+          ],
+        ),
+      );
     }
 
     return WillPopScope(
-      onWillPop: () {
-        if (_newTrip.countryId.length > 0 && _newTrip.name.length > 0)
-          return showDialog(
-            context: context,
-            builder: (ctx) {
-              return AlertDialog(
-                title: Text('Are you sure you want to exit?'),
-                content: Text('You will loose your changes'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text(
-                      'NO',
-                    ),
-                    onPressed: () => Navigator.of(context).pop(false),
-                  ),
-                  FlatButton(
-                    child: Text(
-                      'YES',
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(true),
-                  ),
-                ],
-              );
-            },
-          );
-        else
-          return Future.delayed(Duration.zero).then((value) => true);
-      },
+      onWillPop: () => onWillPop(_newTrip, context),
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -205,46 +722,12 @@ class _TripNewState extends State<TripNew> {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text('are you sure?'),
-                      content: Text(
-                          'you are deleting the entire trip and its places'),
-                      actions: [
-                        FlatButton(
-                          child: Text(
-                            'NO',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop(false);
-                          },
-                        ),
-                        FlatButton(
-                          child: Text('YES'),
-                          onPressed: () {
-                            Navigator.of(context).pop(true);
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                ).then(
-                  (res) => res
-                      ? Navigator.of(context).pop({
-                          'action': 'delete',
-                          'item': _newTrip,
-                        })
-                      : Navigator.of(context).pop(),
-                );
-              },
+              icon: Icon(Icons.info_outline),
+              onPressed: () {},
             ),
+            IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () => onDeleteButton(_newTrip, context)),
             Builder(
               builder: (ctx) => IconButton(
                 icon: const Icon(Icons.check),
@@ -255,615 +738,307 @@ class _TripNewState extends State<TripNew> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: null,
-          backgroundColor:
-              _selectedCountry ? Colors.red[800] : Colors.grey[600],
-          child: Consumer<TripProvider>(
-            builder: (_, tripProvider, __) => IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                _selectedCountry
-                    ? Navigator.of(context)
-                        .push(
-                        MaterialPageRoute(
-                          builder: (_) => PlaceNew(
-                            _newTrip.countryId,
-                            Place(
-                              id: 0,
-                              tripId: _newTrip.id,
-                              coordinates: LatLng(
-                                  _initialPosition.target.latitude,
-                                  _initialPosition.target.longitude),
-                            ),
-                          ),
-                        ),
-                      )
-                        .then((res) {
-                        if (res != null) {
-                          if (res['item'].tripId > 0)
-                            tripProvider.createPlace(res['item']).catchError(
-                                  (e) => showMessage(context, e, true),
-                                );
-                          else
-                            setState(() {
-                              _newPlaces.add(res['item']);
-                            });
-                        }
-                      })
-                    : showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: Text('no location selected'),
-                          content: Text(
-                              'places select a main location before adding places'),
-                          actions: [
-                            FlatButton(
-                              child: Text(
-                                'OK',
-                              ),
-                              onPressed: () => Navigator.of(ctx).pop(),
-                            ),
-                          ],
-                        ),
-                      ).then(
-                        (value) =>
-                            FocusScope.of(context).requestFocus(_locationFocus),
-                      );
-              },
+        body: SafeArea(
+            child: Form(
+          key: _form,
+          onChanged: () {
+            _newTrip.places = _newPlaces;
+            _newTrip.name = _nameController.text;
+            _newTrip.about = _aboutController.text;
+            _newPlaces.sort((a, b) => a.order.compareTo(b.order));
+            _newTrip.locationName = _locationController.text;
+            _newTrip.price = _priceController.text.isEmpty
+                ? 0
+                : double.parse(_priceController.text);
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                //cover image
+                ...buildCoverImage(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 50),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      //trip name
+                      ...buildName(),
+                      //location
+                      ...buildLocation(),
+                      //about
+                      ...buildDescription(),
+                      //price
+                      ...buildPrice(),
+                      //preview audio
+                      ...buildPreviewAudio(),
+                      //language
+                      ...buildLanguage(),
+                      //places list
+                      buildPlacesList(),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        body: SafeArea(
-          child: FutureBuilder(
-              future: _initialization(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting)
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                else
-                  return Form(
-                    key: _form,
-                    onChanged: () {
-                      _newTrip.name = _nameController.text;
-                      _newTrip.about = _aboutController.text;
-                      _newTrip.imageUrl = _imageController.text;
-                      _newTrip.price = _priceController.text.isEmpty
-                          ? 0
-                          : double.parse(_priceController.text);
-
-                      _newPlaces.sort((a, b) => a.order.compareTo(b.order));
-                      _newTrip.places = _newPlaces;
-                      // _newTrip.languageNameId = _languageController.text;
-                    },
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          //cover image
-                          Stack(alignment: Alignment.bottomCenter, children: [
-                            Container(
-                              color: Colors.grey[300],
-                              height: MediaQuery.of(context).size.height / 3.5,
-                              width: MediaQuery.of(context).size.width,
-                              child: CachedNetworkImage(
-                                imageUrl: _imageController.text,
-                                fit: BoxFit.cover,
-                                placeholder: (_, _a) => Icon(
-                                  Icons.photo_camera,
-                                  color: Colors.grey[600],
-                                  size: 75,
-                                ),
-                                errorWidget: (_, _a, _b) => Icon(
-                                  Icons.photo_camera,
-                                  color: Colors.grey[600],
-                                  size: 75,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              color: Colors.black38,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                child: TextFormField(
-                                  style: TextStyle(color: Colors.white70),
-                                  decoration: InputDecoration(
-                                    labelText: 'cover image',
-                                    labelStyle: TextStyle(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.bold),
-                                    suffixIcon: IconButton(
-                                      onPressed: () {},
-                                      color: Colors.white70,
-                                      icon: const Icon(Icons.file_upload),
-                                    ),
-                                  ),
-                                  keyboardType: TextInputType.url,
-                                  textInputAction: TextInputAction.next,
-                                  focusNode: _imageFocus,
-                                  controller: _imageController,
-                                  onFieldSubmitted: (_) =>
-                                      FocusScope.of(context)
-                                          .requestFocus(_nameFocus),
-                                ),
-                              ),
-                            )
-                          ]),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          //rest of the form
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                //trip name
-                                TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: 'trip name',
-                                  ),
-                                  textInputAction: TextInputAction.next,
-                                  controller: _nameController,
-                                  focusNode: _nameFocus,
-                                  onFieldSubmitted: (_) =>
-                                      FocusScope.of(context)
-                                          .requestFocus(_locationFocus),
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                //location
-                                TextFormField(
-                                  onTap: () async {
-                                    PlaceDetails result = await showSearch(
-                                        context: context,
-                                        delegate: PlaceNewSearch(
-                                            _userPosition, '', Caller.TripNew));
-                                    if (result != null) {
-                                      _controller.future.then(
-                                        (value) => value.animateCamera(
-                                          CameraUpdate.newLatLngZoom(
-                                              LatLng(
-                                                  result.geometry.location.lat,
-                                                  result.geometry.location.lng),
-                                              14.5),
-                                        ),
-                                      );
-
-                                      _newTrip.googlePlaceId = result.placeId;
-
-                                      _initialPosition = CameraPosition(
-                                        target: LatLng(
-                                            result.geometry.location.lat,
-                                            result.geometry.location.lng),
-                                        zoom: 14.5,
-                                      );
-
-                                      var _countryName = '';
-                                      result.addressComponents.forEach(
-                                          (comp) => comp.types.forEach((type) {
-                                                if (type == 'country') {
-                                                  _newTrip.countryId =
-                                                      comp.shortName;
-                                                  _countryName = comp.longName;
-                                                }
-                                              }));
-
-                                      setState(() {
-                                        _initialPosition = _initialPosition;
-                                        _selectedCountry = true;
-                                        _newTrip = _newTrip;
-                                        _locationController.text =
-                                            '${result.name}, $_countryName';
-                                      });
-                                    }
-                                  },
-                                  readOnly: true,
-                                  decoration: InputDecoration(
-                                    labelText: 'location',
-                                    helperText: 'trip\'s main city / location',
-                                    suffixIcon: const Icon(Icons.search),
-                                  ),
-                                  controller: _locationController,
-                                  focusNode: _locationFocus,
-                                  textInputAction: TextInputAction.next,
-                                  onFieldSubmitted: (_) =>
-                                      FocusScope.of(context)
-                                          .requestFocus(_aboutFocus),
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                //price
-                                TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: 'price',
-                                    helperText: 'write 0 for free',
-                                  ),
-                                  validator: (value) => value.isEmpty
-                                      ? 'input a valid price! insert 0 for free'
-                                      : null,
-                                  keyboardType: TextInputType.numberWithOptions(
-                                      decimal: true),
-                                  textInputAction: TextInputAction.next,
-                                  controller: _priceController,
-                                  focusNode: _priceFocus,
-                                  onFieldSubmitted: (_) =>
-                                      FocusScope.of(context)
-                                          .requestFocus(_aboutFocus),
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                //about
-                                TextFormField(
-                                  maxLines: 3,
-                                  keyboardType: TextInputType.multiline,
-                                  decoration: InputDecoration(
-                                    labelText: 'about the trip',
-                                  ),
-                                  textInputAction: TextInputAction.newline,
-                                  controller: _aboutController,
-                                  focusNode: _aboutFocus,
-                                  onFieldSubmitted: (value) =>
-                                      FocusScope.of(context)
-                                          .requestFocus(_audioFocus),
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                //preview audio
-                                TextFormField(
-                                  onTap: () {},
-                                  decoration: InputDecoration(
-                                    labelText: 'preview audio',
-                                    helperText: 'upload preview audio',
-                                    suffixIcon: Icon(Icons.file_upload),
-                                  ),
-                                  readOnly: true,
-                                  textInputAction: TextInputAction.next,
-                                  controller: _audioController,
-                                  focusNode: _audioFocus,
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                //language
-                                DropdownButtonFormField(
-                                    decoration: InputDecoration(
-                                      labelText: 'language',
-                                    ),
-                                    value: _newTrip.languageNameId != null
-                                        ? _newTrip.languageNameId.isNotEmpty
-                                            ? _newTrip.languageNameId
-                                            : _localeName
-                                                .split('_')[0]
-                                                .toUpperCase()
-                                        : _localeName
-                                            .split('_')[0]
-                                            .toUpperCase(),
-                                    items: _languages.languages
-                                        .map((lang) => DropdownMenuItem<String>(
-                                            value: lang.code,
-                                            child: Text(
-                                                '${lang.nativeName} (${lang.code})')))
-                                        .toList(),
-                                    onChanged: (langCode) {
-                                      var filteredCountries =
-                                          _countries.getByLanguage(langCode,
-                                              _localeName.split('_')[0]);
-                                      String flagId = filteredCountries
-                                          .firstWhere((c) => c.code == langCode,
-                                              orElse: () => _countries
-                                                  .getByLanguage(langCode,
-                                                      _localeName.split('_')[0])
-                                                  .firstWhere(
-                                                      (c) =>
-                                                          c.code ==
-                                                          _localeName
-                                                              .split('_')[1],
-                                                      orElse: () => _countries
-                                                          .getByLanguage(
-                                                              langCode,
-                                                              _localeName.split(
-                                                                  '_')[0])
-                                                          .first))
-                                          .code;
-                                      setState(
-                                        () {
-                                          _newTrip.languageNameId = langCode;
-                                          _newTrip.languageFlagId = flagId;
-                                        },
-                                      );
-                                    }),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                DropdownButtonFormField(
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                      labelText: 'language flag',
-                                      helperText:
-                                          'choose a country flag to show with the selected language'),
-                                  value: _newTrip.languageFlagId != null
-                                      ? _newTrip.languageFlagId.isNotEmpty
-                                          ? _newTrip.languageFlagId
-                                          : _localeName
-                                              .split('_')[0]
-                                              .toUpperCase()
-                                      : _localeName.split('_')[0].toUpperCase(),
-                                  items: _countries
-                                      .getByLanguage(_newTrip.languageNameId,
-                                          _localeName.split('_')[0])
-                                      .map(
-                                        (country) => DropdownMenuItem<String>(
-                                          value: country.code,
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              Flag(
-                                                country.code,
-                                                fit: BoxFit.cover,
-                                                height: 20,
-                                                width: 30,
-                                              ).build(context),
-                                              SizedBox(
-                                                width: 5,
-                                              ),
-                                              Flexible(
-                                                child: Text(
-                                                  '${country.name} (${country.code})',
-                                                  softWrap: true,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (val) => setState(
-                                    () {
-                                      _newTrip.languageFlagId = val;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 30,
-                                ),
-                                //map & places
-                                Consumer<TripProvider>(
-                                  builder: (_, tripProvider, __) => Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 20),
-                                        child: Container(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Text(
-                                            'places',
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.black54),
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                            border: Border.all(
-                                                width: 1,
-                                                color: Colors.grey[400]),
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(10))),
-                                        padding: const EdgeInsets.all(5),
-                                        height: 300,
-                                        child: GoogleMap(
-                                          liteModeEnabled:
-                                              Platform.isAndroid ? true : null,
-                                          buildingsEnabled: false,
-                                          mapToolbarEnabled: false,
-                                          myLocationButtonEnabled: false,
-                                          myLocationEnabled: true,
-                                          mapType: MapType.normal,
-                                          initialCameraPosition:
-                                              _initialPosition,
-                                          onMapCreated:
-                                              (GoogleMapController controller) {
-                                            if (!_controller.isCompleted)
-                                              _controller.complete(controller);
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        child: ListView.builder(
-                                          physics: ClampingScrollPhysics(),
-                                          shrinkWrap: true,
-                                          itemCount: _newPlaces.length,
-                                          itemBuilder: (ctx, i) {
-                                            return Card(
-                                              elevation: 1,
-                                              child: ListTile(
-                                                leading: Container(
-                                                  width: 40,
-                                                  height: 40,
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(5)),
-                                                    child: CachedNetworkImage(
-                                                      fit: BoxFit.cover,
-                                                      imageUrl:
-                                                          '${_newPlaces[i].imageUrl}',
-                                                      placeholder: (_, __) =>
-                                                          const Icon(
-                                                        Icons.photo_camera,
-                                                        size: 30,
-                                                      ),
-                                                      errorWidget:
-                                                          (_, __, ___) =>
-                                                              const Icon(
-                                                        Icons.camera_alt,
-                                                        size: 30,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                title: Text(
-                                                  '${i + 1}. ${_newPlaces[i].name}',
-                                                  style: _titleStyle,
-                                                ),
-                                                subtitle: Text(
-                                                  _newPlaces[i].price > 0
-                                                      ? '\$ ${_newPlaces[i].price}'
-                                                      : 'free',
-                                                  style: _subtitleStyle,
-                                                ),
-                                                trailing: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    IconButton(
-                                                      icon: Icon(Icons.delete),
-                                                      onPressed: () {
-                                                        showDialog(
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return AlertDialog(
-                                                              title: Text(
-                                                                  'are you sure?'),
-                                                              content: Text(
-                                                                  'you are deleting ${_newPlaces[i].name} from the places list'),
-                                                              actions: [
-                                                                FlatButton(
-                                                                  child: Text(
-                                                                    'NO',
-                                                                    style:
-                                                                        TextStyle(
-                                                                      color: Colors
-                                                                              .grey[
-                                                                          600],
-                                                                    ),
-                                                                  ),
-                                                                  onPressed:
-                                                                      () {
-                                                                    Navigator.of(
-                                                                            context)
-                                                                        .pop(
-                                                                            false);
-                                                                  },
-                                                                ),
-                                                                FlatButton(
-                                                                  child: Text(
-                                                                      'YES'),
-                                                                  onPressed:
-                                                                      () {
-                                                                    Navigator.of(
-                                                                            context)
-                                                                        .pop(
-                                                                            true);
-                                                                  },
-                                                                ),
-                                                              ],
-                                                            );
-                                                          },
-                                                        ).then((res) async {
-                                                          if (res) {
-                                                            await tripProvider
-                                                                .deletePlace(
-                                                                    _newPlaces[
-                                                                        i])
-                                                                .catchError((e) =>
-                                                                    showMessage(
-                                                                        context,
-                                                                        e,
-                                                                        true));
-                                                          }
-                                                        });
-                                                      },
-                                                    ),
-                                                    IconButton(
-                                                      icon: Icon(Icons.edit),
-                                                      onPressed: () {
-                                                        Navigator.of(context)
-                                                            .push(
-                                                          MaterialPageRoute(
-                                                            builder: (_) =>
-                                                                PlaceNew(
-                                                              _newTrip
-                                                                  .countryId,
-                                                              _newPlaces[i],
-                                                            ),
-                                                          ),
-                                                        )
-                                                            .then((res) {
-                                                          if (res != null) {
-                                                            try {
-                                                              if (res['action'] ==
-                                                                  'delete')
-                                                                tripProvider
-                                                                    .deletePlace(
-                                                                        res['item']);
-                                                              else
-                                                                tripProvider
-                                                                    .updatePlace(
-                                                                        res['item']);
-                                                            } catch (e) {
-                                                              showMessage(
-                                                                  context,
-                                                                  e,
-                                                                  true);
-                                                            }
-                                                          }
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 50,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-              }),
-        ),
+        )),
+        floatingActionButton: _newTrip.id > 0
+            ? FloatingActionButton.extended(
+                onPressed: () => submitTrip(_newTrip, context),
+                label: const Text(
+                  'submit',
+                  style: TextStyle(fontSize: 17),
+                ),
+                icon: const Icon(Icons.cloud_upload),
+                backgroundColor: Colors.green[800],
+              )
+            : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }
 
-  TextStyle _titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  final TextStyle _titleStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
-  TextStyle _subtitleStyle = TextStyle(
+  final TextStyle _subtitleStyle = TextStyle(
     fontSize: 14,
     color: Colors.black38,
     fontWeight: FontWeight.bold,
     letterSpacing: 1.1,
   );
+}
+
+Future<bool> onWillPop(Trip trip, BuildContext context) {
+  if (trip.countryId.length > 0 && trip.name.length > 0)
+    return showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('Are you sure you want to exit?'),
+          content: Text('You will loose your changes'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(
+                'NO',
+              ),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            FlatButton(
+              child: Text(
+                'YES',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                ),
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+  else
+    return Future.delayed(Duration.zero).then((value) => true);
+}
+
+void onDeleteButton(Trip trip, BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('are you sure?'),
+        content: Text('you are deleting the entire trip and its places'),
+        actions: [
+          FlatButton(
+            child: Text(
+              'NO',
+              style: TextStyle(
+                color: Colors.grey[600],
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          FlatButton(
+            child: Text('YES'),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      );
+    },
+  ).then((res) {
+    if (res)
+      Navigator.of(context).pop({
+        'action': 'delete',
+        'item': trip,
+      });
+  });
+}
+
+void submitTrip(Trip trip, BuildContext context) {
+  List<String> tripMessages = [];
+  List<Map<String, List<String>>> placeMessages = [];
+  bool hasErrors = false;
+  bool hasWarnings = false;
+
+  //trip errors
+  if (trip.imageUrl == null || !trip.imageUrl.contains('/'))
+    tripMessages.add('1;trip cover image file is not loaded');
+  if (trip.price == null) tripMessages.add('1;trip price is not valid');
+  if (trip.previewAudioUrl == null || !trip.previewAudioUrl.contains('/'))
+    tripMessages.add('1;trip preview audio file is not loaded');
+  if (trip.languageNameId.length < 1 || trip.languageFlagId.length < 1)
+    tripMessages.add('1;select a valid language and flag');
+  if (trip.places.length < 1) tripMessages.add('1;the trip has no places!');
+
+  //trip warnings
+  if (trip.name.length < 5) tripMessages.add('2;trip name is too short');
+  if (trip.about.length < 5)
+    tripMessages.add('2;trip description is too short');
+
+  if (trip.places.length > 0)
+    for (Place place in trip.places) {
+      Map<String, List<String>> messages = {'name': [], 'messages': []};
+
+      //place errors
+      if (place.imageUrl == null || !place.imageUrl.contains('/'))
+        messages['messages'].add('1;place picture file is not loaded');
+      if (place.price == null)
+        messages['messages'].add('1;place price not valid');
+      if (place.fullAudioUrl == null || !place.fullAudioUrl.contains('/'))
+        messages['messages'].add('1;full audio file is not loaded');
+
+      //place warnings
+      if (place.previewAudioUrl == null || !place.previewAudioUrl.contains('/'))
+        messages['messages'].add('2;preview audio file is not loaded');
+      if (place.name.length < 5)
+        messages['messages'].add('2;place name is too short');
+      if (place.about.length < 5)
+        messages['messages'].add('2;place description is too short');
+
+      if (messages['messages'].length > 0) {
+        messages['name'].add(place.name);
+        placeMessages.add(messages);
+      }
+    }
+
+  if (tripMessages.where((e) => e.split(';')[0] == '1').length > 0 ||
+      placeMessages
+              .where((e) =>
+                  e['messages'].where((p) => p.split(';')[0] == '1') != null)
+              .length >
+          0) hasErrors = true;
+
+  print(tripMessages.length);
+  print(placeMessages.length);
+
+  if (tripMessages.length > 0 || placeMessages.length > 0) hasWarnings = true;
+
+  print(hasErrors);
+  print(hasWarnings);
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      contentPadding: const EdgeInsets.fromLTRB(25, 25, 25, 0),
+      title: RichText(
+          text: TextSpan(
+              text: 'submitting ',
+              style: TextStyle(fontSize: 18, color: Colors.black),
+              children: [
+            TextSpan(
+                text: '${trip.name}',
+                style: TextStyle(fontWeight: FontWeight.bold))
+          ])),
+      content: Container(
+        width: MediaQuery.of(context).size.width - 50,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (tripMessages.length > 0)
+                ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 15),
+                  shrinkWrap: true,
+                  itemCount: tripMessages.length,
+                  itemBuilder: (_, i) => listItem(tripMessages[i].split(';')[0],
+                      tripMessages[i].split(';')[1]),
+                ),
+              if (placeMessages.length > 0)
+                ...buildPlacesMessages(placeMessages).expand((e) => e),
+              if (!hasErrors && !hasWarnings)
+                Text(
+                  'after you submit the trip, all of its info will be uploaded and reviewed by our team for its publication. \n\n you will not be able to change its main content after it is published. \n\n are you sure you want to continue?',
+                  style: _item,
+                )
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        if (!hasErrors && hasWarnings)
+          FlatButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('SUBMIT ANYWAY')),
+        FlatButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'CLOSE',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+        if (!hasErrors && !hasWarnings)
+          FlatButton(
+              onPressed: () => Navigator.pop(context), child: Text('SUBMIT')),
+        //TODO:si todo sale OK, hacer una subida masiva de archivos de trip y places, con progress y... notificaciones?
+      ],
+    ),
+  );
+}
+
+TextStyle _title = TextStyle(fontSize: 17, fontWeight: FontWeight.bold);
+TextStyle _item = TextStyle(fontSize: 15);
+
+Widget listItem(String type, String text) {
+  return ListTile(
+      dense: true,
+      title: Text(text, style: _item),
+      contentPadding: const EdgeInsets.all(0),
+      leading: type == '1' //error
+          ? Icon(
+              Icons.cancel,
+              color: Colors.red[800],
+            )
+          : type == '2' //warning
+              ? Icon(
+                  Icons.warning,
+                  color: Colors.yellow[800],
+                )
+              : Icon(
+                  Icons.info_outline,
+                  color: Colors.blue[400],
+                ));
+}
+
+List<List<Widget>> buildPlacesMessages(
+    List<Map<String, List<String>>> placeMessages) {
+  return placeMessages.map((messages) {
+    return [
+      Text('${messages['name'].first}', style: _title),
+      ListView.builder(
+        padding: EdgeInsets.only(bottom: 10),
+        physics: ClampingScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: messages['messages'].length,
+        itemBuilder: (_, i) => listItem(messages['messages'][i].split(';')[0],
+            messages['messages'][i].split(';')[1]),
+      ),
+    ];
+  }).toList();
 }

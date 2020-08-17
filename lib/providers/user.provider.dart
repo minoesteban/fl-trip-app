@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,10 +5,7 @@ import 'package:tripit/core/controllers/user.controller.dart';
 import 'package:tripit/core/models/user.model.dart';
 import 'package:tripit/core/utils/utils.dart';
 
-import '../config.dart';
-
 class UserProvider with ChangeNotifier {
-  String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
   UserController _userController = UserController();
   User _user = User();
 
@@ -95,13 +90,13 @@ class UserProvider with ChangeNotifier {
 
   void updateImage(PickedFile image) async {
     _user.imageUrl = image.path;
-    _user.imageOrigin = ImageOrigin.Local;
+    _user.imageOrigin = FileOrigin.Local;
     notifyListeners();
 
     String downloadUrl = await _userController.uploadImage(_user.id, image);
     if (downloadUrl != null) {
       _user.imageUrl = downloadUrl;
-      _user.imageOrigin = ImageOrigin.Network;
+      _user.imageOrigin = FileOrigin.Network;
     }
     notifyListeners();
   }

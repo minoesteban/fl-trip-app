@@ -10,11 +10,14 @@ class Place {
   String name;
   String about;
   String googlePlaceId;
+  String locationName;
   LatLng coordinates;
   String fullAudioUrl;
+  FileOrigin fullAudioOrigin;
   String previewAudioUrl;
+  FileOrigin previewAudioOrigin;
   String imageUrl;
-  ImageOrigin imageOrigin;
+  FileOrigin imageOrigin;
   double price = 0;
   int order = 0;
   int tripId;
@@ -27,9 +30,12 @@ class Place {
     this.name,
     this.about,
     this.googlePlaceId,
+    this.locationName,
     this.coordinates,
     this.fullAudioUrl,
+    this.fullAudioOrigin,
     this.previewAudioUrl,
+    this.previewAudioOrigin,
     this.imageUrl,
     this.price,
     this.order,
@@ -45,9 +51,12 @@ class Place {
     String name,
     String about,
     String googlePlaceId,
+    String locationName,
     GeoJsonPoint coordinates,
     String fullAudioUrl,
+    FileOrigin fullAudioOrigin,
     String previewAudioUrl,
+    FileOrigin previewAudioOrigin,
     String imageUrl,
     double price,
     int order,
@@ -62,9 +71,12 @@ class Place {
       name: name ?? this.name,
       about: about ?? this.about,
       googlePlaceId: googlePlaceId ?? this.googlePlaceId,
+      locationName: locationName ?? this.locationName,
       coordinates: coordinates ?? this.coordinates,
       fullAudioUrl: fullAudioUrl ?? this.fullAudioUrl,
+      fullAudioOrigin: fullAudioOrigin ?? this.fullAudioOrigin,
       previewAudioUrl: previewAudioUrl ?? this.previewAudioUrl,
+      previewAudioOrigin: previewAudioOrigin ?? this.previewAudioOrigin,
       imageUrl: imageUrl ?? this.imageUrl,
       price: price ?? this.price,
       order: order ?? this.order,
@@ -82,9 +94,12 @@ class Place {
       'name': name,
       'about': about,
       'googlePlaceId': googlePlaceId,
+      'locationName': locationName,
       'coordinates': coordinates?.toJson(),
       'fullAudioUrl': fullAudioUrl,
+      'fullAudioOrigin': fullAudioOrigin,
       'previewAudioUrl': previewAudioUrl,
+      'previewAudioOrigin': previewAudioOrigin,
       'imageUrl': imageUrl,
       'price': price,
       'order': order,
@@ -105,10 +120,10 @@ class Place {
       });
 
     return {
-      // 'id': id,
       'name': name,
       'about': about,
       'googlePlaceId': googlePlaceId,
+      'locationName': locationName,
       'coordinates': point,
       'fullAudioUrl': fullAudioUrl,
       'previewAudioUrl': previewAudioUrl,
@@ -116,10 +131,6 @@ class Place {
       'price': price,
       'order': order,
       'tripId': tripId ?? 0,
-      // 'rating': rating,
-      // 'createdAt': createdAt,
-      // 'updatedAt': updatedAt,
-      // 'deletedAt': deletedAt,
     };
   }
 
@@ -133,10 +144,13 @@ class Place {
       name: map['name'],
       about: map['about'],
       googlePlaceId: map['googlePlaceId'],
+      locationName: map['locationName'],
       coordinates: LatLng(map['coordinates']['coordinates'][0].toDouble(),
           map['coordinates']['coordinates'][1].toDouble()),
       fullAudioUrl: map['fullAudioUrl'],
+      fullAudioOrigin: map['fullAudioOrigin'],
       previewAudioUrl: map['previewAudioUrl'],
+      previewAudioOrigin: map['previewAudioOrigin'],
       imageUrl: map['imageUrl'],
       price: map['price'].toDouble(),
       order: map['order'],
@@ -154,7 +168,7 @@ class Place {
 
   @override
   String toString() {
-    return 'Place(id: $id, name: $name, about: $about, googlePlaceId: $googlePlaceId, coordinates: $coordinates, fullAudioUrl: $fullAudioUrl, previewAudioUrl: $previewAudioUrl, imageUrl: $imageUrl, price: $price, order: $order, tripId: $tripId, rating: $rating, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Place(id: $id, name: $name, about: $about, googlePlaceId: $googlePlaceId, coordinates: $coordinates, fullAudioUrl: $fullAudioUrl, fullAudioOrigin: $fullAudioOrigin, previewAudioUrl: $previewAudioUrl, previewAudioOrigin: $previewAudioOrigin, imageUrl: $imageUrl, price: $price, order: $order, tripId: $tripId, rating: $rating, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -168,7 +182,9 @@ class Place {
         o.googlePlaceId == googlePlaceId &&
         o.coordinates == coordinates &&
         o.fullAudioUrl == fullAudioUrl &&
+        o.fullAudioOrigin == fullAudioOrigin &&
         o.previewAudioUrl == previewAudioUrl &&
+        o.previewAudioOrigin == previewAudioOrigin &&
         o.imageUrl == imageUrl &&
         o.price == price &&
         o.order == order &&
@@ -187,7 +203,9 @@ class Place {
         googlePlaceId.hashCode ^
         coordinates.hashCode ^
         fullAudioUrl.hashCode ^
+        fullAudioOrigin.hashCode ^
         previewAudioUrl.hashCode ^
+        previewAudioOrigin.hashCode ^
         imageUrl.hashCode ^
         price.hashCode ^
         order.hashCode ^

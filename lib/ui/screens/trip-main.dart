@@ -3,6 +3,8 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import '../../ui/widgets/audio-components.dart';
+import '../../ui/widgets/collapsible-text.dart';
 import '../../providers/cart.provider.dart';
 import '../../providers/language.provider.dart';
 import '../../providers/country.provider.dart';
@@ -14,66 +16,16 @@ import '../widgets/store-trip-places-list.dart';
 import '../widgets/store-trip-map.dart';
 import 'cart-main.dart';
 
-class TripMain extends StatefulWidget {
+class TripMain extends StatelessWidget {
   static const routeName = '/trip';
-  @override
-  _TripMainState createState() => _TripMainState();
-}
+  final Trip trip;
 
-class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
-  TextOverflow _overflow = TextOverflow.ellipsis;
-  int _maxLines = 5;
-  AnimationController _audioController;
-  AnimationController _playPauseController;
-  bool _loadRating = true;
-  double _rating = 0.0;
-  Position userPosition;
-
-  void _toggleShowDescription() {
-    setState(() {
-      _maxLines = _maxLines == null ? 5 : null;
-      _overflow = _overflow == null ? TextOverflow.ellipsis : null;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _audioController =
-        AnimationController(duration: Duration(seconds: 10), vsync: this)
-          ..addListener(() => setState(() {}));
-    _playPauseController = AnimationController(
-        duration: const Duration(milliseconds: 200), vsync: this);
-    userPosition =
-        Provider.of<UserProvider>(context, listen: false).user.position;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _audioController.dispose();
-    _playPauseController.dispose();
-  }
+  TripMain(this.trip);
 
   @override
   Widget build(BuildContext context) {
-    Map args = ModalRoute.of(context).settings.arguments;
-    Trip trip = args['trip'];
-
-    if (_loadRating)
-      Provider.of<TripProvider>(context, listen: false)
-          .getAndSetTripRatings(trip.id)
-          .then((rating) {
-        setState(() {
-          _rating = rating;
-          _loadRating = false;
-        });
-      });
-
-    String audioTime() {
-      int duration = 75;
-      return '${(Duration(seconds: duration).inMinutes.remainder(60) - (_audioController.value).toInt()).toString().padLeft(2, '0')}:${(Duration(seconds: duration).inSeconds.remainder(60) - (_audioController.value * 10).toInt()).toString().padLeft(2, '0')}';
-    }
+    Position userPosition =
+        Provider.of<UserProvider>(context, listen: false).user.position;
 
     return Scaffold(
       body: CustomScrollView(slivers: [
@@ -188,7 +140,6 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-
                     Divider(
                       height: 30,
                     ),
@@ -212,34 +163,54 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                           ],
                         ),
                         VerticalDivider(),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${_rating.toStringAsPrecision(2)}',
-                                  style: TextStyle(
-                                      color: Colors.amber[500],
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 30),
-                                ),
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.amber[500],
-                                  size: 15,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                        FutureBuilder(
+                            future: Provider.of<TripProvider>(context,
+                                    listen: false)
+                                .getAndSetTripRatings(trip.id),
+                            builder: (_, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting)
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation(
+                                        Colors.grey[200]),
+                                  ),
+                                );
+                              else
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${snapshot.data.toStringAsPrecision(2)}',
+                                          style: TextStyle(
+                                              color: Colors.amber[500],
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 30),
+                                        ),
+                                        Icon(
+                                          Icons.star,
+                                          color: Colors.amber[500],
+                                          size: 15,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                            }),
                         VerticalDivider(),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            // Container(
+                            //   height: 30,
+                            //   width: 50,
+                            //   color: Colors.grey,
+                            // ),
                             Flag(
                               trip.languageFlagId.toUpperCase(),
                               height: 30,
@@ -257,54 +228,13 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                       height: 30,
                     ),
                     //preview audio
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                            icon: AnimatedIcon(
-                              icon: AnimatedIcons.play_pause,
-                              progress: _playPauseController,
-                              color: Colors.green,
-                              size: 35,
-                            ),
-                            onPressed: () {
-                              if (_audioController.isAnimating) {
-                                _playPauseController.reverse();
-                                _audioController.stop();
-                              } else {
-                                if (_audioController.isDismissed) {
-                                  _playPauseController.forward();
-                                  _audioController.forward().then((_) {
-                                    _audioController.value = 0;
-                                    _playPauseController.reset();
-                                  });
-                                } else {
-                                  _playPauseController.forward();
-                                  _audioController.forward().then((_) {
-                                    _audioController.value = 0;
-                                    _playPauseController.reset();
-                                  });
-                                }
-                              }
-                            }),
-                        Flexible(
-                          child: LinearProgressIndicator(
-                            value: _audioController.value,
-                            backgroundColor: Colors.grey[300],
-                            valueColor: AlwaysStoppedAnimation(Colors.green),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          audioTime(),
-                          style: _subtitleStyle,
-                        ),
-                        SizedBox(width: 10),
-                      ],
-                    ),
+                    trip.previewAudioUrl == null
+                        ? Center()
+                        : Player(trip.previewAudioUrl, true),
                     Divider(
                       height: 30,
                     ),
+
                     //pictures
                     Container(
                       height: 100,
@@ -343,35 +273,27 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                               )),
                     ),
                     Divider(
-                      height: 30,
+                      height: 40,
                     ),
                     //about text
                     Text(
                       'about the trip',
                       style: _titleStyle,
                     ),
-                    InkWell(
-                      onTap: () => _toggleShowDescription(),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 10),
-                        child: Text(
-                          '${trip.about}',
-                          maxLines: _maxLines,
-                          textAlign: TextAlign.justify,
-                          overflow: _overflow,
-                        ),
-                      ),
-                    ),
+                    CollapsibleText(trip.about),
                     Divider(
-                      height: 30,
+                      height: 40,
                     ),
                     //map and place list
-
+                    Text(
+                      'places',
+                      style: _titleStyle,
+                    ),
                     Card(
                       child: Column(
                         children: [
                           Container(
+                            margin: const EdgeInsets.all(10),
                             child: TripMap(trip, userPosition),
                           ),
                           ExpansionTile(
@@ -395,7 +317,7 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                               Container(
                                 child: PlacesList(trip.places
                                   ..sort((a, b) => a.order.compareTo(b.order))),
-                              )
+                              ),
                             ],
                           ),
                         ],
@@ -405,32 +327,25 @@ class _TripMainState extends State<TripMain> with TickerProviderStateMixin {
                 ),
               ),
             ),
+            SizedBox(
+              height: 30,
+            ),
           ]),
         ),
       ]),
     );
   }
 
-  TextStyle _titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  final TextStyle _titleStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
-  TextStyle _titleBigStyle =
+  final TextStyle _titleBigStyle =
       TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
 
-  TextStyle _subtitleStyle = TextStyle(
+  final TextStyle _subtitleStyle = TextStyle(
     fontSize: 14,
     color: Colors.black38,
     fontWeight: FontWeight.bold,
     letterSpacing: 1.1,
   );
 }
-
-// var _sortMenu = Padding(
-//   padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
-//   child: Row(
-//     crossAxisAlignment: CrossAxisAlignment.end,
-//     mainAxisAlignment: MainAxisAlignment.end,
-//     children: <Widget>[
-//       SortMenu(currentOption, handleChangeSortOption),
-//     ],
-//   ),
-// )

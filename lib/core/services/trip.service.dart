@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import '../../core/models/trip.model.dart';
@@ -77,8 +76,10 @@ class TripService {
     return _trips;
   }
 
-  Future<String> uploadImage(int id, PickedFile pickedFile) async {
+  Future<String> uploadImage(int id, File pickedFile) async {
     String fileExtension = path.extension(pickedFile.path).substring(1);
+    String fileName = path.basenameWithoutExtension(pickedFile.path);
+    String fileNameZipped = fileName + '_cmp';
     String url = '$_endpoint/trips/$id/files?type=$fileExtension';
     var res = await http.put(url);
     if (res.statusCode == HttpStatus.ok) {
@@ -87,10 +88,10 @@ class TripService {
 
       file = await FlutterImageCompress.compressAndGetFile(
         file.absolute.path,
-        '${file.absolute.path.replaceAll('image_picker', 'compressed_image_picker')}',
-        minHeight: 1000,
-        minWidth: 1000,
-        quality: 88,
+        '${file.absolute.path.replaceAll(fileName, fileNameZipped)}',
+        minHeight: 800,
+        minWidth: 800,
+        quality: 80,
       );
 
       res = await http.put(json.decode(res.body)['uploadUrl'],
@@ -100,7 +101,7 @@ class TripService {
         final res = await http.patch(url,
             headers: _headers, body: json.encode({'imageUrl': downloadUrl}));
         if (res.statusCode == HttpStatus.ok) {
-          return json.decode(res.body)['item'][1][0]['imageUrl'];
+          return json.decode(res.body)['trip']['imageUrl'];
         } else {
           throw HttpException(res.body);
         }
@@ -109,23 +110,28 @@ class TripService {
     } else
       throw HttpException(res.body);
   }
-}
 
-// Future<ServiceResponse> submitTrip(Trip newTrip) async {
-//   String url = '$_endpoint/trip';
-//   try {
-//     final res = await http.post(url,
-//         headers: _headers, body: json.encode(newTrip.toMap()));
-//     Trip createdTrip = await parse(res.body);
-//     if (newTrip.places.length > 0) {
-//       ServiceResponse response =
-//           await _placeService.createMulti(newTrip.places);
-//       createdTrip.places = response.hasItems ? response.items : [];
-//       return ServiceResponse(
-//           [createdTrip], response.hasErrors ? response.errors : []);
-//     } else
-//       return ServiceResponse([createdTrip], []);
-//   } catch (e) {
-//     throw e;
-//   }
-// }
+  Future<String> uploadAudio(int id, File audio) async {
+    String fileExtension = path.extension(audio.path).substring(1);
+    String url = '$_endpoint/trips/$id/files?type=$fileExtension';
+    var res = await http.put(url);
+    if (res.statusCode == HttpStatus.ok) {
+      String downloadUrl = json.decode(res.body)['downloadUrl'];
+      res = await http.put(json.decode(res.body)['uploadUrl'],
+          body: audio.readAsBytesSync());
+      if (res.statusCode == HttpStatus.ok) {
+        String url = '$_endpoint/trips/$id';
+        res = await http.patch(url,
+            headers: _headers,
+            body: json.encode({'previewAudioUrl': downloadUrl}));
+        if (res.statusCode == HttpStatus.ok) {
+          return json.decode(res.body)['trip']['previewAudioUrl'];
+        } else {
+          throw HttpException(res.toString());
+        }
+      } else
+        throw HttpException(res.body);
+    } else
+      throw HttpException(res.body);
+  }
+}

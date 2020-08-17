@@ -1,15 +1,15 @@
-import 'dart:async';
 import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/user.provider.dart';
-
+import 'package:file_picker/file_picker.dart';
+import 'package:google_maps_webservice/places.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/utils/utils.dart';
 import '../../core/models/place.model.dart';
+import '../../providers/user.provider.dart';
+import '../../ui/utils/files-permission.dart';
 import '../../ui/widgets/place-new-search.dart';
 
 class PlaceNew extends StatefulWidget {
@@ -25,7 +25,6 @@ class PlaceNew extends StatefulWidget {
 
 class _PlaceNewState extends State<PlaceNew> {
   Completer<GoogleMapController> _controller = Completer();
-  CameraPosition _initialPosition;
   final _form = GlobalKey<FormState>();
   Place _newPlace = Place();
   final _imageFocus = FocusNode();
@@ -48,16 +47,25 @@ class _PlaceNewState extends State<PlaceNew> {
     super.initState();
     _imageFocus.addListener(_updateImage);
     _newPlace = widget._place;
-    _initialPosition = CameraPosition(
-      target: LatLng(
-          _newPlace.coordinates.latitude, _newPlace.coordinates.longitude),
-      zoom: 14.5,
-    );
     if (_newPlace.id > 0) {
       _nameController.text = _newPlace.name ?? '';
       _aboutController.text = _newPlace.about ?? '';
-      _priceController.text = _newPlace.price.toString() ?? '';
+      _priceController.text = _newPlace.price != null
+          ? _newPlace.price != 99999 ? _newPlace.price.toString() : ''
+          : '';
       _imageController.text = _newPlace.imageUrl ?? '';
+      _locationController.text = _newPlace.locationName ?? '';
+      _fullAudioController.text = _newPlace.fullAudioUrl;
+      _previewAudioController.text = _newPlace.previewAudioUrl;
+      if (_newPlace.fullAudioUrl != null)
+        _newPlace.fullAudioOrigin = _newPlace.fullAudioUrl.startsWith('http')
+            ? FileOrigin.Network
+            : FileOrigin.Local;
+      if (_newPlace.previewAudioUrl != null)
+        _newPlace.previewAudioOrigin =
+            _newPlace.previewAudioUrl.startsWith('http')
+                ? FileOrigin.Network
+                : FileOrigin.Local;
     }
   }
 
@@ -123,6 +131,299 @@ class _PlaceNewState extends State<PlaceNew> {
                 ),
               ));
 
+    Widget buildMap() {
+      return Container(
+        decoration: BoxDecoration(
+            border: Border.all(width: 1, color: Colors.grey[400]),
+            borderRadius: BorderRadius.all(Radius.circular(10))),
+        height: 200,
+        padding: const EdgeInsets.all(5),
+        child: GoogleMap(
+          liteModeEnabled: Platform.isAndroid ? true : null,
+          buildingsEnabled: false,
+          mapToolbarEnabled: false,
+          myLocationButtonEnabled: false,
+          myLocationEnabled: false,
+          mapType: MapType.normal,
+          initialCameraPosition: CameraPosition(
+              target: LatLng(_newPlace.coordinates.latitude,
+                  _newPlace.coordinates.longitude),
+              zoom: 13),
+          onMapCreated: (GoogleMapController controller) {
+            _controller.complete(controller);
+          },
+        ),
+      );
+    }
+
+    List<Widget> buildCoverImage() {
+      return [
+        Stack(alignment: Alignment.bottomCenter, children: [
+          Container(
+            color: Colors.grey[300],
+            height: MediaQuery.of(context).size.height / 3.5,
+            width: MediaQuery.of(context).size.width,
+            child: _newPlace.imageOrigin == FileOrigin.Local
+                ? Image.asset(
+                    _newPlace.imageUrl,
+                    fit: BoxFit.cover,
+                  )
+                : CachedNetworkImage(
+                    imageUrl: _imageController.text,
+                    fit: BoxFit.cover,
+                    placeholder: (_, _a) => Icon(
+                      Icons.photo_camera,
+                      color: Colors.grey[600],
+                      size: 75,
+                    ),
+                    errorWidget: (_, _a, _b) => Icon(
+                      Icons.photo_camera,
+                      color: Colors.grey[600],
+                      size: 75,
+                    ),
+                  ),
+          ),
+          Container(
+            color: Colors.black38,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              child: TextFormField(
+                onTap: () async {
+                  if (await onAddFileClicked(context, FileType.image)) {
+                    File file = await FilePicker.getFile(type: FileType.image);
+                    if (file != null) {
+                      setState(() {
+                        _imageController.text = file.path;
+                        _newPlace.imageUrl = _imageController.text;
+                        _newPlace.imageOrigin = FileOrigin.Local;
+                      });
+                    }
+                  }
+                },
+                readOnly: true,
+                style: TextStyle(color: Colors.white70),
+                decoration: InputDecoration(
+                  labelText: 'place picture',
+                  labelStyle: TextStyle(
+                      color: Colors.white70, fontWeight: FontWeight.bold),
+                  suffixIcon: IconButton(
+                    onPressed: () async {},
+                    color: Colors.white70,
+                    icon: const Icon(Icons.file_upload),
+                  ),
+                ),
+                focusNode: _imageFocus,
+                controller: _imageController,
+              ),
+            ),
+          )
+        ]),
+        const SizedBox(height: 20),
+      ];
+    }
+
+    List<Widget> buildLocation() {
+      return [
+        TextFormField(
+          onTap: () async {
+            PlaceDetails result = await showSearch(
+                context: context,
+                delegate: PlaceNewSearch(
+                    Provider.of<UserProvider>(context, listen: false)
+                        .user
+                        .position,
+                    widget._countryCode,
+                    Caller.PlaceNew));
+            if (result != null) {
+              _controller.future.then(
+                (value) => value.animateCamera(
+                  CameraUpdate.newLatLngZoom(
+                      LatLng(result.geometry.location.lat,
+                          result.geometry.location.lng),
+                      14.5),
+                ),
+              );
+
+              _newPlace.name = result.name;
+              _newPlace.googlePlaceId = result.placeId;
+              _newPlace.coordinates = LatLng(
+                  result.geometry.location.lat, result.geometry.location.lng);
+
+              setState(() {
+                _locationController.text = '${result.name}';
+                _nameController.text = '${result.name}';
+                _newPlace = _newPlace;
+              });
+            }
+          },
+          readOnly: true,
+          validator: (value) => value.isEmpty ? 'select a location!' : null,
+          decoration: InputDecoration(
+            labelText: 'location',
+            helperText: 'select a place',
+            suffixIcon: const Icon(Icons.search),
+          ),
+          controller: _locationController,
+          focusNode: _locationFocus,
+        ),
+        Divider(height: 30),
+      ];
+    }
+
+    List<Widget> buildName() {
+      return [
+        TextFormField(
+          decoration: InputDecoration(
+            labelText: 'name',
+            helperText: 'custom place name',
+          ),
+          validator: (value) => value.isEmpty ? 'write a valid name!' : null,
+          textInputAction: TextInputAction.next,
+          controller: _nameController,
+          focusNode: _nameFocus,
+          onFieldSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_priceFocus),
+        ),
+        const SizedBox(height: 30),
+      ];
+    }
+
+    List<Widget> buildPrice() {
+      return [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              // flex: 2,
+              child: TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'price',
+                  helperText: 'individual place price. write 0 for free',
+                  suffix: Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Text('USD'),
+                  ),
+                ),
+                validator: (value) => value == null
+                    ? 'input a valid place price! insert 0 for free'
+                    : null,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.next,
+                controller: _priceController,
+                focusNode: _priceFocus,
+                onFieldSubmitted: (_) =>
+                    FocusScope.of(context).requestFocus(_fullAudioFocus),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 30),
+      ];
+    }
+
+    Future<void> selectAudioFile(bool isFull) async {
+      if (await onAddFileClicked(context, FileType.audio)) {
+        File file = await FilePicker.getFile(
+            type: FileType.custom,
+            allowedExtensions: [
+              'mpeg',
+              'wav',
+              'webm',
+              'ogg',
+              'mp3',
+              'mp4',
+              'm4a'
+            ]);
+
+        if (file != null) {
+          setState(() {
+            if (isFull) {
+              _fullAudioController.text = file.absolute.path;
+              _newPlace.fullAudioUrl = file.path;
+              _newPlace.fullAudioOrigin = FileOrigin.Local;
+            } else {
+              _previewAudioController.text = file.absolute.path;
+              _newPlace.previewAudioUrl = file.path;
+              _newPlace.previewAudioOrigin = FileOrigin.Local;
+            }
+          });
+        }
+      }
+    }
+
+    List<Widget> buildFullAudio() {
+      return [
+        TextFormField(
+          onTap: () async {
+            await selectAudioFile(true);
+          },
+          decoration: InputDecoration(
+            labelText: 'full audio',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.file_upload),
+              onPressed: () async {
+                await selectAudioFile(true);
+              },
+            ),
+          ),
+          readOnly: true,
+          controller: _fullAudioController,
+          focusNode: _fullAudioFocus,
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    List<Widget> buildPreviewAudio() {
+      return [
+        TextFormField(
+          onTap: () async {
+            await selectAudioFile(true);
+          },
+          decoration: InputDecoration(
+            labelText: 'preview audio',
+            helperMaxLines: 2,
+            helperText:
+                'upload preview audio. if no audio is uploaded here, the first 30 seconds of the full audio will be used as preview',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.file_upload),
+              onPressed: () async {
+                await selectAudioFile(true);
+              },
+            ),
+          ),
+          readOnly: true,
+          controller: _previewAudioController,
+          focusNode: _previewAudioFocus,
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    List<Widget> buildDescription() {
+      return [
+        TextFormField(
+          maxLines: 3,
+          keyboardType: TextInputType.multiline,
+          decoration: InputDecoration(
+            labelText: 'about the place',
+          ),
+          validator: (value) =>
+              value.isEmpty ? 'write something about the place!' : null,
+          textInputAction: TextInputAction.newline,
+          controller: _aboutController,
+          focusNode: _aboutFocus,
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
     return WillPopScope(
       onWillPop: () {
         return showDialog(
@@ -156,7 +457,7 @@ class _PlaceNewState extends State<PlaceNew> {
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: Colors.red[900],
-          title: Text('add place',
+          title: Text(_newPlace.id > 0 ? 'edit place' : 'add place',
               style:
                   TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
           actions: [
@@ -213,65 +514,16 @@ class _PlaceNewState extends State<PlaceNew> {
               _newPlace.name = _nameController.text;
               _newPlace.about = _aboutController.text;
               _newPlace.imageUrl = _imageController.text;
+              _newPlace.locationName = _locationController.text;
               _newPlace.price = _priceController.text.isEmpty
-                  ? 0
+                  ? 99999
                   : double.parse(_priceController.text);
             },
             child: SingleChildScrollView(
               child: Column(
                 children: [
                   //cover image
-                  Stack(alignment: Alignment.bottomCenter, children: [
-                    Container(
-                      color: Colors.grey[300],
-                      height: MediaQuery.of(context).size.height / 3.5,
-                      width: MediaQuery.of(context).size.width,
-                      child: CachedNetworkImage(
-                        imageUrl: _imageController.text,
-                        fit: BoxFit.cover,
-                        placeholder: (_, _a) => Icon(
-                          Icons.photo_camera,
-                          color: Colors.grey[600],
-                          size: 75,
-                        ),
-                        errorWidget: (_, _a, _b) => Icon(
-                          Icons.photo_camera,
-                          color: Colors.grey[600],
-                          size: 75,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      color: Colors.black38,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
-                        child: TextFormField(
-                          style: TextStyle(color: Colors.white70),
-                          decoration: InputDecoration(
-                            labelText: 'place picture',
-                            labelStyle: TextStyle(
-                                color: Colors.white70,
-                                fontWeight: FontWeight.bold),
-                            suffixIcon: IconButton(
-                              onPressed: () {},
-                              color: Colors.white70,
-                              icon: const Icon(Icons.file_upload),
-                            ),
-                          ),
-                          keyboardType: TextInputType.url,
-                          textInputAction: TextInputAction.next,
-                          focusNode: _imageFocus,
-                          controller: _imageController,
-                          onFieldSubmitted: (_) => FocusScope.of(context)
-                              .requestFocus(_locationFocus),
-                        ),
-                      ),
-                    )
-                  ]),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  ...buildCoverImage(),
                   //rest of the form
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
@@ -281,172 +533,18 @@ class _PlaceNewState extends State<PlaceNew> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         //map & location
-                        Container(
-                          decoration: BoxDecoration(
-                              border:
-                                  Border.all(width: 1, color: Colors.grey[400]),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10))),
-                          height: 200,
-                          padding: const EdgeInsets.all(5),
-                          child: GoogleMap(
-                            liteModeEnabled: Platform.isAndroid ? true : null,
-                            buildingsEnabled: false,
-                            mapToolbarEnabled: false,
-                            myLocationButtonEnabled: false,
-                            myLocationEnabled: false,
-                            mapType: MapType.normal,
-                            initialCameraPosition: _initialPosition,
-                            onMapCreated: (GoogleMapController controller) {
-                              _controller.complete(controller);
-                            },
-                          ),
-                        ),
-                        TextFormField(
-                          onTap: () async {
-                            PlaceDetails result = await showSearch(
-                                context: context,
-                                delegate: PlaceNewSearch(
-                                    Provider.of<UserProvider>(context,
-                                            listen: false)
-                                        .user
-                                        .position,
-                                    widget._countryCode,
-                                    Caller.PlaceNew));
-                            if (result != null) {
-                              _controller.future.then(
-                                (value) => value.animateCamera(
-                                  CameraUpdate.newLatLngZoom(
-                                      LatLng(result.geometry.location.lat,
-                                          result.geometry.location.lng),
-                                      14.5),
-                                ),
-                              );
-
-                              _newPlace.name = result.name;
-                              _newPlace.googlePlaceId = result.placeId;
-                              _newPlace.coordinates = LatLng(
-                                  result.geometry.location.lat,
-                                  result.geometry.location.lng);
-
-                              setState(() {
-                                _locationController.text = '${result.name}';
-                                _nameController.text = '${result.name}';
-                                _newPlace = _newPlace;
-                              });
-                            }
-                          },
-                          readOnly: true,
-                          validator: (value) =>
-                              value.isEmpty ? 'select a location!' : null,
-                          decoration: InputDecoration(
-                            labelText: 'location',
-                            helperText: 'select a place',
-                            suffixIcon: const Icon(Icons.search),
-                          ),
-                          controller: _locationController,
-                          focusNode: _locationFocus,
-                          textInputAction: TextInputAction.next,
-                          onFieldSubmitted: (_) =>
-                              FocusScope.of(context).requestFocus(_nameFocus),
-                        ),
-                        Divider(
-                          height: 30,
-                        ),
+                        // buildMap(),
+                        ...buildLocation(),
                         //name
-                        TextFormField(
-                          decoration: InputDecoration(
-                            labelText: 'name',
-                            helperText: 'custom place name',
-                          ),
-                          validator: (value) =>
-                              value.isEmpty ? 'write a valid name!' : null,
-                          textInputAction: TextInputAction.next,
-                          controller: _nameController,
-                          focusNode: _nameFocus,
-                          onFieldSubmitted: (_) =>
-                              FocusScope.of(context).requestFocus(_priceFocus),
-                        ),
-                        const SizedBox(
-                          height: 30,
-                        ),
+                        ...buildName(),
                         //price
-                        TextFormField(
-                          decoration: InputDecoration(
-                            labelText: 'price',
-                            helperText:
-                                'individual place price. write 0 for free',
-                          ),
-                          validator: (value) => value.isEmpty
-                              ? 'input a valid place price! insert 0 for free'
-                              : null,
-                          keyboardType:
-                              TextInputType.numberWithOptions(decimal: true),
-                          textInputAction: TextInputAction.next,
-                          controller: _priceController,
-                          focusNode: _priceFocus,
-                          onFieldSubmitted: (_) => FocusScope.of(context)
-                              .requestFocus(_fullAudioFocus),
-                        ),
-                        const SizedBox(
-                          height: 30,
-                        ),
+                        ...buildPrice(),
                         //full audio
-                        TextFormField(
-                          onTap: () {},
-                          decoration: InputDecoration(
-                            labelText: 'full audio',
-                            suffixIcon: Icon(Icons.file_upload),
-                          ),
-                          // validator: (value) =>
-                          //     value.isEmpty ? 'upload the place audio' : null,
-                          readOnly: true,
-                          textInputAction: TextInputAction.next,
-                          controller: _fullAudioController,
-                          focusNode: _fullAudioFocus,
-                          onFieldSubmitted: (_) => FocusScope.of(context)
-                              .requestFocus(_previewAudioFocus),
-                        ),
-                        const SizedBox(
-                          height: 30,
-                        ),
+                        ...buildFullAudio(),
                         //preview audio
-                        TextFormField(
-                          onTap: () {},
-                          decoration: InputDecoration(
-                            labelText: 'preview audio',
-                            helperMaxLines: 2,
-                            helperText:
-                                'upload preview audio. if no audio is uploaded here, the first 30 seconds of the full audio will be used as preview',
-                            suffixIcon: Icon(Icons.file_upload),
-                          ),
-                          readOnly: true,
-                          textInputAction: TextInputAction.next,
-                          controller: _previewAudioController,
-                          focusNode: _previewAudioFocus,
-                          onFieldSubmitted: (_) =>
-                              FocusScope.of(context).requestFocus(_aboutFocus),
-                        ),
-                        const SizedBox(
-                          height: 30,
-                        ),
+                        ...buildPreviewAudio(),
                         //about
-                        TextFormField(
-                          maxLines: 3,
-                          keyboardType: TextInputType.multiline,
-                          decoration: InputDecoration(
-                            labelText: 'about the place',
-                          ),
-                          validator: (value) => value.isEmpty
-                              ? 'write something about the place!'
-                              : null,
-                          textInputAction: TextInputAction.newline,
-                          controller: _aboutController,
-                          focusNode: _aboutFocus,
-                        ),
-                        const SizedBox(
-                          height: 30,
-                        ),
+                        ...buildDescription(),
                       ],
                     ),
                   ),

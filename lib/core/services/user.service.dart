@@ -49,9 +49,9 @@ class UserService {
       file = await FlutterImageCompress.compressAndGetFile(
         file.absolute.path,
         '${file.absolute.path.replaceAll('image_picker', 'compressed_image_picker')}',
-        minHeight: 1000,
-        minWidth: 1000,
-        quality: 88,
+        minHeight: 400,
+        minWidth: 400,
+        quality: 70,
       );
 
       res = await http.put(json.decode(res.body)['uploadUrl'],

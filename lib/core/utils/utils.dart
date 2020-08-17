@@ -7,4 +7,4 @@ String getRandString(int len) {
   return base64UrlEncode(values);
 }
 
-enum ImageOrigin { Local, Network }
+enum FileOrigin { Local, Network }

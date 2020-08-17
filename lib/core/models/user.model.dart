@@ -11,7 +11,7 @@ class User {
   String firstName;
   String lastName;
   String imageUrl;
-  ImageOrigin imageOrigin;
+  FileOrigin imageOrigin;
   String languageId1;
   String languageId2;
   String languageId3;

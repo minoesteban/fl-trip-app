@@ -9,8 +9,10 @@ class Trip {
   String name;
   int ownerId;
   String googlePlaceId;
+  String locationName;
   String countryId;
   String previewAudioUrl;
+  FileOrigin audioOrigin;
   String languageNameId;
   String languageFlagId;
   double price = 0;
@@ -18,7 +20,7 @@ class Trip {
   bool submitted = false;
   bool published = false;
   String imageUrl;
-  ImageOrigin imageOrigin;
+  FileOrigin imageOrigin;
   List<Place> places = []; //not in DB model
   DateTime createdAt;
   DateTime updatedAt;
@@ -28,6 +30,7 @@ class Trip {
     this.name,
     this.ownerId,
     this.googlePlaceId,
+    this.locationName,
     this.countryId,
     this.previewAudioUrl,
     this.languageNameId,
@@ -48,6 +51,7 @@ class Trip {
     String name,
     int ownerId,
     String googlePlaceId,
+    String locationName,
     String countryId,
     String previewAudioUrl,
     String languageNameId,
@@ -68,6 +72,7 @@ class Trip {
       name: name ?? this.name,
       ownerId: ownerId ?? this.ownerId,
       googlePlaceId: googlePlaceId ?? this.googlePlaceId,
+      locationName: locationName ?? this.locationName,
       countryId: countryId ?? this.countryId,
       previewAudioUrl: previewAudioUrl ?? this.previewAudioUrl,
       languageNameId: languageNameId ?? this.languageNameId,
@@ -90,6 +95,7 @@ class Trip {
       'name': name,
       'ownerId': ownerId,
       'googlePlaceId': googlePlaceId,
+      'locationName': locationName,
       'countryId': countryId,
       'previewAudioUrl': previewAudioUrl,
       'languageNameId': languageNameId,
@@ -108,10 +114,10 @@ class Trip {
 
   Map<String, dynamic> toMapForDB() {
     return {
-      // 'id': id,
       'name': name,
       'ownerId': ownerId,
       'googlePlaceId': googlePlaceId,
+      'locationName': locationName,
       'countryId': countryId,
       'previewAudioUrl': previewAudioUrl,
       'languageNameId': languageNameId,
@@ -122,9 +128,6 @@ class Trip {
       // 'published': published,
       'imageUrl': imageUrl,
       'Places': places?.map((x) => x?.toMapForDB())?.toList(),
-      // 'createdAt': createdAt?.millisecondsSinceEpoch,
-      // 'updatedAt': updatedAt?.millisecondsSinceEpoch,
-      // 'deletedAt': deletedAt?.millisecondsSinceEpoch,
     };
   }
 
@@ -144,6 +147,7 @@ class Trip {
       name: map['name'],
       ownerId: map['ownerId'],
       googlePlaceId: map['googlePlaceId'],
+      locationName: map['locationName'],
       countryId: map['countryId'],
       previewAudioUrl: map['previewAudioUrl'],
       languageNameId: map['languageNameId'],

@@ -1,13 +1,12 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:path/path.dart' as path;
-import 'package:tripit/core/utils/utils.dart';
+import '../../core/utils/utils.dart';
+import '../../ui/widgets/collapsible-text.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/language.provider.dart';
 import '../../providers/user.provider.dart';
@@ -17,37 +16,22 @@ import '../../ui/utils/show-message.dart';
 import '../../ui/screens/trip-main.dart';
 import '../../ui/screens/trip-new.dart';
 
-class Profile extends StatefulWidget {
+class Profile extends StatelessWidget {
   static const routeName = '/profile';
 
   @override
-  _ProfileState createState() => _ProfileState();
-}
-
-class _ProfileState extends State<Profile> {
-  int _ownerId;
-  List<Trip> _trips;
-  Set<String> _userLanguages;
-  Set<String> _countries;
-  Set<String> _cities;
-  int _places = 0;
-  double _rating = 0;
-  double _ratingAcum = 0;
-  TextOverflow _overflow = TextOverflow.ellipsis;
-  int _maxLines = 5;
-  void _toggleShowDescription() {
-    setState(() {
-      _maxLines = _maxLines == null ? 5 : null;
-      _overflow = _overflow == null ? TextOverflow.ellipsis : null;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    print('build profile');
-    Future<void> initializeData(
-        UserProvider userProvider, TripProvider tripsProvider) async {
-      _ownerId = userProvider.user.id;
+    List<Trip> _trips;
+    Set<String> _userLanguages;
+    Set<String> _countries;
+    Set<String> _cities;
+    int _places = 0;
+    double _rating = 0;
+    double _ratingAcum = 0;
+    TripProvider tripsProvider =
+        Provider.of<TripProvider>(context, listen: false);
+
+    Future<void> initializeData(UserProvider userProvider) async {
       _trips = tripsProvider.findByGuide(userProvider.user.id);
       _userLanguages = _userLanguages ??
           _trips
@@ -96,7 +80,7 @@ class _ProfileState extends State<Profile> {
                 child: CircleAvatar(
                   radius: 75,
                   backgroundImage: userProvider.user.imageUrl != null
-                      ? userProvider.user.imageOrigin == ImageOrigin.Local
+                      ? userProvider.user.imageOrigin == FileOrigin.Local
                           ? AssetImage(userProvider.user.imageUrl)
                           : CachedNetworkImageProvider(userProvider.getImage())
                       : AssetImage('assets/images/avatar.png'),
@@ -108,7 +92,7 @@ class _ProfileState extends State<Profile> {
                 color: Colors.grey[400],
                 iconSize: 35,
                 onPressed: () async {
-                  if (await onAddFileClicked(context, FileType.Image)) {
+                  if (await onAddFileClicked(context, FileType.image)) {
                     ImagePicker picker = ImagePicker();
                     PickedFile image = await picker.getImage(
                       source: ImageSource.gallery,
@@ -135,7 +119,7 @@ class _ProfileState extends State<Profile> {
       );
     }
 
-    List<Widget> buildStats(TripProvider tripsProvider) {
+    List<Widget> buildStats() {
       return [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -238,19 +222,7 @@ class _ProfileState extends State<Profile> {
           'about the creator',
           style: _titleStyle,
         ),
-        InkWell(
-          onTap: () => _toggleShowDescription(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: Text(
-              about,
-              maxLines: _maxLines,
-              textAlign: TextAlign.justify,
-              overflow: _overflow,
-              style: TextStyle(fontSize: 14),
-            ),
-          ),
-        ),
+        CollapsibleText(about),
         Divider(
           height: 30,
         ),
@@ -277,6 +249,11 @@ class _ProfileState extends State<Profile> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: <Widget>[
+                  // Container(
+                  //   width: 75,
+                  //   height: 45,
+                  //   color: Colors.grey,
+                  // ),
                   Flag(
                     _userLanguages.elementAt(i).split(',')[0],
                     width: 75,
@@ -374,14 +351,19 @@ class _ProfileState extends State<Profile> {
                               opacity: _trips[i].published == true
                                   ? 1
                                   : _trips[i].submitted == true ? 0.7 : 0.4,
-                              child: CachedNetworkImage(
-                                imageUrl: '${_trips[i].imageUrl}',
-                                fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) => Container(
-                                  height: 150,
-                                  color: Colors.grey,
-                                ),
-                              ),
+                              child: _trips[i].imageOrigin == FileOrigin.Local
+                                  ? Image.asset(
+                                      _trips[i].imageUrl,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : CachedNetworkImage(
+                                      imageUrl: '${_trips[i].imageUrl}',
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, __, ___) => Container(
+                                        height: 150,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
@@ -415,10 +397,11 @@ class _ProfileState extends State<Profile> {
           return IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              Navigator.of(context).pushNamed<Map<String, dynamic>>(
+              Navigator.of(context)
+                  .pushNamed<Map<String, dynamic>>(
                 TripNew.routeName,
-                arguments: {'ownerId': _ownerId},
-              ).then((res) {
+              )
+                  .then((res) {
                 if (res != null) {
                   if (res['action'] == 'delete')
                     tripsProvider
@@ -437,10 +420,10 @@ class _ProfileState extends State<Profile> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Consumer2<UserProvider, TripProvider>(
-            builder: (_, userProvider, tripsProvider, __) {
+          child: Consumer<UserProvider>(
+            builder: (_, userProvider, __) {
               return FutureBuilder(
-                future: initializeData(userProvider, tripsProvider),
+                future: initializeData(userProvider),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
@@ -453,7 +436,7 @@ class _ProfileState extends State<Profile> {
                       //avatar & name
                       buildAvatar(userProvider),
                       //stats
-                      ...buildStats(tripsProvider),
+                      ...buildStats(),
                       //about
                       if (userProvider.user.about != null)
                         ...buildDescription(userProvider.user.about),
@@ -472,12 +455,13 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  TextStyle _statNumber = TextStyle(
+  final TextStyle _statNumber = TextStyle(
       color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 20);
 
-  TextStyle _titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  final TextStyle _titleStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
-  TextStyle _subtitleStyle = TextStyle(
+  final TextStyle _subtitleStyle = TextStyle(
     fontSize: 12,
     color: Colors.black38,
     fontWeight: FontWeight.bold,

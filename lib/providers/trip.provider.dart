@@ -1,6 +1,7 @@
 import 'dart:async' show Future;
-
+import 'dart:io';
 import 'package:flutter/material.dart';
+import '../core/utils/utils.dart';
 import '../core/controllers/place.controller.dart';
 import '../core/models/place.model.dart';
 import '../core/controllers/trip.controller.dart';
@@ -28,10 +29,9 @@ class TripProvider with ChangeNotifier {
   }
 
   Future<void> delete(int id) async {
-    return await _controller.delete(id).then((_) {
-      _trips.removeWhere((element) => element.id == id);
-      notifyListeners();
-    }).catchError((err) => throw err);
+    await _controller.delete(id).catchError((err) => throw err);
+    _trips.removeWhere((element) => element.id == id);
+    notifyListeners();
   }
 
   Future<void> deletePlace(Place place) async {
@@ -44,11 +44,28 @@ class TripProvider with ChangeNotifier {
   }
 
   Future<void> create(Trip trip) async {
-    orderPlaces(trip);
-    return await _controller.create(trip).then((v) {
-      _trips.add(v);
+    try {
+      orderPlaces(trip);
+      Trip createdTrip = await _controller.create(trip);
+      _trips.add(createdTrip);
       notifyListeners();
-    }).catchError((err) => throw err);
+
+      if (createdTrip.id > 0) {
+        for (int i = 0; i <= createdTrip.places.length; i++) {
+          createdTrip.places[i].previewAudioOrigin = FileOrigin.Local;
+          createdTrip.places[i].fullAudioOrigin = FileOrigin.Local;
+          createdTrip.places[i].imageOrigin = FileOrigin.Local;
+          createdTrip.places[i] = await _placeController.uploadAudio(
+              createdTrip.places[i], createdTrip.places[i]);
+          createdTrip.places[i] = await _placeController.uploadImage(
+              createdTrip.places[i], createdTrip.places[i]);
+        }
+      }
+
+      notifyListeners();
+    } catch (err) {
+      throw err;
+    }
   }
 
   Future<void> submit(int id) async {
@@ -60,9 +77,9 @@ class TripProvider with ChangeNotifier {
     }).catchError((err) => throw err);
   }
 
-  Future<Trip> update(Trip trip) async {
-    return await _controller.update(trip).then((resultTrip) {
-      _trips[_trips.indexWhere((e) => e.id == resultTrip.id)] = resultTrip;
+  Future<void> update(Trip trip) async {
+    await _controller.update(trip).then((updatedTrip) {
+      _trips[_trips.indexWhere((e) => e.id == updatedTrip.id)] = updatedTrip;
       notifyListeners();
     }).catchError((err) => throw err);
   }
@@ -110,6 +127,7 @@ class TripProvider with ChangeNotifier {
   }
 
   Future<double> getAndSetTripRatings(int tripId) async {
+    print('tripprovider-getratings');
     List<Rating> ratings = [];
     ratings = _trips
         .firstWhere((trip) => trip.id == tripId)
@@ -135,7 +153,7 @@ class TripProvider with ChangeNotifier {
             );
           });
       });
-    // notifyListeners();
+    notifyListeners();
 
     return ratings.length > 0
         ? ratings.map((e) => e.rating).reduce((a, b) => a + b) / ratings.length
@@ -155,24 +173,19 @@ class TripProvider with ChangeNotifier {
     });
     notifyListeners();
   }
+
+  Future<void> updateImage(int id, File image) async {
+    _trips[_trips.indexWhere((e) => e.id == id)].imageUrl = image.path;
+
+    _trips[_trips.indexWhere((e) => e.id == id)].imageOrigin = FileOrigin.Local;
+    notifyListeners();
+
+    String downloadUrl = await _controller.uploadImage(id, image);
+    if (downloadUrl != null) {
+      _trips[_trips.indexWhere((e) => e.id == id)].imageUrl = downloadUrl;
+      _trips[_trips.indexWhere((e) => e.id == id)].imageOrigin =
+          FileOrigin.Network;
+    }
+    notifyListeners();
+  }
 }
-
-// Future<ServiceResponse> createWithPlaces(Trip trip) async {
-//   ServiceResponse res = await _controller.createWithPlaces(trip);
-//   if (res.hasItems) {
-//     _trips.add(res.items.first);
-//     notifyListeners();
-//   }
-//   return res;
-// }
-
-// Future<ServiceResponse> updateWithPlaces(Trip trip) async {
-//   ServiceResponse res = await _controller.updateWithPlaces(trip);
-//   if (res.hasItems) {
-//     _trips.indexWhere((e) => e.id == res.items.first.id) > 0
-//         ? _trips[_trips.indexWhere((e) => e.id == res.items.first.id)] = trip
-//         : _trips.add(trip);
-//     notifyListeners();
-//   }
-//   return res;
-// }

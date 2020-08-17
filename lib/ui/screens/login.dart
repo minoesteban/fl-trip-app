@@ -14,7 +14,10 @@ class LoginMain extends StatelessWidget {
               onPressed: () {
                 Navigator.pushReplacementNamed(context, TabNavigator.routeName);
               },
-              child: Text('LOGIN')),
+              child: Text(
+                'LOGIN',
+                style: TextStyle(fontSize: 50),
+              )),
         ),
       ),
     );

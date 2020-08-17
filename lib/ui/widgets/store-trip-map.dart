@@ -55,19 +55,6 @@ class TripMap extends StatelessWidget {
             1)));
   }
 
-  // _moveToMarker(GoogleMapController controller, String selectedPlaceKey) {
-  //   Place selectedPlace =
-  //       widget.trip.places.singleWhere((place) => place.id == selectedPlaceKey);
-  //   Future.delayed(
-  //       Duration(milliseconds: 200),
-  //       () => controller.animateCamera(CameraUpdate.newLatLngBounds(
-  //           boundsFromLatLngList([
-  //             LatLng(selectedPlace.coordinates.latitude,
-  //                 selectedPlace.coordinates.longitude)
-  //           ]),
-  //           1)));
-  // }
-
   @override
   Widget build(BuildContext context) {
     final CameraPosition _initialPosition = CameraPosition(
@@ -78,7 +65,7 @@ class TripMap extends StatelessWidget {
 
     return Container(
       height: 300,
-      padding: EdgeInsets.all(10),
+      // padding: EdgeInsets.all(10),
       child: GoogleMap(
         liteModeEnabled: Platform.isAndroid ? true : null,
         buildingsEnabled: false,

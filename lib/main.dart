@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'core/models/place.model.dart';
+import 'core/models/trip.model.dart';
 import 'providers/cart.provider.dart';
 import 'providers/language.provider.dart';
 import 'providers/country.provider.dart';
@@ -70,16 +71,31 @@ void main() async {
           MapMain.routeName: (context) => MapMain(),
           Store.routeName: (context) => Store(),
           Profile.routeName: (context) => Profile(),
-          TripMain.routeName: (context) => TripMain(),
           PlaceDialog.routeName: (context) => PlaceDialog(new Place()),
-          // TripNew.routeName: (context) => TripNew(),
           CartMain.routeName: (context) => CartMain(),
         },
         onGenerateRoute: (settings) {
+          Map<dynamic, dynamic> args = settings.arguments ?? {};
           switch (settings.name) {
             case TripNew.routeName:
               return MaterialPageRoute<Map<String, dynamic>>(
-                  builder: (context) => TripNew(), settings: settings);
+                  builder: (context) {
+                Trip trip = args['trip'] ??
+                    Trip(
+                        id: 0,
+                        name: '',
+                        countryId: '',
+                        price: 0,
+                        ownerId: _userProvider.user.id);
+                return TripNew(trip);
+              });
+            case TripMain.routeName:
+              return MaterialPageRoute<Map<String, dynamic>>(
+                  builder: (context) {
+                    Trip trip = args['trip'];
+                    return TripMain(trip);
+                  },
+                  settings: settings);
             default:
               return MaterialPageRoute<void>(builder: (context) => LoginMain());
           }

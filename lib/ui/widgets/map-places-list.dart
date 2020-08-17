@@ -9,6 +9,7 @@ import '../../providers/user.provider.dart';
 import '../../core/models/place.model.dart';
 import '../../core/models/trip.model.dart';
 import '../screens/trip-main.dart';
+import 'audio-components.dart';
 
 class PlaceList extends StatelessWidget {
   final String selectedPlaceId;
@@ -34,10 +35,11 @@ class PlaceList extends StatelessWidget {
                       if (selectedPlaceId != null)
                         _trips.addAll(_tripProvider.trips.where((trip) =>
                             trip.places
-                                .where((place) =>
-                                    place.googlePlaceId == selectedPlaceId)
-                                .length >
-                            0));
+                                    .where((place) =>
+                                        place.googlePlaceId == selectedPlaceId)
+                                    .length >
+                                0 &&
+                            trip.published));
 
                       return PageView.builder(
                         itemCount: _trips.length,
@@ -81,22 +83,18 @@ class PlaceCard extends StatefulWidget {
 
 class _PlaceCardState extends State<PlaceCard>
     with SingleTickerProviderStateMixin {
-  AnimationController _playPauseController;
   UserProvider _userProvider;
   LanguageProvider _languageProvider;
 
   @override
   void initState() {
     super.initState();
-    _playPauseController = AnimationController(
-        duration: const Duration(milliseconds: 200), vsync: this);
     _userProvider = Provider.of<UserProvider>(context, listen: false);
     _languageProvider = Provider.of<LanguageProvider>(context, listen: false);
   }
 
   @override
   void dispose() {
-    _playPauseController.dispose();
     super.dispose();
   }
 
@@ -184,14 +182,22 @@ class _PlaceCardState extends State<PlaceCard>
                   textAlign: TextAlign.start,
                   softWrap: true,
                   maxLines: 2,
-                  style: TextStyle(fontSize: 18),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Nunito',
+                  ),
                 ),
                 subtitle: Text(
                   '${widget.trip.name}',
                   textAlign: TextAlign.start,
                   softWrap: true,
                   maxLines: 2,
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Nunito',
+                  ),
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -225,7 +231,13 @@ class _PlaceCardState extends State<PlaceCard>
                       children: <Widget>[
                         ClipRRect(
                           borderRadius: BorderRadius.all(Radius.circular(3)),
-                          child: Flag(
+                          child:
+                              // Container(
+                              //   height: 25,
+                              //   width: 40,
+                              //   color: Colors.grey,
+                              // ),
+                              Flag(
                             widget.trip.languageFlagId.toUpperCase(),
                             height: 25,
                             width: 40,
@@ -241,19 +253,7 @@ class _PlaceCardState extends State<PlaceCard>
                     SizedBox(
                       width: 10,
                     ),
-                    IconButton(
-                      onPressed: () {
-                        _playPauseController.isDismissed
-                            ? _playPauseController.forward()
-                            : _playPauseController.reverse();
-                      },
-                      iconSize: 40,
-                      icon: AnimatedIcon(
-                        icon: AnimatedIcons.play_pause,
-                        progress: _playPauseController,
-                      ),
-                      color: Colors.green[500],
-                    ),
+                    Player(_place.previewAudioUrl, false),
                   ],
                 ),
               ),

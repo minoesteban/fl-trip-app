@@ -1,11 +1,12 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'custom-dialog.dart';
 
-enum FileType { Image, Audio }
+// enum FileType { Image, Audio }
 
 Future<bool> onAddFileClicked(BuildContext context, FileType fileType) async {
   showOpenAppSettingsDialog(context) {
@@ -20,13 +21,13 @@ Future<bool> onAddFileClicked(BuildContext context, FileType fileType) async {
 
   Permission permission;
 
-  if (fileType == FileType.Image) {
+  if (fileType == FileType.image) {
     if (Platform.isIOS) {
       permission = Permission.photos;
     } else {
       permission = Permission.storage;
     }
-  } else if (fileType == FileType.Audio) {
+  } else if (fileType == FileType.audio) {
     if (Platform.isIOS) {
       permission = Permission.mediaLibrary;
     } else {
