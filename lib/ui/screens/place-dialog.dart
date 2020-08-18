@@ -142,7 +142,11 @@ class PlaceDialog extends StatelessWidget {
                                 user.tripIsPurchased(
                                     trips.findById(_place.tripId).id)
                             ? 'purchased'
-                            : 'add to cart (\$${_place.price.toStringAsPrecision(2)})',
+                            : _place.price == 0
+                                ? 'add to cart   (free)'
+                                : _place.price == 99999
+                                    ? 'not purchaseable'
+                                    : 'add to cart   (\$${_place.price.toStringAsPrecision(3)})',
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -151,7 +155,10 @@ class PlaceDialog extends StatelessWidget {
                       ),
                       onPressed: user.placeIsPurchased(_place.id) ||
                               user.tripIsPurchased(
-                                  trips.findById(_place.tripId).id)
+                                  trips.findById(_place.tripId).id) ||
+                              trips.findById(_place.tripId).ownerId ==
+                                  user.user.id ||
+                              _place.price == 99999
                           ? null
                           : () {
                               Provider.of<CartProvider>(context, listen: false)

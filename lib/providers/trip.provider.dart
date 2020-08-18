@@ -19,12 +19,14 @@ class TripProvider with ChangeNotifier {
   }
 
   Future<List<Trip>> loadTrips() async {
+    print('loadtrips');
     _trips = await _controller
         .getAllTrips()
         .then((value) => value)
         .catchError((err) {
       throw err;
     });
+    notifyListeners();
     return [..._trips];
   }
 
@@ -68,20 +70,43 @@ class TripProvider with ChangeNotifier {
     }
   }
 
-  Future<void> submit(int id) async {
-    await _controller.submit(id).then((resultTrip) {
-      if (_trips.indexWhere((e) => e.id == resultTrip.id) > 0)
-        _trips[_trips.indexWhere((e) => e.id == resultTrip.id)].submitted =
-            true;
-      notifyListeners();
-    }).catchError((err) => throw err);
+  Future<void> submit(Trip trip) async {
+    int tripIndex = _trips.indexWhere((t) => t.id == trip.id);
+    print('index $tripIndex');
+    print('trip in collection ${_trips[tripIndex].name}');
+    try {
+      print(
+          'will update trip ${trip.name} image ${trip.imageUrl} audio ${trip.previewAudioUrl}');
+      await update(trip);
+      print(
+          'finished updating trip ${trip.name} image ${trip.imageUrl} audio ${trip.previewAudioUrl}');
+      for (Place place in _trips[tripIndex].places) {
+        print(
+            'will update place ${place.name} image ${place.imageUrl} audio ${place.previewAudioUrl} audio ${place.fullAudioUrl}');
+        await updatePlace(place);
+        print(
+            'finished updating place ${place.name} image ${place.imageUrl} audio ${place.previewAudioUrl} audio ${place.fullAudioUrl}');
+      }
+
+      print('will submit trip ${trip.name} submitted ${trip.submitted}');
+      await _controller.submit(_trips[tripIndex].id);
+      print(
+          'finished submitting trip ${_trips[tripIndex].name} submitted ${_trips[tripIndex].submitted}');
+    } catch (err) {
+      throw err;
+    }
   }
 
   Future<void> update(Trip trip) async {
-    await _controller.update(trip).then((updatedTrip) {
-      _trips[_trips.indexWhere((e) => e.id == updatedTrip.id)] = updatedTrip;
+    try {
+      List<Place> places = trip.places;
+      _trips[_trips.indexWhere((e) => e.id == trip.id)] =
+          await _controller.update(trip);
+      _trips[_trips.indexWhere((e) => e.id == trip.id)].places = places;
       notifyListeners();
-    }).catchError((err) => throw err);
+    } catch (err) {
+      throw err;
+    }
   }
 
   void addTrip(Trip trip) {
@@ -153,7 +178,7 @@ class TripProvider with ChangeNotifier {
             );
           });
       });
-    notifyListeners();
+    // notifyListeners();
 
     return ratings.length > 0
         ? ratings.map((e) => e.rating).reduce((a, b) => a + b) / ratings.length

@@ -1,6 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:tripit/core/controllers/user.controller.dart';
 import 'package:tripit/core/models/user.model.dart';
 import 'package:tripit/core/utils/utils.dart';
@@ -88,7 +89,7 @@ class UserProvider with ChangeNotifier {
     }).catchError((err) => throw err);
   }
 
-  void updateImage(PickedFile image) async {
+  void updateImage(File image) async {
     _user.imageUrl = image.path;
     _user.imageOrigin = FileOrigin.Local;
     notifyListeners();

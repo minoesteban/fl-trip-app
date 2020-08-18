@@ -96,7 +96,7 @@ class CartMain extends StatelessWidget {
                         radius: 30,
                         child: Text(
                           cart.items[i].price > 0
-                              ? '\$ ${cart.items[i].price.toStringAsPrecision(2)}'
+                              ? '\$ ${cart.items[i].price.toStringAsPrecision(3)}'
                               : 'free',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, color: Colors.white),

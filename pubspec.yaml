@@ -37,7 +37,6 @@ dependencies:
   geojson: ^0.9.1
   http: ^0.12.2
   badges: ^1.1.1
-  image_picker: ^0.6.7+4
   path: ^1.6.0
   path_provider: ^1.6.11
   permission_handler: ^5.0.1+1

@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../ui/utils/trip-submit.dart';
 import '../../core/utils/utils.dart';
 import '../../ui/screens/place-new.dart';
 import '../../ui/utils/show-message.dart';
@@ -603,7 +604,7 @@ class _TripNewState extends State<TripNew> {
                 ),
                 itemBuilder: (ctx, i) {
                   return ListTile(
-                    contentPadding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                    contentPadding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
                     leading: Container(
                       width: 60,
                       height: 50,
@@ -878,167 +879,4 @@ void onDeleteButton(Trip trip, BuildContext context) {
         'item': trip,
       });
   });
-}
-
-void submitTrip(Trip trip, BuildContext context) {
-  List<String> tripMessages = [];
-  List<Map<String, List<String>>> placeMessages = [];
-  bool hasErrors = false;
-  bool hasWarnings = false;
-
-  //trip errors
-  if (trip.imageUrl == null || !trip.imageUrl.contains('/'))
-    tripMessages.add('1;trip cover image file is not loaded');
-  if (trip.price == null) tripMessages.add('1;trip price is not valid');
-  if (trip.previewAudioUrl == null || !trip.previewAudioUrl.contains('/'))
-    tripMessages.add('1;trip preview audio file is not loaded');
-  if (trip.languageNameId.length < 1 || trip.languageFlagId.length < 1)
-    tripMessages.add('1;select a valid language and flag');
-  if (trip.places.length < 1) tripMessages.add('1;the trip has no places!');
-
-  //trip warnings
-  if (trip.name.length < 5) tripMessages.add('2;trip name is too short');
-  if (trip.about.length < 5)
-    tripMessages.add('2;trip description is too short');
-
-  if (trip.places.length > 0)
-    for (Place place in trip.places) {
-      Map<String, List<String>> messages = {'name': [], 'messages': []};
-
-      //place errors
-      if (place.imageUrl == null || !place.imageUrl.contains('/'))
-        messages['messages'].add('1;place picture file is not loaded');
-      if (place.price == null)
-        messages['messages'].add('1;place price not valid');
-      if (place.fullAudioUrl == null || !place.fullAudioUrl.contains('/'))
-        messages['messages'].add('1;full audio file is not loaded');
-
-      //place warnings
-      if (place.previewAudioUrl == null || !place.previewAudioUrl.contains('/'))
-        messages['messages'].add('2;preview audio file is not loaded');
-      if (place.name.length < 5)
-        messages['messages'].add('2;place name is too short');
-      if (place.about.length < 5)
-        messages['messages'].add('2;place description is too short');
-
-      if (messages['messages'].length > 0) {
-        messages['name'].add(place.name);
-        placeMessages.add(messages);
-      }
-    }
-
-  if (tripMessages.where((e) => e.split(';')[0] == '1').length > 0 ||
-      placeMessages
-              .where((e) =>
-                  e['messages'].where((p) => p.split(';')[0] == '1') != null)
-              .length >
-          0) hasErrors = true;
-
-  print(tripMessages.length);
-  print(placeMessages.length);
-
-  if (tripMessages.length > 0 || placeMessages.length > 0) hasWarnings = true;
-
-  print(hasErrors);
-  print(hasWarnings);
-
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      contentPadding: const EdgeInsets.fromLTRB(25, 25, 25, 0),
-      title: RichText(
-          text: TextSpan(
-              text: 'submitting ',
-              style: TextStyle(fontSize: 18, color: Colors.black),
-              children: [
-            TextSpan(
-                text: '${trip.name}',
-                style: TextStyle(fontWeight: FontWeight.bold))
-          ])),
-      content: Container(
-        width: MediaQuery.of(context).size.width - 50,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (tripMessages.length > 0)
-                ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 15),
-                  shrinkWrap: true,
-                  itemCount: tripMessages.length,
-                  itemBuilder: (_, i) => listItem(tripMessages[i].split(';')[0],
-                      tripMessages[i].split(';')[1]),
-                ),
-              if (placeMessages.length > 0)
-                ...buildPlacesMessages(placeMessages).expand((e) => e),
-              if (!hasErrors && !hasWarnings)
-                Text(
-                  'after you submit the trip, all of its info will be uploaded and reviewed by our team for its publication. \n\n you will not be able to change its main content after it is published. \n\n are you sure you want to continue?',
-                  style: _item,
-                )
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        if (!hasErrors && hasWarnings)
-          FlatButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('SUBMIT ANYWAY')),
-        FlatButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            'CLOSE',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ),
-        if (!hasErrors && !hasWarnings)
-          FlatButton(
-              onPressed: () => Navigator.pop(context), child: Text('SUBMIT')),
-        //TODO:si todo sale OK, hacer una subida masiva de archivos de trip y places, con progress y... notificaciones?
-      ],
-    ),
-  );
-}
-
-TextStyle _title = TextStyle(fontSize: 17, fontWeight: FontWeight.bold);
-TextStyle _item = TextStyle(fontSize: 15);
-
-Widget listItem(String type, String text) {
-  return ListTile(
-      dense: true,
-      title: Text(text, style: _item),
-      contentPadding: const EdgeInsets.all(0),
-      leading: type == '1' //error
-          ? Icon(
-              Icons.cancel,
-              color: Colors.red[800],
-            )
-          : type == '2' //warning
-              ? Icon(
-                  Icons.warning,
-                  color: Colors.yellow[800],
-                )
-              : Icon(
-                  Icons.info_outline,
-                  color: Colors.blue[400],
-                ));
-}
-
-List<List<Widget>> buildPlacesMessages(
-    List<Map<String, List<String>>> placeMessages) {
-  return placeMessages.map((messages) {
-    return [
-      Text('${messages['name'].first}', style: _title),
-      ListView.builder(
-        padding: EdgeInsets.only(bottom: 10),
-        physics: ClampingScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: messages['messages'].length,
-        itemBuilder: (_, i) => listItem(messages['messages'][i].split(';')[0],
-            messages['messages'][i].split(';')[1]),
-      ),
-    ];
-  }).toList();
 }

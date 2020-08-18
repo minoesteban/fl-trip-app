@@ -71,37 +71,16 @@ class PlaceList extends StatelessWidget {
   }
 }
 
-class PlaceCard extends StatefulWidget {
+class PlaceCard extends StatelessWidget {
   final Trip trip;
   final String selectedPlaceId;
 
   PlaceCard({this.trip, this.selectedPlaceId});
 
   @override
-  _PlaceCardState createState() => _PlaceCardState();
-}
-
-class _PlaceCardState extends State<PlaceCard>
-    with SingleTickerProviderStateMixin {
-  UserProvider _userProvider;
-  LanguageProvider _languageProvider;
-
-  @override
-  void initState() {
-    super.initState();
-    _userProvider = Provider.of<UserProvider>(context, listen: false);
-    _languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    Place _place = widget.trip.places
-        .firstWhere((place) => place.googlePlaceId == widget.selectedPlaceId);
+    Place _place = trip.places
+        .firstWhere((place) => place.googlePlaceId == selectedPlaceId);
 
     return Padding(
       padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -113,7 +92,7 @@ class _PlaceCardState extends State<PlaceCard>
         child: InkWell(
           onTap: () =>
               Navigator.pushNamed(context, TripMain.routeName, arguments: {
-            'trip': this.widget.trip,
+            'trip': trip,
           }),
           child: GridTile(
             child: ClipRRect(
@@ -130,48 +109,32 @@ class _PlaceCardState extends State<PlaceCard>
                   ),
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
-                _userProvider.tripIsPurchased(widget.trip.id)
-                    ? Align(
-                        alignment: Alignment.topRight,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(10)),
-                              color: Colors.green),
-                          height: 25,
-                          width: 50,
-                          child: Text(
-                            'got it!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      )
-                    : _place.price == 0
-                        ? Align(
-                            alignment: Alignment.topRight,
-                            child: Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(10),
-                                  ),
-                                  color: Colors.grey[500]),
-                              height: 25,
-                              width: 50,
-                              child: Text(
-                                'free!',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          )
-                        : null,
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.only(bottomLeft: Radius.circular(10)),
+                        color: Provider.of<UserProvider>(context, listen: false)
+                                .tripIsPurchased(trip.id)
+                            ? Colors.green
+                            : Colors.grey[500]),
+                    height: 25,
+                    width: 50,
+                    child: Text(
+                      Provider.of<UserProvider>(context, listen: false)
+                              .tripIsPurchased(trip.id)
+                          ? 'got it!'
+                          : _place.price == 0
+                              ? 'free!'
+                              : '\$ ${trip.price.toStringAsPrecision(3)}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                )
               ]),
             ),
             footer: Container(
@@ -189,7 +152,7 @@ class _PlaceCardState extends State<PlaceCard>
                   ),
                 ),
                 subtitle: Text(
-                  '${widget.trip.name}',
+                  '${trip.name}',
                   textAlign: TextAlign.start,
                   softWrap: true,
                   maxLines: 2,
@@ -231,28 +194,21 @@ class _PlaceCardState extends State<PlaceCard>
                       children: <Widget>[
                         ClipRRect(
                           borderRadius: BorderRadius.all(Radius.circular(3)),
-                          child:
-                              // Container(
-                              //   height: 25,
-                              //   width: 40,
-                              //   color: Colors.grey,
-                              // ),
-                              Flag(
-                            widget.trip.languageFlagId.toUpperCase(),
+                          child: Flag(
+                            trip.languageFlagId.toUpperCase(),
                             height: 25,
                             width: 40,
                             fit: BoxFit.cover,
                           ),
                         ),
                         Text(
-                          '${_languageProvider.getNativeName(widget.trip.languageNameId)}',
+                          Provider.of<LanguageProvider>(context, listen: false)
+                              .getNativeName(trip.languageNameId),
                           style: TextStyle(color: Colors.white),
                         )
                       ],
                     ),
-                    SizedBox(
-                      width: 10,
-                    ),
+                    const SizedBox(width: 10),
                     Player(_place.previewAudioUrl, false),
                   ],
                 ),

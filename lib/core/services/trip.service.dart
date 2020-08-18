@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:tripit/core/utils/utils.dart';
 import '../../core/models/trip.model.dart';
 import '../../config.dart';
 
@@ -78,21 +78,13 @@ class TripService {
 
   Future<String> uploadImage(int id, File pickedFile) async {
     String fileExtension = path.extension(pickedFile.path).substring(1);
-    String fileName = path.basenameWithoutExtension(pickedFile.path);
-    String fileNameZipped = fileName + '_cmp';
     String url = '$_endpoint/trips/$id/files?type=$fileExtension';
     var res = await http.put(url);
     if (res.statusCode == HttpStatus.ok) {
       String downloadUrl = json.decode(res.body)['downloadUrl'];
       File file = File(pickedFile.path);
 
-      file = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path,
-        '${file.absolute.path.replaceAll(fileName, fileNameZipped)}',
-        minHeight: 800,
-        minWidth: 800,
-        quality: 80,
-      );
+      file = await compress(file);
 
       res = await http.put(json.decode(res.body)['uploadUrl'],
           body: file.readAsBytesSync());

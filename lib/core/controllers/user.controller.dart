@@ -1,4 +1,4 @@
-import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../core/models/user.model.dart';
 import '../../core/services/user.service.dart';
 
@@ -13,7 +13,7 @@ class UserController {
     return await _userService.update(newUser).catchError((err) => throw err);
   }
 
-  Future<String> uploadImage(int id, PickedFile image) async {
+  Future<String> uploadImage(int id, File image) async {
     return await _userService.uploadImage(id, image);
   }
 }

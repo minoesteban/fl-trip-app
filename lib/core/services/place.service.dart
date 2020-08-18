@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:tripit/core/utils/utils.dart';
 import '../../config.dart';
 import '../../core/models/place.model.dart';
 
@@ -52,8 +51,6 @@ class PlaceService {
   Future<String> uploadImage(int tripId, int id, File image) async {
     print('placeservice-uploadimage');
     String fileExtension = path.extension(image.path).substring(1);
-    String fileName = path.basenameWithoutExtension(image.path);
-    String fileNameZipped = fileName + '_cmp';
     String url =
         '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension';
     var res = await http.put(url);
@@ -61,13 +58,7 @@ class PlaceService {
       String downloadUrl = json.decode(res.body)['downloadUrl'];
       File file = File(image.path);
 
-      file = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path,
-        '${file.absolute.path.replaceAll(fileName, fileNameZipped)}',
-        minHeight: 500,
-        minWidth: 500,
-        quality: 90,
-      );
+      file = await compress(file);
 
       res = await http.put(json.decode(res.body)['uploadUrl'],
           body: file.readAsBytesSync());

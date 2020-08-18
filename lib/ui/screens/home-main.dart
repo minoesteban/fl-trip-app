@@ -1,6 +1,8 @@
 import 'package:badges/badges.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/providers/user.provider.dart';
 import 'package:tripit/ui/screens/cart-main.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/cart.provider.dart';
@@ -13,58 +15,53 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget buildTripList() {
-      List<Trip> _ts = [];
-      return Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width - 40,
-          height: MediaQuery.of(context).size.height / 6,
-          child: Consumer<TripProvider>(
-            builder: (context, tripsData, _) {
-              _ts = tripsData.trips.where((trip) => trip.published).toList();
-              return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                shrinkWrap: true,
-                itemCount: _ts.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    color: Colors.white,
-                    width: MediaQuery.of(context).size.width / 2.5,
-                    child: Card(
-                      elevation: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Center(
-                          child: Wrap(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, TripMain.routeName,
-                                      arguments: {
-                                        'trip': _ts[index],
-                                      });
-                                },
-                                child: Text(
-                                  '${_ts[index].name}',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.2),
-                                ),
-                              ),
-                            ],
+    List<Trip> _ts = [];
+    List<Trip> _purchased = [];
+    List<Trip> _favourites = [];
+    List<Trip> _newest = [];
+    List<Trip> _recommended = [];
+
+    Widget buildTripList(List<Trip> _ts) {
+      return GridView.count(
+        shrinkWrap: true,
+        physics: ClampingScrollPhysics(),
+        crossAxisCount: 2,
+        primary: false,
+        childAspectRatio: 0.85,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        children: _ts
+            .map((trip) => ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    onTap: () => Navigator.pushNamed(
+                        context, TripMain.routeName,
+                        arguments: {
+                          'trip': trip,
+                        }),
+                    child: GridTile(
+                      child: CachedNetworkImage(
+                        imageUrl: trip.imageUrl,
+                        fit: BoxFit.cover,
+                      ),
+                      footer: GridTileBar(
+                        backgroundColor: Colors.black38,
+                        title: Text(
+                          trip.name,
+                          softWrap: true,
+                          overflow: TextOverflow.fade,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 1.1,
+                            fontFamily: 'Nunito',
                           ),
                         ),
                       ),
                     ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
+                  ),
+                ))
+            .toList(),
       );
     }
 
@@ -95,64 +92,97 @@ class Home extends StatelessWidget {
                 badgeColor: Colors.white,
                 child: IconButton(
                     icon: Icon(Icons.shopping_cart),
-                    onPressed: () {
-                      Navigator.pushNamed(context, CartMain.routeName);
-                    }),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, CartMain.routeName)),
               ),
             ),
           ),
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'recent trips',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Divider(
-                  height: 20,
-                ),
-                buildTripList(),
-                // Divider(
-                //   height: 20,
-                // ),
-                // Text(
-                //   'my trips',
-                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                // ),
-                // Divider(
-                //   height: 20,
-                // ),
-                // buildTripList(),
-                // Divider(
-                //   height: 20,
-                // ),
-                // Text(
-                //   'recommended trips',
-                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                // ),
-                // Divider(
-                //   height: 20,
-                // ),
-                // buildTripList(),
-                // Divider(
-                //   height: 20,
-                // ),
-                // Text(
-                //   'new trips',
-                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                // ),
-                // Divider(
-                //   height: 20,
-                // ),
-                // buildTripList(),
-              ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await Provider.of<TripProvider>(context, listen: false).loadTrips();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              child: Consumer2<TripProvider, UserProvider>(
+                  builder: (context, tripsData, userData, _) {
+                _ts = tripsData.trips.where((trip) => trip.published)?.toList();
+                _purchased = _ts
+                    .where((trip) =>
+                        userData.user.purchasedTrips.contains(trip.id) ||
+                        userData.user.purchasedPlaces
+                            .contains(_ts.expand((t) => t.places)))
+                    ?.toList();
+
+                _favourites = _ts
+                    .where((trip) =>
+                        userData.user.favouriteTrips.contains(trip.id) ||
+                        userData.user.favouritePlaces
+                            .contains(_ts.expand((t) => t.places)))
+                    ?.toList();
+
+                _favourites.removeWhere((t) => _purchased.contains(t));
+
+                _newest = _ts.where((trip) => trip.updatedAt != null)?.toList();
+                _newest.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+                _newest = _newest
+                    ?.getRange(0, _newest.length < 5 ? _newest.length : 5)
+                    ?.toList();
+
+                _recommended = _ts
+                    .where((t) =>
+                        !_favourites.contains(t) &&
+                        !_newest.contains(t) &&
+                        !_purchased.contains(t))
+                    ?.toList();
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    if (_purchased.length > 0) ...[
+                      Text(
+                        'your purchased trips & places',
+                        style: _title,
+                      ),
+                      const SizedBox(height: 15),
+                      buildTripList(_purchased),
+                      const Divider(height: 40),
+                    ],
+                    if (_favourites.length > 0) ...[
+                      Text(
+                        'your favourite trips & places',
+                        style: _title,
+                      ),
+                      const SizedBox(height: 15),
+                      buildTripList(_favourites),
+                      const Divider(height: 40),
+                    ],
+                    if (_newest.length > 0) ...[
+                      Text(
+                        'newest trips',
+                        style: _title,
+                      ),
+                      const SizedBox(height: 15),
+                      buildTripList(_newest),
+                      const Divider(height: 40),
+                    ],
+                    if (_recommended.length > 0) ...[
+                      Text(
+                        'recommended for you',
+                        style: _title,
+                      ),
+                      const SizedBox(height: 15),
+                      buildTripList(_recommended),
+                      const Divider(height: 40),
+                    ],
+                  ],
+                );
+              }),
             ),
           ),
         ),
@@ -160,3 +190,5 @@ class Home extends StatelessWidget {
     );
   }
 }
+
+TextStyle _title = TextStyle(fontSize: 18, fontWeight: FontWeight.bold);

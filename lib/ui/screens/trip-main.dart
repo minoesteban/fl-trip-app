@@ -36,17 +36,17 @@ class TripMain extends StatelessWidget {
           pinned: true,
           actions: [
             IconButton(
-              icon: Icon(Icons.share),
+              icon: const Icon(Icons.share),
               onPressed: () => print('share'),
             ),
             Consumer<UserProvider>(
               builder: (_, user, __) => IconButton(
                 iconSize: 30,
                 icon: user.tripIsFavourite(trip.id)
-                    ? Icon(
+                    ? const Icon(
                         Icons.favorite,
                       )
-                    : Icon(
+                    : const Icon(
                         Icons.favorite_border,
                       ),
                 onPressed: () {
@@ -74,7 +74,7 @@ class TripMain extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation(Colors.grey[100]),
                 ),
               ),
-              errorWidget: (context, url, error) => Icon(Icons.error),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
           ),
         ),
@@ -88,10 +88,22 @@ class TripMain extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
+                    if (trip.submitted && !trip.published) ...[
+                      Text(
+                          'this trip has been submitted and it is under review! we will let you know once it is published',
+                          maxLines: 5,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold)),
+                      const Divider(height: 30),
+                    ],
                     //location & purchase
                     ListTile(
                       title: Text(
-                        '${Provider.of<CountryProvider>(context, listen: false).getName(trip.countryId)}',
+                        Provider.of<CountryProvider>(context, listen: false)
+                            .getName(trip.countryId),
                         softWrap: true,
                         style: _titleStyle,
                       ),
@@ -106,14 +118,17 @@ class TripMain extends StatelessWidget {
                               child: Text(
                                 user.tripIsPurchased(trip.id)
                                     ? 'purchased'
-                                    : 'add to cart \$${trip.price}',
+                                    : trip.price == 0
+                                        ? 'add to cart   (free)'
+                                        : 'add to cart    \$${trip.price}',
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 18,
                                     letterSpacing: 1.5),
                               ),
-                              onPressed: user.tripIsPurchased(trip.id)
+                              onPressed: user.tripIsPurchased(trip.id) ||
+                                      trip.ownerId == user.user.id
                                   ? null
                                   : () {
                                       Provider.of<CartProvider>(context,
@@ -122,10 +137,9 @@ class TripMain extends StatelessWidget {
                                       user.togglePurchasedTrip(trip.id);
                                       Scaffold.of(ctx).showSnackBar(
                                         SnackBar(
-                                          duration: Duration(seconds: 1),
-                                          content: Text(
-                                            'trip added to cart!',
-                                          ),
+                                          duration: const Duration(seconds: 1),
+                                          content:
+                                              const Text('trip added to cart!'),
                                           action: SnackBarAction(
                                               label: 'GO TO CART',
                                               onPressed: () {
@@ -140,9 +154,7 @@ class TripMain extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Divider(
-                      height: 30,
-                    ),
+                    const Divider(height: 30),
                     //downloads, rating and language
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -162,7 +174,7 @@ class TripMain extends StatelessWidget {
                             ),
                           ],
                         ),
-                        VerticalDivider(),
+                        const VerticalDivider(),
                         FutureBuilder(
                             future: Provider.of<TripProvider>(context,
                                     listen: false)
@@ -185,7 +197,7 @@ class TripMain extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          '${snapshot.data.toStringAsPrecision(2)}',
+                                          snapshot.data.toStringAsPrecision(2),
                                           style: TextStyle(
                                               color: Colors.amber[500],
                                               fontWeight: FontWeight.bold,
@@ -201,39 +213,31 @@ class TripMain extends StatelessWidget {
                                   ],
                                 );
                             }),
-                        VerticalDivider(),
+                        const VerticalDivider(),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Container(
-                            //   height: 30,
-                            //   width: 50,
-                            //   color: Colors.grey,
-                            // ),
                             Flag(
                               trip.languageFlagId.toUpperCase(),
                               height: 30,
                               width: 50,
                             ),
                             Text(
-                              '${Provider.of<LanguageProvider>(context, listen: false).getNativeName(trip.languageNameId)}',
+                              Provider.of<LanguageProvider>(context,
+                                      listen: false)
+                                  .getNativeName(trip.languageNameId),
                               style: _subtitleStyle,
                             ),
                           ],
                         ),
                       ],
                     ),
-                    Divider(
-                      height: 30,
-                    ),
+                    const Divider(height: 30),
                     //preview audio
-                    trip.previewAudioUrl == null
-                        ? Center()
-                        : Player(trip.previewAudioUrl, true),
-                    Divider(
-                      height: 30,
-                    ),
+                    if (trip.previewAudioUrl != null)
+                      Player(trip.previewAudioUrl, true),
+                    if (trip.previewAudioUrl != null) const Divider(height: 30),
 
                     //pictures
                     Container(
@@ -254,41 +258,29 @@ class TripMain extends StatelessWidget {
                                 child: Card(
                                   elevation: 1,
                                   child: Hero(
-                                    tag: '${trip.places[i].imageUrl}',
+                                    tag: trip.places[i].imageUrl,
                                     child: CachedNetworkImage(
-                                      fit: BoxFit.cover,
-                                      imageUrl: '${trip.places[i].imageUrl}',
-                                      placeholder: (context, url) => Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 0.5,
-                                          valueColor: AlwaysStoppedAnimation(
-                                              Colors.grey[100]),
-                                        ),
-                                      ),
-                                      errorWidget: (context, url, error) =>
-                                          Icon(Icons.error),
-                                    ),
+                                        fit: BoxFit.cover,
+                                        imageUrl: trip.places[i].imageUrl,
+                                        placeholder: (context, url) => Center(
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 0.5,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation(
+                                                        Colors.grey[100]))),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error)),
                                   ),
                                 ),
                               )),
                     ),
-                    Divider(
-                      height: 40,
-                    ),
+                    const Divider(height: 40),
                     //about text
-                    Text(
-                      'about the trip',
-                      style: _titleStyle,
-                    ),
+                    Text('about the trip', style: _titleStyle),
                     CollapsibleText(trip.about),
-                    Divider(
-                      height: 40,
-                    ),
+                    const Divider(height: 40),
                     //map and place list
-                    Text(
-                      'places',
-                      style: _titleStyle,
-                    ),
+                    Text('places', style: _titleStyle),
                     Card(
                       child: Column(
                         children: [
@@ -302,15 +294,9 @@ class TripMain extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 //TODO: obtener distancia total del trip (lineas con geometry?)
-                                Text(
-                                  'total distance',
-                                  style: _titleStyle,
-                                ),
-                                Text(
-                                  '15.6 Km',
-                                  style: _subtitleStyle,
-                                ),
-                                SizedBox(),
+                                Text('total distance', style: _titleStyle),
+                                Text('15.6 Km', style: _subtitleStyle),
+                                const SizedBox(),
                               ],
                             ),
                             children: [
@@ -327,9 +313,7 @@ class TripMain extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(
-              height: 30,
-            ),
+            const SizedBox(height: 30),
           ]),
         ),
       ]),

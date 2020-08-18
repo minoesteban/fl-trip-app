@@ -27,7 +27,7 @@
 //             mainAxisSize: MainAxisSize.min,
 //             children: [
 //               Text(
-//                 '${rating.toStringAsPrecision(2)}',
+//                 '${rating.toStringAsPrecision(3)}',
 //                 style: TextStyle(
 //                     color: Colors.amber[500],
 //                     fontWeight: FontWeight.bold,
