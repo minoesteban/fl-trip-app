@@ -17,6 +17,8 @@ import '../../ui/utils/show-message.dart';
 import '../../ui/screens/trip-main.dart';
 import '../../ui/screens/trip-new.dart';
 
+//TODO: Error al guardar trip nuevo con muy poca info (capaz en profile main)
+//TODO: Quitar espacios de los nombres de archivos seleccionados
 class Profile extends StatelessWidget {
   static const routeName = '/profile';
 
