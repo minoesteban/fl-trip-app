@@ -85,7 +85,6 @@ void main() async {
                         id: 0,
                         name: '',
                         countryId: '',
-                        price: 0,
                         ownerId: _userProvider.user.id);
                 return TripNew(trip);
               });

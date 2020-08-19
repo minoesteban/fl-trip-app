@@ -262,7 +262,7 @@ class Profile extends StatelessWidget {
                             : Navigator.pushNamed<Map<String, dynamic>>(
                                 context,
                                 TripNew.routeName,
-                                arguments: {'trip': _trips[i]},
+                                arguments: {'trip': _trips[i].copyWith()},
                               ).then((res) {
                                 if (res != null) {
                                   if (res['action'] == 'delete')

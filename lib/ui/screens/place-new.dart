@@ -26,7 +26,7 @@ class PlaceNew extends StatefulWidget {
 class _PlaceNewState extends State<PlaceNew> {
   Completer<GoogleMapController> _controller = Completer();
   final _form = GlobalKey<FormState>();
-  Place _newPlace = Place();
+  Place _newPlace;
   final _imageFocus = FocusNode();
   final _imageController = TextEditingController();
   final _locationFocus = FocusNode();
@@ -47,26 +47,26 @@ class _PlaceNewState extends State<PlaceNew> {
     super.initState();
     _imageFocus.addListener(_updateImage);
     _newPlace = widget._place;
-    if (_newPlace.id > 0) {
-      _nameController.text = _newPlace.name ?? '';
-      _aboutController.text = _newPlace.about ?? '';
-      _priceController.text = _newPlace.price != null
-          ? _newPlace.price != 99999 ? _newPlace.price.toString() : ''
-          : '';
-      _imageController.text = _newPlace.imageUrl ?? '';
-      _locationController.text = _newPlace.locationName ?? '';
-      _fullAudioController.text = _newPlace.fullAudioUrl;
-      _previewAudioController.text = _newPlace.previewAudioUrl;
-      if (_newPlace.fullAudioUrl != null)
-        _newPlace.fullAudioOrigin = _newPlace.fullAudioUrl.startsWith('http')
-            ? FileOrigin.Network
-            : FileOrigin.Local;
-      if (_newPlace.previewAudioUrl != null)
-        _newPlace.previewAudioOrigin =
-            _newPlace.previewAudioUrl.startsWith('http')
-                ? FileOrigin.Network
-                : FileOrigin.Local;
-    }
+    // if (_newPlace.id > 0) {
+    _nameController.text = _newPlace.name ?? '';
+    _aboutController.text = _newPlace.about ?? '';
+    _priceController.text = _newPlace.price != null
+        ? _newPlace.price != 99999 ? _newPlace.price.toString() : ''
+        : '';
+    _imageController.text = _newPlace.imageUrl ?? '';
+    _locationController.text = _newPlace.locationName ?? '';
+    _fullAudioController.text = _newPlace.fullAudioUrl;
+    _previewAudioController.text = _newPlace.previewAudioUrl;
+    if (_newPlace.fullAudioUrl != null)
+      _newPlace.fullAudioOrigin = _newPlace.fullAudioUrl.startsWith('http')
+          ? FileOrigin.Network
+          : FileOrigin.Local;
+    if (_newPlace.previewAudioUrl != null)
+      _newPlace.previewAudioOrigin =
+          _newPlace.previewAudioUrl.startsWith('http')
+              ? FileOrigin.Network
+              : FileOrigin.Local;
+    // }
   }
 
   @override
@@ -131,31 +131,6 @@ class _PlaceNewState extends State<PlaceNew> {
                 ),
               ));
 
-    Widget buildMap() {
-      return Container(
-        decoration: BoxDecoration(
-            border: Border.all(width: 1, color: Colors.grey[400]),
-            borderRadius: BorderRadius.all(Radius.circular(10))),
-        height: 200,
-        padding: const EdgeInsets.all(5),
-        child: GoogleMap(
-          liteModeEnabled: Platform.isAndroid ? true : null,
-          buildingsEnabled: false,
-          mapToolbarEnabled: false,
-          myLocationButtonEnabled: false,
-          myLocationEnabled: false,
-          mapType: MapType.normal,
-          initialCameraPosition: CameraPosition(
-              target: LatLng(_newPlace.coordinates.latitude,
-                  _newPlace.coordinates.longitude),
-              zoom: 13),
-          onMapCreated: (GoogleMapController controller) {
-            _controller.complete(controller);
-          },
-        ),
-      );
-    }
-
     List<Widget> buildCoverImage() {
       return [
         Stack(alignment: Alignment.bottomCenter, children: [
@@ -206,11 +181,7 @@ class _PlaceNewState extends State<PlaceNew> {
                   labelText: 'place picture',
                   labelStyle: TextStyle(
                       color: Colors.white70, fontWeight: FontWeight.bold),
-                  suffixIcon: IconButton(
-                    onPressed: () async {},
-                    color: Colors.white70,
-                    icon: const Icon(Icons.file_upload),
-                  ),
+                  suffixIcon: const Icon(Icons.file_upload),
                 ),
                 focusNode: _imageFocus,
                 controller: _imageController,
@@ -359,12 +330,7 @@ class _PlaceNewState extends State<PlaceNew> {
           },
           decoration: InputDecoration(
             labelText: 'full audio',
-            suffixIcon: IconButton(
-              icon: Icon(Icons.file_upload),
-              onPressed: () async {
-                await selectAudioFile(true);
-              },
-            ),
+            suffixIcon: const Icon(Icons.file_upload),
           ),
           readOnly: true,
           controller: _fullAudioController,
@@ -380,19 +346,14 @@ class _PlaceNewState extends State<PlaceNew> {
       return [
         TextFormField(
           onTap: () async {
-            await selectAudioFile(true);
+            await selectAudioFile(false);
           },
           decoration: InputDecoration(
             labelText: 'preview audio',
             helperMaxLines: 2,
             helperText:
                 'upload preview audio. if no audio is uploaded here, the first 30 seconds of the full audio will be used as preview',
-            suffixIcon: IconButton(
-              icon: Icon(Icons.file_upload),
-              onPressed: () async {
-                await selectAudioFile(true);
-              },
-            ),
+            suffixIcon: const Icon(Icons.file_upload),
           ),
           readOnly: true,
           controller: _previewAudioController,
@@ -462,7 +423,7 @@ class _PlaceNewState extends State<PlaceNew> {
                   TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
           actions: [
             IconButton(
-                icon: Icon(Icons.delete),
+                icon: const Icon(Icons.delete),
                 onPressed: () {
                   showDialog(
                     context: context,
@@ -500,7 +461,7 @@ class _PlaceNewState extends State<PlaceNew> {
                 }),
             Builder(
               builder: (ctx) => IconButton(
-                  icon: Icon(Icons.check),
+                  icon: const Icon(Icons.check),
                   onPressed: () {
                     _saveForm(ctx);
                   }),

@@ -125,6 +125,7 @@ class TripProvider with ChangeNotifier {
   }
 
   Future<void> updatePlace(Place place) async {
+    print('update place');
     int tripIndex = _trips.indexWhere((trip) => trip.id == place.tripId);
     int placeIndex =
         _trips[tripIndex].places.indexWhere((p) => place.id == p.id);

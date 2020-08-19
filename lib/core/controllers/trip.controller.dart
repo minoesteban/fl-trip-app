@@ -13,12 +13,13 @@ class TripController {
   Future<Trip> create(Trip trip) async {
     try {
       Trip createdTrip = await _service.create(trip);
-      if (trip.imageOrigin == FileOrigin.Local) {
+      if (trip.imageOrigin == FileOrigin.Local && trip.imageUrl.isNotEmpty) {
         File image = File(trip.imageUrl);
         createdTrip.imageUrl = await uploadImage(createdTrip.id, image);
         createdTrip.imageOrigin = FileOrigin.Network;
       }
-      if (trip.audioOrigin == FileOrigin.Local) {
+      if (trip.audioOrigin == FileOrigin.Local &&
+          trip.previewAudioUrl.isNotEmpty) {
         File audio = File(trip.previewAudioUrl);
         createdTrip.previewAudioUrl = await uploadAudio(createdTrip.id, audio);
         createdTrip.audioOrigin = FileOrigin.Network;
@@ -36,12 +37,13 @@ class TripController {
   Future<Trip> update(Trip trip) async {
     try {
       Trip updatedTrip = await _service.update(trip);
-      if (trip.imageOrigin == FileOrigin.Local) {
+      if (trip.imageOrigin == FileOrigin.Local && trip.imageUrl.isNotEmpty) {
         File image = File(trip.imageUrl);
         updatedTrip.imageUrl = await uploadImage(updatedTrip.id, image);
         updatedTrip.imageOrigin = FileOrigin.Network;
       }
-      if (trip.audioOrigin == FileOrigin.Local) {
+      if (trip.audioOrigin == FileOrigin.Local &&
+          trip.previewAudioUrl.isNotEmpty) {
         File audio = File(trip.previewAudioUrl);
         updatedTrip.previewAudioUrl = await uploadAudio(updatedTrip.id, audio);
         updatedTrip.audioOrigin = FileOrigin.Network;

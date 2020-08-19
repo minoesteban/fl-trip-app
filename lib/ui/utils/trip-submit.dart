@@ -117,14 +117,19 @@ void submitTrip(Trip trip, BuildContext context) async {
       }
     }
 
-  if (tripMessages.where((e) => e.split(';')[0] == '1').length > 0 ||
-      placeMessages
-              .where((e) =>
-                  e['messages'].where((p) => p.split(';')[0] == '1') != null)
-              .length >
-          0) hasErrors = true;
+  if (tripMessages.where((e) => e.split(';')[0] == '1').length > 0)
+    hasErrors = true;
+
+  if (placeMessages
+          .where((e) =>
+              e['messages'].where((p) => p.split(';')[0] == '1').length > 0)
+          .length >
+      0) hasErrors = true;
 
   if (tripMessages.length > 0 || placeMessages.length > 0) hasWarnings = true;
+
+  print('errors $hasErrors');
+  print('warnings $hasWarnings');
 
   showDialog<bool>(
     context: context,
@@ -166,7 +171,7 @@ void submitTrip(Trip trip, BuildContext context) async {
         ),
       ),
       actions: [
-        if (!hasErrors && hasWarnings)
+        if (hasWarnings && !hasErrors)
           FlatButton(
             child: Text('SUBMIT ANYWAY'),
             onPressed: () => Navigator.of(context).pop(true),

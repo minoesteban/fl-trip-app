@@ -40,9 +40,8 @@ class PlaceController {
 
   Future<Place> uploadImage(Place newPlace, Place oldPlace) async {
     try {
-      if (oldPlace.imageUrl != null &&
-          oldPlace.imageUrl.length > 0 &&
-          oldPlace.imageOrigin == FileOrigin.Local) {
+      if (oldPlace.imageOrigin == FileOrigin.Local &&
+          oldPlace.imageUrl.isNotEmpty) {
         File image = File(oldPlace.imageUrl);
         newPlace.imageUrl =
             await _service.uploadImage(newPlace.tripId, newPlace.id, image);
@@ -56,17 +55,15 @@ class PlaceController {
 
   Future<Place> uploadAudio(Place newPlace, Place oldPlace) async {
     try {
-      if (oldPlace.previewAudioUrl != null &&
-          oldPlace.previewAudioUrl.length > 0 &&
-          oldPlace.previewAudioOrigin == FileOrigin.Local) {
+      if (oldPlace.previewAudioOrigin == FileOrigin.Local &&
+          oldPlace.previewAudioUrl.isNotEmpty) {
         File audio = File(oldPlace.previewAudioUrl);
         newPlace.previewAudioUrl = await _service.uploadAudio(
             newPlace.tripId, newPlace.id, audio, false);
         newPlace.previewAudioOrigin = FileOrigin.Network;
       }
-      if (oldPlace.fullAudioUrl != null &&
-          oldPlace.fullAudioUrl.length > 0 &&
-          oldPlace.fullAudioOrigin == FileOrigin.Local) {
+      if (oldPlace.fullAudioOrigin == FileOrigin.Local &&
+          oldPlace.fullAudioUrl.isNotEmpty) {
         File audio = File(oldPlace.fullAudioUrl);
         newPlace.fullAudioUrl = await _service.uploadAudio(
             newPlace.tripId, newPlace.id, audio, true);

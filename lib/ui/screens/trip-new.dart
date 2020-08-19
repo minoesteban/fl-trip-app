@@ -18,7 +18,6 @@ import '../../core/models/trip.model.dart';
 import '../../providers/trip.provider.dart';
 import '../../providers/user.provider.dart';
 import '../../core/models/place.model.dart';
-import '../../ui/widgets/store-trip-map.dart';
 import '../../ui/utils/files-permission.dart';
 import '../../providers/country.provider.dart';
 import '../../ui/widgets/place-new-search.dart';
@@ -66,7 +65,7 @@ class _TripNewState extends State<TripNew> {
   @override
   void initState() {
     super.initState();
-    _imageFocus.addListener(_updateImage);
+    // _imageFocus.addListener(_updateImage);
     _localeName = Platform.localeName;
     print(_localeName);
     _newTrip = widget.trip;
@@ -74,7 +73,8 @@ class _TripNewState extends State<TripNew> {
     _nameController.text = _newTrip.name ?? '';
     _aboutController.text = _newTrip.about ?? '';
     _imageController.text = _newTrip.imageUrl ?? '';
-    _priceController.text = _newTrip.price.toString() ?? '';
+    _priceController.text =
+        _newTrip.price == null ? '' : _newTrip.price.toString();
     _audioController.text = _newTrip.previewAudioUrl ?? '';
     _locationController.text = _newTrip.locationName ?? '';
     _languageCodeController.text = _newTrip.languageNameId != null
@@ -108,7 +108,7 @@ class _TripNewState extends State<TripNew> {
 
   @override
   void dispose() {
-    _imageFocus.removeListener(_updateImage);
+    // _imageFocus.removeListener(_updateImage);
     _imageFocus.dispose();
     _imageController.dispose();
     _nameFocus.dispose();
@@ -146,19 +146,16 @@ class _TripNewState extends State<TripNew> {
     }
   }
 
-  void _updateImage() {
-    if (!_imageFocus.hasFocus) {
-      setState(() {});
-    }
-  }
+  // void _updateImage() {
+  //   if (!_imageFocus.hasFocus) {
+  //     setState(() {});
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    print('build trip new');
-
     //get location name
-    if (_locationController.text == '' && _newTrip.id > 0) {
-      print('obtengo location de places');
+    if (_locationController.text == '' && _newTrip.id > 0)
       places
           .getDetailsByPlaceId(
             _newTrip.googlePlaceId,
@@ -173,7 +170,6 @@ class _TripNewState extends State<TripNew> {
                   },
                 ),
               ));
-    }
 
     List<Widget> buildCoverImage() {
       return [
@@ -215,10 +211,10 @@ class _TripNewState extends State<TripNew> {
                         File file =
                             await FilePicker.getFile(type: FileType.image);
                         if (file != null) {
+                          if (file.path.contains(' '))
+                            file.renameSync(file.path.replaceAll(' ', ''));
                           setState(() {
-                            _newTrip.imageUrl = file.path;
                             _imageController.text = file.path;
-                            _newTrip.imageOrigin = FileOrigin.Local;
                           });
                         }
                       }
@@ -229,10 +225,7 @@ class _TripNewState extends State<TripNew> {
                       labelText: 'cover image',
                       labelStyle: TextStyle(
                           color: Colors.white70, fontWeight: FontWeight.bold),
-                      suffixIcon: Icon(
-                        Icons.file_upload,
-                        color: Colors.white70,
-                      ),
+                      suffixIcon: const Icon(Icons.file_upload),
                     ),
                     focusNode: _imageFocus,
                     controller: _imageController,
@@ -252,57 +245,13 @@ class _TripNewState extends State<TripNew> {
           decoration: InputDecoration(
             labelText: 'trip name',
           ),
+          validator: (value) =>
+              value.isEmpty ? 'insert a name for the trip' : null,
           textInputAction: TextInputAction.next,
           controller: _nameController,
           focusNode: _nameFocus,
           onFieldSubmitted: (_) =>
               FocusScope.of(context).requestFocus(_locationFocus),
-        ),
-        const SizedBox(
-          height: 30,
-        ),
-      ];
-    }
-
-    List<Widget> buildPrice() {
-      return [
-        TextFormField(
-          decoration: InputDecoration(
-            labelText: 'price',
-            helperText: 'write 0 for free',
-            suffix: Padding(
-              padding: const EdgeInsets.only(right: 10),
-              child: Text('USD'),
-            ),
-          ),
-          validator: (value) =>
-              value.isEmpty ? 'input a valid price! insert 0 for free' : null,
-          keyboardType: TextInputType.numberWithOptions(decimal: true),
-          textInputAction: TextInputAction.next,
-          controller: _priceController,
-          focusNode: _priceFocus,
-          onFieldSubmitted: (_) =>
-              FocusScope.of(context).requestFocus(_aboutFocus),
-        ),
-        const SizedBox(
-          height: 30,
-        ),
-      ];
-    }
-
-    List<Widget> buildDescription() {
-      return [
-        TextFormField(
-          maxLines: 5,
-          keyboardType: TextInputType.multiline,
-          decoration: InputDecoration(
-            labelText: 'about the trip',
-          ),
-          textInputAction: TextInputAction.newline,
-          controller: _aboutController,
-          focusNode: _aboutFocus,
-          onFieldSubmitted: (value) =>
-              FocusScope.of(context).requestFocus(_priceFocus),
         ),
         const SizedBox(
           height: 30,
@@ -357,6 +306,7 @@ class _TripNewState extends State<TripNew> {
             helperText: 'trip\'s main city / location',
             suffixIcon: const Icon(Icons.search),
           ),
+          validator: (value) => value.isEmpty ? 'select a location!' : null,
           controller: _locationController,
           focusNode: _locationFocus,
           textInputAction: TextInputAction.next,
@@ -369,18 +319,105 @@ class _TripNewState extends State<TripNew> {
       ];
     }
 
+    List<Widget> buildDescription() {
+      return [
+        TextFormField(
+          maxLines: 5,
+          keyboardType: TextInputType.multiline,
+          decoration: InputDecoration(
+            labelText: 'about the trip',
+          ),
+          textInputAction: TextInputAction.newline,
+          controller: _aboutController,
+          focusNode: _aboutFocus,
+          onFieldSubmitted: (value) =>
+              FocusScope.of(context).requestFocus(_priceFocus),
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    List<Widget> buildPrice() {
+      return [
+        TextFormField(
+          decoration: InputDecoration(
+            labelText: 'price',
+            helperText: 'write 0 for free',
+            suffix: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Text('USD'),
+            ),
+          ),
+          validator: (value) =>
+              value.isEmpty ? 'input a valid price! insert 0 for free' : null,
+          keyboardType: TextInputType.numberWithOptions(decimal: true),
+          textInputAction: TextInputAction.next,
+          controller: _priceController,
+          focusNode: _priceFocus,
+          onFieldSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_audioFocus),
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
+    List<Widget> buildPreviewAudio() {
+      return [
+        TextFormField(
+          onTap: () async {
+            if (await onAddFileClicked(context, FileType.audio)) {
+              File file = await FilePicker.getFile(
+                  type: FileType.custom,
+                  allowedExtensions: [
+                    'mpeg',
+                    'wav',
+                    'webm',
+                    'ogg',
+                    'mp3',
+                    'mp4',
+                    'm4a'
+                  ]);
+
+              if (file != null) {
+                setState(() {
+                  _audioController.text = file.absolute.path;
+                  _newTrip.previewAudioUrl = file.path;
+                  _newTrip.audioOrigin = FileOrigin.Local;
+                });
+              }
+            }
+          },
+          decoration: InputDecoration(
+            labelText: 'preview audio',
+            helperText: 'upload preview audio. max length 2 minutes',
+            suffixIcon: const Icon(Icons.file_upload),
+          ),
+          readOnly: true,
+          textInputAction: TextInputAction.next,
+          controller: _audioController,
+          focusNode: _audioFocus,
+          onFieldSubmitted: (value) =>
+              Focus.of(context).requestFocus(_languageCodeFocus),
+        ),
+        const SizedBox(
+          height: 30,
+        ),
+      ];
+    }
+
     List<Widget> buildLanguage() {
       return [
         DropdownButtonFormField(
+          focusNode: _languageCodeFocus,
           decoration: InputDecoration(
             labelText: 'language',
           ),
           value: _languageCodeController.text,
-          // _newTrip.languageNameId != null
-          //     ? _newTrip.languageNameId.isNotEmpty
-          //         ? _newTrip.languageNameId
-          //         : _localeName.split('_')[0].toUpperCase()
-          //     : _localeName.split('_')[0].toUpperCase(),
+          validator: (value) => value.isEmpty ? 'select a language!' : null,
           items: _languages.languages
               .map((lang) => DropdownMenuItem<String>(
                   value: lang.code,
@@ -399,22 +436,21 @@ class _TripNewState extends State<TripNew> {
                                     langCode, _localeName.split('_')[0])
                                 .first))
                 .code;
+
             setState(
               () {
                 _newTrip.languageNameId = langCode;
                 _newTrip.languageFlagId = flagId;
                 _languageCodeController.text = langCode;
                 _languageFlagController.text = flagId;
+                Focus.of(context).requestFocus(_languageFlagFocus);
               },
             );
           },
-          validator: (value) =>
-              value.isEmpty ? 'input a valid price! insert 0 for free' : null,
         ),
-        const SizedBox(
-          height: 30,
-        ),
+        const SizedBox(height: 30),
         DropdownButtonFormField(
+          focusNode: _languageFlagFocus,
           isExpanded: true,
           decoration: InputDecoration(
               labelText: 'language flag',
@@ -425,6 +461,7 @@ class _TripNewState extends State<TripNew> {
                   ? _languageFlagController.text
                   : _localeName.split('_')[0].toUpperCase()
               : _localeName.split('_')[0].toUpperCase(),
+          validator: (value) => value.isEmpty ? 'select a country flag!' : null,
           items: _countries
               .getByLanguage(_newTrip.languageNameId, _localeName.split('_')[0])
               .map(
@@ -465,51 +502,6 @@ class _TripNewState extends State<TripNew> {
       ];
     }
 
-    List<Widget> buildPreviewAudio() {
-      return [
-        TextFormField(
-          onTap: () {},
-          decoration: InputDecoration(
-            labelText: 'preview audio',
-            helperText: 'upload preview audio. max length 2 minutes',
-            suffixIcon: IconButton(
-              icon: Icon(Icons.file_upload),
-              onPressed: () async {
-                if (await onAddFileClicked(context, FileType.audio)) {
-                  File file = await FilePicker.getFile(
-                      type: FileType.custom,
-                      allowedExtensions: [
-                        'mpeg',
-                        'wav',
-                        'webm',
-                        'ogg',
-                        'mp3',
-                        'mp4',
-                        'm4a'
-                      ]);
-
-                  if (file != null) {
-                    setState(() {
-                      _audioController.text = file.absolute.path;
-                      _newTrip.previewAudioUrl = file.path;
-                      _newTrip.audioOrigin = FileOrigin.Local;
-                    });
-                  }
-                }
-              },
-            ),
-          ),
-          readOnly: true,
-          textInputAction: TextInputAction.next,
-          controller: _audioController,
-          focusNode: _audioFocus,
-        ),
-        const SizedBox(
-          height: 30,
-        ),
-      ];
-    }
-
     Widget addPlaceButton(TripProvider tripProvider) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -526,9 +518,6 @@ class _TripNewState extends State<TripNew> {
                           Place(
                             id: 0,
                             tripId: _newTrip.id,
-                            coordinates: LatLng(
-                                _initialPosition.target.latitude,
-                                _initialPosition.target.longitude),
                           ),
                         ),
                       ),
@@ -570,17 +559,6 @@ class _TripNewState extends State<TripNew> {
       );
     }
 
-    Widget buildMap() {
-      return Container(
-        decoration: BoxDecoration(
-            border: Border.all(width: 1, color: Colors.grey[400]),
-            borderRadius: BorderRadius.all(Radius.circular(10))),
-        padding: const EdgeInsets.all(5),
-        height: 300,
-        child: TripMap(_newTrip, _userPosition),
-      );
-    }
-
     Widget buildPlacesList() {
       return Consumer<TripProvider>(
         builder: (_, tripProvider, __) => Column(
@@ -610,18 +588,20 @@ class _TripNewState extends State<TripNew> {
                       height: 50,
                       child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(5)),
-                        child: CachedNetworkImage(
-                          fit: BoxFit.cover,
-                          imageUrl: '${_newPlaces[i].imageUrl}',
-                          placeholder: (_, __) => const Icon(
-                            Icons.photo_camera,
-                            size: 30,
-                          ),
-                          errorWidget: (_, __, ___) => const Icon(
-                            Icons.camera_alt,
-                            size: 30,
-                          ),
-                        ),
+                        child: _newPlaces[i].imageOrigin == FileOrigin.Local
+                            ? Image.asset(_newPlaces[i].imageUrl)
+                            : CachedNetworkImage(
+                                fit: BoxFit.cover,
+                                imageUrl: _newPlaces[i].imageUrl,
+                                placeholder: (_, __) => const Icon(
+                                  Icons.photo_camera,
+                                  size: 30,
+                                ),
+                                errorWidget: (_, __, ___) => const Icon(
+                                  Icons.camera_alt,
+                                  size: 30,
+                                ),
+                              ),
                       ),
                     ),
                     title: Text(
@@ -681,21 +661,30 @@ class _TripNewState extends State<TripNew> {
                         MaterialPageRoute(
                           builder: (_) => PlaceNew(
                             _newTrip.countryId,
-                            _newPlaces[i],
+                            _newPlaces[i].copyWith(),
                           ),
                         ),
                       )
                           .then((res) {
                         if (res != null) {
+                          print('ressss $res');
                           try {
-                            if (res['action'] == 'delete')
-                              tripProvider.deletePlace(
-                                res['item'],
-                              );
-                            else
-                              tripProvider.updatePlace(
-                                res['item'],
-                              );
+                            Place place = res['item'];
+                            if (place.tripId > 0) {
+                              if (res['action'] == 'delete')
+                                tripProvider.deletePlace(
+                                  res['item'],
+                                );
+                              else if (res['action'] == 'create/update')
+                                tripProvider.updatePlace(
+                                  res['item'],
+                                );
+                            } else {
+                              if (res['action'] == 'delete')
+                                _newPlaces.removeAt(i);
+                              else if (res['action'] == 'create/update')
+                                _newPlaces[i] = place;
+                            }
                           } catch (e) {
                             showMessage(context, e, true);
                           }
@@ -751,6 +740,10 @@ class _TripNewState extends State<TripNew> {
             _newTrip.price = _priceController.text.isEmpty
                 ? 0
                 : double.parse(_priceController.text);
+            _newTrip.imageUrl = _imageController.text;
+            _newTrip.imageOrigin = _imageController.text.startsWith('http')
+                ? FileOrigin.Network
+                : FileOrigin.Local;
           },
           child: SingleChildScrollView(
             child: Column(
