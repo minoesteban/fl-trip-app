@@ -98,3 +98,66 @@ class Purchase {
         deletedAt.hashCode;
   }
 }
+
+class PurchaseCount {
+  int tripId;
+  int placeId;
+  int count;
+  PurchaseCount({
+    this.tripId,
+    this.placeId,
+    this.count,
+  });
+
+  PurchaseCount copyWith({
+    int tripId,
+    int placeId,
+    int count,
+  }) {
+    return PurchaseCount(
+      tripId: tripId ?? this.tripId,
+      placeId: placeId ?? this.placeId,
+      count: count ?? this.count,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'tripId': tripId,
+      'placeId': placeId,
+      'count': count,
+    };
+  }
+
+  factory PurchaseCount.fromMap(Map<String, dynamic> map) {
+    if (map == null) return null;
+
+    return PurchaseCount(
+      tripId: map['tripId'] ?? 0,
+      placeId: map['placeId'] ?? 0,
+      count: int.tryParse(map['count']) ?? 0,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory PurchaseCount.fromJson(String source) =>
+      PurchaseCount.fromMap(json.decode(source));
+
+  @override
+  String toString() =>
+      'PurchaseCount(tripId: $tripId, placeId: $placeId, count: $count)';
+
+  @override
+  bool operator ==(Object o) {
+    if (identical(this, o)) return true;
+
+    return o is PurchaseCount &&
+        o.tripId == tripId &&
+        o.placeId == placeId &&
+        o.count == count;
+  }
+
+  @override
+  int get hashCode => tripId.hashCode ^ placeId.hashCode ^ count.hashCode;
+}

@@ -52,7 +52,7 @@ class TripProvider with ChangeNotifier {
       _trips.add(createdTrip);
       notifyListeners();
 
-      if (createdTrip.id > 0) {
+      if (createdTrip.id > 0 && createdTrip.places.length > 0) {
         for (int i = 0; i <= createdTrip.places.length; i++) {
           createdTrip.places[i].previewAudioOrigin = FileOrigin.Local;
           createdTrip.places[i].fullAudioOrigin = FileOrigin.Local;

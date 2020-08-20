@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/providers/purchase.provider.dart';
 import 'core/models/place.model.dart';
 import 'core/models/trip.model.dart';
 import 'providers/cart.provider.dart';
@@ -33,6 +34,9 @@ void main() async {
   TripProvider _trips = TripProvider();
   await _trips.loadTrips();
 
+  PurchaseProvider _purchases = PurchaseProvider();
+  await _purchases.getCounts();
+
   CountryProvider _countries = CountryProvider();
   await _countries.loadCountries();
 
@@ -47,6 +51,9 @@ void main() async {
         ),
         ChangeNotifierProvider<TripProvider>.value(
           value: _trips,
+        ),
+        ChangeNotifierProvider<PurchaseProvider>.value(
+          value: _purchases,
         ),
         ChangeNotifierProvider<UserProvider>.value(
           value: _userProvider,

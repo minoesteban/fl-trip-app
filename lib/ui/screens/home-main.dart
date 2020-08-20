@@ -105,7 +105,7 @@ class Home extends StatelessWidget {
             await Provider.of<TripProvider>(context, listen: false).loadTrips();
           },
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
               child: Consumer2<TripProvider, UserProvider>(

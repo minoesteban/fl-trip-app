@@ -3,14 +3,15 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import '../../ui/widgets/audio-components.dart';
-import '../../ui/widgets/collapsible-text.dart';
+import '../../core/models/trip.model.dart';
+import '../../providers/purchase.provider.dart';
 import '../../providers/cart.provider.dart';
 import '../../providers/language.provider.dart';
 import '../../providers/country.provider.dart';
 import '../../providers/user.provider.dart';
 import '../../providers/trip.provider.dart';
-import '../../core/models/trip.model.dart';
+import '../../ui/widgets/audio-components.dart';
+import '../../ui/widgets/collapsible-text.dart';
 import '../../ui/widgets/image-list.dart';
 import '../widgets/store-trip-places-list.dart';
 import '../widgets/store-trip-map.dart';
@@ -164,8 +165,10 @@ class TripMain extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              //TODO: obtener cantidad de purchases? o de ratings
-                              '15.6k',
+                              Provider.of<PurchaseProvider>(context,
+                                      listen: false)
+                                  .getCountBy(trip.id, 0)
+                                  .toString(),
                               style: _titleBigStyle,
                             ),
                             Text(

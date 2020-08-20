@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/providers/purchase.provider.dart';
 import 'package:tripit/providers/trip.provider.dart';
 import 'package:tripit/ui/widgets/audio-components.dart';
 import 'package:tripit/ui/widgets/collapsible-text.dart';
@@ -16,6 +18,9 @@ class PlaceDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AudioPlayer _fullAudioPlayer = AudioPlayer();
+    _fullAudioPlayer.setUrl(_place.fullAudioUrl);
+
     return AlertDialog(
       scrollable: true,
       titlePadding: const EdgeInsets.all(0),
@@ -31,7 +36,7 @@ class PlaceDialog extends StatelessWidget {
                 valueColor: AlwaysStoppedAnimation(Colors.grey[100]),
               ),
             ),
-            errorWidget: (context, url, error) => Icon(Icons.error),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
         ),
         Container(
@@ -66,67 +71,60 @@ class PlaceDialog extends StatelessWidget {
         children: [
           //stats
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Column(
                 children: [
-                  //TODO: obtener cantidad de descargas (compras? o ratings?)
                   Text(
-                    '${_place.rating.count}',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  Text(
-                    'ratings',
-                    style: TextStyle(color: Colors.black38, fontSize: 12),
-                  ),
+                      Provider.of<PurchaseProvider>(context, listen: false)
+                          .getCountBy(_place.tripId, _place.id)
+                          .toString(),
+                      style: _statNumber),
+                  const Text('downloads', style: _statTitle),
                 ],
               ),
-              VerticalDivider(),
+              const VerticalDivider(),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '${_place.rating.rating.toStringAsPrecision(2)}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 26,
-                        color: Colors.amber[500],
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Icon(
-                    Icons.star,
-                    color: Colors.amber[500],
-                    size: 18,
-                  ),
+                  Text('${_place.rating.rating.toStringAsPrecision(2)}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 32,
+                          color: Colors.amber[500],
+                          fontWeight: FontWeight.bold)),
+                  Icon(Icons.star, color: Colors.amber[500], size: 18),
                 ],
               ),
-              VerticalDivider(),
-              Column(
-                children: [
-                  //TODO: obtener duracion del audio principal
-                  Text(
-                    '17\'',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  Text(
-                    'audio',
-                    style: TextStyle(color: Colors.black38, fontSize: 12),
-                  ),
-                ],
-              ),
+              const VerticalDivider(),
+              FutureBuilder(
+                  future: _fullAudioPlayer.setUrl(_place.fullAudioUrl),
+                  builder: (_, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(Colors.grey[300]),
+                        ),
+                      );
+                    }
+                    Duration duration = snapshot.data;
+
+                    return Column(
+                      children: [
+                        Text('${duration.inMinutes}\'', style: _statNumber),
+                        Text('audio', style: _statTitle),
+                      ],
+                    );
+                  }),
             ],
           ),
-          SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           //preview audio
           Player(_place.previewAudioUrl, true),
           //about
           CollapsibleText(_place.about),
-          Divider(
-            height: 20,
-          ),
+          const Divider(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5),
             child: SizedBox(
@@ -178,3 +176,8 @@ class PlaceDialog extends StatelessWidget {
     );
   }
 }
+
+const _statNumber = TextStyle(fontWeight: FontWeight.bold, fontSize: 22);
+
+const _statTitle =
+    TextStyle(color: Colors.black38, fontSize: 16, fontWeight: FontWeight.bold);

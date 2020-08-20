@@ -412,6 +412,7 @@ class _TripNewState extends State<TripNew> {
     List<Widget> buildLanguage() {
       return [
         DropdownButtonFormField(
+          //TODO: todavia no funciona el focus de los dropdownmenu en form. seguir el tema
           focusNode: _languageCodeFocus,
           decoration: InputDecoration(
             labelText: 'language',
