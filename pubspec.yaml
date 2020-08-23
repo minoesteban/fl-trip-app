@@ -43,11 +43,14 @@ dependencies:
   flutter_image_compress: ^0.7.0
   file_picker: ^1.13.3
   just_audio: ^0.3.1
+  # hive: ^1.4.4
+  # hive_flutter: ^0.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  # hive_generator: ^0.7.1
+  # build_runner:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

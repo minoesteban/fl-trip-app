@@ -20,8 +20,8 @@ class _PlayerState extends State<Player> {
 
   @override
   void dispose() {
-    super.dispose();
     _player.dispose();
+    super.dispose();
   }
 
   @override

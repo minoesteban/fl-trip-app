@@ -13,7 +13,10 @@ class PurchaseProvider with ChangeNotifier {
 
   int getCountBy(int tripId, int placeId) {
     if (placeId == 0) {
-      return _counts.where((c) => c.tripId == tripId).first.count;
+      return _counts
+          .firstWhere((c) => c.tripId == tripId,
+              orElse: () => PurchaseCount(count: 0))
+          .count;
     }
     return _counts
         .where((c) => c.placeId == placeId || c.tripId == tripId)
