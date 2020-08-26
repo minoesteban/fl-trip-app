@@ -6,7 +6,6 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../core/utils/utils.dart';
 import '../../ui/widgets/collapsible-text.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/language.provider.dart';
@@ -44,15 +43,14 @@ class Profile extends StatelessWidget {
             _rating = _ratingAcum /
                 _trips
                     .where((trip) => trip.places
-                        .where((place) => place.rating == null
+                        .where((place) => place.ratingAvg == null
                             ? false
-                            : place.rating.rating > 0)
+                            : place.ratingAvg > 0)
                         .isNotEmpty)
                     .length;
           });
         }
       }
-      return _rating;
     }
 
     Widget buildAvatar() {
@@ -67,7 +65,7 @@ class Profile extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 75,
                     backgroundImage: userProvider.user.imageUrl != null
-                        ? userProvider.user.imageOrigin == FileOrigin.Local
+                        ? !userProvider.user.imageUrl.startsWith('http')
                             ? AssetImage(userProvider.user.imageUrl)
                             : CachedNetworkImageProvider(
                                 userProvider.getImage())
@@ -147,7 +145,7 @@ class Profile extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                '${snapshot.data.toStringAsPrecision(2) ?? '-'}',
+                                '${_rating.toStringAsPrecision(2) ?? '-'}',
                                 style: TextStyle(
                                     color: Colors.amber[500],
                                     fontWeight: FontWeight.bold,
@@ -267,10 +265,10 @@ class Profile extends StatelessWidget {
                               ).then((res) {
                                 if (res != null) {
                                   if (res['action'] == 'delete')
-                                    tripsProvider.delete(res['item'].id);
+                                    tripsProvider.deleteLocal(res['item']);
                                   else
                                     tripsProvider
-                                        .update(res['item'])
+                                        .updateLocal(res['item'])
                                         .catchError((e) =>
                                             showMessage(context, e, true));
                                 }
@@ -306,7 +304,7 @@ class Profile extends StatelessWidget {
                             opacity: _trips[i].published == true
                                 ? 1
                                 : _trips[i].submitted == true ? 0.7 : 0.4,
-                            child: _trips[i].imageOrigin == FileOrigin.Local
+                            child: !_trips[i].imageUrl.startsWith('http')
                                 ? Image.asset(
                                     _trips[i].imageUrl,
                                     fit: BoxFit.cover,
@@ -357,7 +355,7 @@ class Profile extends StatelessWidget {
               if (res != null) {
                 if (res['action'] == 'create/update')
                   Provider.of<TripProvider>(context, listen: false)
-                      .create(res['item'])
+                      .createLocal(res['item'])
                       .catchError((e) => showMessage(context, e, true));
               }
             }).catchError((e) => showMessage(context, e, true));

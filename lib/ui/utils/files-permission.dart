@@ -20,7 +20,6 @@ Future<bool> onAddFileClicked(BuildContext context, FileType fileType) async {
   }
 
   Permission permission;
-
   if (fileType == FileType.image) {
     if (Platform.isIOS) {
       permission = Permission.photos;
@@ -36,14 +35,9 @@ Future<bool> onAddFileClicked(BuildContext context, FileType fileType) async {
   }
 
   PermissionStatus permissionStatus = await permission.status;
-
-  print(permissionStatus);
-
   if (permissionStatus == PermissionStatus.restricted) {
     showOpenAppSettingsDialog(context);
-
     permissionStatus = await permission.status;
-
     if (permissionStatus != PermissionStatus.granted) {
       //Only continue if permission granted
       return false;
@@ -52,9 +46,7 @@ Future<bool> onAddFileClicked(BuildContext context, FileType fileType) async {
 
   if (permissionStatus == PermissionStatus.permanentlyDenied) {
     showOpenAppSettingsDialog(context);
-
     permissionStatus = await permission.status;
-
     if (permissionStatus != PermissionStatus.granted) {
       //Only continue if permission granted
       return false;
@@ -63,7 +55,6 @@ Future<bool> onAddFileClicked(BuildContext context, FileType fileType) async {
 
   if (permissionStatus == PermissionStatus.undetermined) {
     permissionStatus = await permission.request();
-
     if (permissionStatus != PermissionStatus.granted) {
       //Only continue if permission granted
       return false;
@@ -86,4 +77,6 @@ Future<bool> onAddFileClicked(BuildContext context, FileType fileType) async {
   if (permissionStatus == PermissionStatus.granted) {
     return true;
   }
+
+  return false;
 }

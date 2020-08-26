@@ -1,37 +1,59 @@
 import 'dart:convert';
-
+import 'package:hive/hive.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tripit/core/utils/utils.dart';
 
+part 'user.model.g.dart';
+
+@HiveType(typeId: 1)
 class User {
+  @HiveField(0)
   int id;
+  @HiveField(1)
   String username;
   String password;
+  @HiveField(2)
   String firstName;
+  @HiveField(3)
   String lastName;
+  @HiveField(4)
   String imageUrl;
+  @HiveField(5)
   FileOrigin imageOrigin;
-  String languageId1;
-  String languageId2;
-  String languageId3;
-  String languageId4;
-  String languageId5;
+  @HiveField(6)
+  List<String> selectedLanguages;
+  @HiveField(7)
   String about;
+  @HiveField(8)
   List<int> favouriteTrips;
+  @HiveField(9)
   List<int> favouritePlaces;
+  @HiveField(10)
   List<int> purchasedTrips;
+  @HiveField(11)
   List<int> purchasedPlaces;
+  @HiveField(12)
   List<int> downloadedTrips;
+  @HiveField(13)
   List<int> downloadedPlaces;
   Position position; // not in DB model
+  @HiveField(14)
   bool onlyNearest;
+  @HiveField(15)
   bool onlyFavourites;
+  @HiveField(16)
   bool onlyPurchased;
   bool active;
+  @HiveField(17)
   DateTime createdAt;
+  @HiveField(18)
   DateTime updatedAt;
   DateTime deletedAt;
+  @HiveField(19)
+  bool needSync;
+  // @HiveField(20)
+  // Map<String, double> lastPosition;
   User({
     this.id,
     this.username,
@@ -39,12 +61,8 @@ class User {
     this.firstName,
     this.lastName,
     this.imageUrl,
-    this.languageId1,
-    this.languageId2,
-    this.languageId3,
-    this.languageId4,
-    this.languageId5,
     this.about,
+    this.selectedLanguages,
     this.favouriteTrips,
     this.favouritePlaces,
     this.purchasedTrips,
@@ -68,12 +86,8 @@ class User {
     String firstName,
     String lastName,
     String imageUrl,
-    String languageId1,
-    String languageId2,
-    String languageId3,
-    String languageId4,
-    String languageId5,
     String about,
+    List<String> selectedLanguages,
     List<int> favouriteTrips,
     List<int> favouritePlaces,
     List<int> purchasedTrips,
@@ -96,12 +110,8 @@ class User {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       imageUrl: imageUrl ?? this.imageUrl,
-      languageId1: languageId1 ?? this.languageId1,
-      languageId2: languageId2 ?? this.languageId2,
-      languageId3: languageId3 ?? this.languageId3,
-      languageId4: languageId4 ?? this.languageId4,
-      languageId5: languageId5 ?? this.languageId5,
       about: about ?? this.about,
+      selectedLanguages: selectedLanguages ?? this.selectedLanguages,
       favouriteTrips: favouriteTrips ?? this.favouriteTrips,
       favouritePlaces: favouritePlaces ?? this.favouritePlaces,
       purchasedTrips: purchasedTrips ?? this.purchasedTrips,
@@ -127,12 +137,8 @@ class User {
       'firstName': firstName,
       'lastName': lastName,
       'imageUrl': imageUrl,
-      'languageId1': languageId1,
-      'languageId2': languageId2,
-      'languageId3': languageId3,
-      'languageId4': languageId4,
-      'languageId5': languageId5,
       'about': about,
+      'selectedLanguages': selectedLanguages,
       'favouriteTrips': favouriteTrips,
       'favouritePlaces': favouritePlaces,
       'purchasedTrips': purchasedTrips,
@@ -150,6 +156,26 @@ class User {
     };
   }
 
+  Map<String, dynamic> toMapForDB() {
+    return {
+      'username': username,
+      'firstName': firstName,
+      'lastName': lastName,
+      'imageUrl': imageUrl,
+      'about': about,
+      'selectedLanguages': selectedLanguages,
+      'favouriteTrips': favouriteTrips,
+      'favouritePlaces': favouritePlaces,
+      'purchasedTrips': purchasedTrips,
+      'purchasedPlaces': purchasedPlaces,
+      'downloadedTrips': downloadedTrips,
+      'downloadedPlaces': downloadedPlaces,
+      'onlyNearest': onlyNearest,
+      'onlyFavourites': onlyFavourites,
+      'onlyPurchased': onlyPurchased,
+    };
+  }
+
   static User fromMap(Map<String, dynamic> map) {
     if (map == null) return null;
 
@@ -160,12 +186,10 @@ class User {
       firstName: map['firstName'],
       lastName: map['lastName'],
       imageUrl: map['imageUrl'],
-      languageId1: map['languageId1'],
-      languageId2: map['languageId2'],
-      languageId3: map['languageId3'],
-      languageId4: map['languageId4'],
-      languageId5: map['languageId5'],
       about: map['about'],
+      selectedLanguages: map['selectedLanguages'] != null
+          ? List<String>.from(map['selectedLanguages'])
+          : [],
       favouriteTrips: map['favouriteTrips'] != null
           ? List<int>.from(map['favouriteTrips'])
           : [],
@@ -190,9 +214,9 @@ class User {
       onlyFavourites: map['onlyFavourites'],
       onlyPurchased: map['onlyPurchased'],
       active: map['active'],
-      createdAt: map['createdAt'],
-      updatedAt: map['updatedAt'],
-      deletedAt: map['deletedAt'],
+      createdAt: DateTime.tryParse(map['created_at']),
+      updatedAt: DateTime.tryParse(map['updated_at']),
+      // deletedAt: DateTime.tryParse(map['deleted_at'] ?? ''),
     );
   }
 
@@ -202,7 +226,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(id: $id, username: $username, password: $password, firstName: $firstName, lastName: $lastName, imageUrl: $imageUrl, languageId1: $languageId1, languageId2: $languageId2, languageId3: $languageId3, languageId4: $languageId4, languageId5: $languageId5, about: $about, favouriteTrips: $favouriteTrips, favouritePlaces: $favouritePlaces, purchasedTrips: $purchasedTrips, purchasedPlaces: $purchasedPlaces, downloadedTrips: $downloadedTrips, downloadedPlaces: $downloadedPlaces, position: $position, onlyNearest: $onlyNearest, onlyFavourites: $onlyFavourites, onlyPurchased: $onlyPurchased, active: $active, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'User(id: $id, username: $username, password: $password, firstName: $firstName, lastName: $lastName, imageUrl: $imageUrl, selectedLanguages: $selectedLanguages,  favouriteTrips: $favouriteTrips, favouritePlaces: $favouritePlaces, purchasedTrips: $purchasedTrips, purchasedPlaces: $purchasedPlaces, downloadedTrips: $downloadedTrips, downloadedPlaces: $downloadedPlaces, position: $position, onlyNearest: $onlyNearest, onlyFavourites: $onlyFavourites, onlyPurchased: $onlyPurchased, active: $active, about: $about,  createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -216,12 +240,8 @@ class User {
         o.firstName == firstName &&
         o.lastName == lastName &&
         o.imageUrl == imageUrl &&
-        o.languageId1 == languageId1 &&
-        o.languageId2 == languageId2 &&
-        o.languageId3 == languageId3 &&
-        o.languageId4 == languageId4 &&
-        o.languageId5 == languageId5 &&
         o.about == about &&
+        listEquals(o.selectedLanguages, selectedLanguages) &&
         listEquals(o.favouriteTrips, favouriteTrips) &&
         listEquals(o.favouritePlaces, favouritePlaces) &&
         listEquals(o.purchasedTrips, purchasedTrips) &&
@@ -246,12 +266,8 @@ class User {
         firstName.hashCode ^
         lastName.hashCode ^
         imageUrl.hashCode ^
-        languageId1.hashCode ^
-        languageId2.hashCode ^
-        languageId3.hashCode ^
-        languageId4.hashCode ^
-        languageId5.hashCode ^
         about.hashCode ^
+        selectedLanguages.hashCode ^
         favouriteTrips.hashCode ^
         favouritePlaces.hashCode ^
         purchasedTrips.hashCode ^

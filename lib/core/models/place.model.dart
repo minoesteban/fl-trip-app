@@ -1,30 +1,55 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:geojson/geojson.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hive/hive.dart';
 import '../../core/utils/utils.dart';
-import '../../core/models/rating.model.dart';
 
+part 'place.model.g.dart';
+
+@HiveType(typeId: 3)
 class Place {
+  @HiveField(0)
   int id;
+  @HiveField(1)
   String name;
+  @HiveField(2)
   String about;
+  @HiveField(3)
   String googlePlaceId;
+  @HiveField(4)
   String locationName;
-  LatLng coordinates;
+  @HiveField(5)
+  Coordinates coordinates;
+  @HiveField(6)
   String fullAudioUrl;
+  @HiveField(7)
   FileOrigin fullAudioOrigin;
+  @HiveField(8)
   String previewAudioUrl;
+  @HiveField(9)
   FileOrigin previewAudioOrigin;
+  @HiveField(10)
   String imageUrl;
+  @HiveField(11)
   FileOrigin imageOrigin;
+  @HiveField(12)
   double price = 0;
+  @HiveField(13)
   int order = 0;
+  @HiveField(14)
   int tripId;
-  Rating rating;
+  @HiveField(15)
+  double ratingAvg;
+  @HiveField(16)
+  int ratingCount;
+  @HiveField(17)
   DateTime createdAt;
+  @HiveField(18)
   DateTime updatedAt;
+  @HiveField(19)
   DateTime deletedAt;
+  @HiveField(20)
+  bool needSync;
   Place({
     this.id,
     this.name,
@@ -40,7 +65,8 @@ class Place {
     this.price,
     this.order,
     this.tripId,
-    this.rating,
+    this.ratingAvg,
+    this.ratingCount,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
@@ -61,7 +87,8 @@ class Place {
     double price,
     int order,
     int tripId,
-    Rating rating,
+    double ratingAvg,
+    int ratingCount,
     DateTime createdAt,
     DateTime updatedAt,
     DateTime deletedAt,
@@ -81,7 +108,8 @@ class Place {
       price: price ?? this.price,
       order: order ?? this.order,
       tripId: tripId ?? this.tripId,
-      rating: rating ?? this.rating,
+      ratingAvg: ratingAvg ?? this.ratingAvg,
+      ratingCount: ratingCount ?? this.ratingCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -89,13 +117,20 @@ class Place {
   }
 
   Map<String, dynamic> toMap() {
+    Map<String, dynamic> point;
+    if (coordinates != null)
+      point = {
+        'type': 'Point',
+        'coordinates': [coordinates.latitude, coordinates.longitude],
+      };
+
     return {
       'id': id,
       'name': name,
       'about': about,
       'googlePlaceId': googlePlaceId,
       'locationName': locationName,
-      'coordinates': coordinates?.toJson(),
+      'coordinates': point,
       'fullAudioUrl': fullAudioUrl,
       'fullAudioOrigin': fullAudioOrigin,
       'previewAudioUrl': previewAudioUrl,
@@ -104,7 +139,8 @@ class Place {
       'price': price,
       'order': order,
       'tripId': tripId,
-      'rating': rating,
+      'ratingAvg': ratingAvg,
+      'ratingCount': ratingCount,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'deletedAt': deletedAt,
@@ -112,18 +148,19 @@ class Place {
   }
 
   Map<String, dynamic> toMapForDB() {
-    String point;
+    Map<String, dynamic> point;
     if (coordinates != null)
-      point = json.encode({
+      point = {
         'type': 'Point',
-        'coordinates': coordinates?.toJson(),
-      });
+        'coordinates': [coordinates.latitude, coordinates.longitude],
+      };
 
     return {
       'name': name,
       'about': about,
       'googlePlaceId': googlePlaceId,
       'locationName': locationName,
+      // 'coordinates': point,
       'coordinates': point,
       'fullAudioUrl': fullAudioUrl,
       'previewAudioUrl': previewAudioUrl,
@@ -139,13 +176,25 @@ class Place {
 
     if (map['id'] == null) throw HttpException('no place id found on map');
 
+    int ratingCount = 0;
+    double ratingAvg = 0;
+    if (map['Ratings'] != null && map['Ratings'].length > 0) {
+      ratingCount = map['Ratings'].length;
+      var ratingsList =
+          map['Ratings'].map((r) => r['rating'].toDouble()).toList();
+      ratingAvg = ratingsList.length > 1
+          ? ratingsList.reduce((a, b) => a + b).toDouble()
+          : ratingsList[0];
+      ratingAvg = ratingAvg / ratingCount;
+    }
+
     return Place(
       id: map['id'],
       name: map['name'],
       about: map['about'],
       googlePlaceId: map['googlePlaceId'],
       locationName: map['locationName'],
-      coordinates: LatLng(map['coordinates']['coordinates'][0].toDouble(),
+      coordinates: Coordinates(map['coordinates']['coordinates'][0].toDouble(),
           map['coordinates']['coordinates'][1].toDouble()),
       fullAudioUrl: map['fullAudioUrl'],
       fullAudioOrigin: map['fullAudioOrigin'],
@@ -155,10 +204,11 @@ class Place {
       price: map['price'].toDouble(),
       order: map['order'],
       tripId: map['tripId'],
-      rating: map['rating'],
-      createdAt: map['createdAt'],
-      updatedAt: map['updatedAt'],
-      deletedAt: map['deletedAt'],
+      ratingAvg: ratingAvg,
+      ratingCount: ratingCount,
+      createdAt: DateTime.tryParse(map['created_at']),
+      updatedAt: DateTime.tryParse(map['updated_at']),
+      // deletedAt: DateTime.tryParse(map['deleted_at']),
     );
   }
 
@@ -168,7 +218,7 @@ class Place {
 
   @override
   String toString() {
-    return 'Place(id: $id, name: $name, about: $about, googlePlaceId: $googlePlaceId, coordinates: $coordinates, fullAudioUrl: $fullAudioUrl, fullAudioOrigin: $fullAudioOrigin, previewAudioUrl: $previewAudioUrl, previewAudioOrigin: $previewAudioOrigin, imageUrl: $imageUrl, price: $price, order: $order, tripId: $tripId, rating: $rating, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
+    return 'Place(id: $id, name: $name, googlePlaceId: $googlePlaceId, coordinates: $coordinates, fullAudioUrl: $fullAudioUrl, fullAudioOrigin: $fullAudioOrigin, previewAudioUrl: $previewAudioUrl, previewAudioOrigin: $previewAudioOrigin, imageUrl: $imageUrl, price: $price, order: $order, tripId: $tripId, ratingAvg: $ratingAvg, ratingCount: $ratingCount, about: $about, createdAt: $createdAt, updatedAt: $updatedAt, deletedAt: $deletedAt)';
   }
 
   @override
@@ -189,7 +239,8 @@ class Place {
         o.price == price &&
         o.order == order &&
         o.tripId == tripId &&
-        o.rating == rating &&
+        o.ratingAvg == ratingAvg &&
+        o.ratingCount == ratingCount &&
         o.createdAt == createdAt &&
         o.updatedAt == updatedAt &&
         o.deletedAt == deletedAt;
@@ -210,7 +261,8 @@ class Place {
         price.hashCode ^
         order.hashCode ^
         tripId.hashCode ^
-        rating.hashCode ^
+        ratingAvg.hashCode ^
+        ratingCount.hashCode ^
         createdAt.hashCode ^
         updatedAt.hashCode ^
         deletedAt.hashCode;

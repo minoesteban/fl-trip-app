@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
-import 'package:tripit/core/utils/utils.dart';
+import '../../core/utils/utils.dart';
 import '../../core/models/trip.model.dart';
 import '../../config.dart';
 

@@ -1,14 +1,17 @@
-import 'dart:io';
-
+import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/purchase.provider.dart';
-import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:tripit/core/models/cart-item.model.dart';
+import 'package:tripit/core/models/cart.model.dart';
+import 'package:tripit/core/models/rating.model.dart';
+import 'package:tripit/core/models/user.model.dart';
+import 'package:tripit/core/utils/utils.dart';
 import 'core/models/place.model.dart';
 import 'core/models/trip.model.dart';
 import 'providers/cart.provider.dart';
+import 'providers/purchase.provider.dart';
 import 'providers/language.provider.dart';
 import 'providers/country.provider.dart';
 import 'providers/user.provider.dart';
@@ -30,9 +33,16 @@ void main() async {
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
 
-  // final Directory docDirectory =
-  //     await path_provider.getApplicationDocumentsDirectory();
-  // Hive.init(docDirectory.path);
+  Hive.initFlutter();
+
+  Hive.registerAdapter(UserAdapter());
+  Hive.registerAdapter(TripAdapter());
+  Hive.registerAdapter(PlaceAdapter());
+  Hive.registerAdapter(CartAdapter());
+  Hive.registerAdapter(CartItemAdapter());
+  Hive.registerAdapter(RatingAdapter());
+  Hive.registerAdapter(CoordinatesAdapter());
+  Hive.registerAdapter(FileOriginAdapter());
 
   UserProvider _userProvider = UserProvider();
   //TODO: hacer el get dinamico segun login?

@@ -125,10 +125,7 @@ class MapSearch extends SearchDelegate<Geometry> {
                                       language:
                                           Platform.localeName.split('_')[0],
                                     );
-                                    if (!details.isOkay)
-                                      print(
-                                          'error en get place details ${details.errorMessage}');
-                                    else
+                                    if (details.isOkay)
                                       close(context, details.result.geometry);
                                   },
                                   leading: Icon(Icons.place),
@@ -161,10 +158,7 @@ class MapSearch extends SearchDelegate<Geometry> {
                                       language:
                                           Platform.localeName.split('_')[0],
                                     );
-                                    if (!details.isOkay)
-                                      print(
-                                          'error en get place details ${details.errorMessage}');
-                                    else
+                                    if (details.isOkay)
                                       close(context, details.result.geometry);
                                   },
                                   leading: Icon(Icons.map),
@@ -197,10 +191,7 @@ class MapSearch extends SearchDelegate<Geometry> {
                                       language:
                                           Platform.localeName.split('_')[0],
                                     );
-                                    if (!details.isOkay)
-                                      print(
-                                          'error en get place details ${details.errorMessage}');
-                                    else
+                                    if (details.isOkay)
                                       close(context, details.result.geometry);
                                   },
                                   leading: Icon(Icons.location_city),
@@ -233,10 +224,7 @@ class MapSearch extends SearchDelegate<Geometry> {
                                       language:
                                           Platform.localeName.split('_')[0],
                                     );
-                                    if (!details.isOkay)
-                                      print(
-                                          'error en get place details ${details.errorMessage}');
-                                    else
+                                    if (details.isOkay)
                                       close(context, details.result.geometry);
                                   },
                                   leading: Icon(Icons.flag),

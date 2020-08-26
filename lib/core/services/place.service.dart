@@ -79,6 +79,8 @@ class PlaceService {
 
   Future<String> uploadAudio(
       int tripId, int id, File audio, bool isFullAudio) async {
+    //TODO: upload full audio to different -private- bucket (API).
+
     print('placeservice-uploadaudio $isFullAudio');
     String fileExtension = path.extension(audio.path).substring(1);
     String url =
@@ -110,5 +112,10 @@ class PlaceService {
         throw HttpException(res.body);
     } else
       throw HttpException(res.body);
+  }
+
+  Future<void> downloadFullAudio(Place place) async {
+    //TODO: download full audio from private bucket.
+    return Future.delayed(Duration(seconds: 0));
   }
 }

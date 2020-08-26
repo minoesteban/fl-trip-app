@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/utils.dart';
 import '../../core/models/place.model.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/trip.provider.dart';
@@ -20,11 +19,9 @@ void submitTrip(Trip trip, BuildContext context) async {
   if (trip.imageUrl == null || !trip.imageUrl.contains('/'))
     tripMessages.add('1;trip cover image file is not loaded');
   else {
-    if (trip.imageOrigin == FileOrigin.Local) {
-      File image = File(trip.imageUrl);
-      if (!await image.exists())
-        tripMessages.add('1;trip cover image file does not exist');
-    }
+    File image = File(trip.imageUrl);
+    if (!await image.exists())
+      tripMessages.add('1;trip cover image file does not exist');
   }
 
   if (trip.price == null)
@@ -36,14 +33,12 @@ void submitTrip(Trip trip, BuildContext context) async {
   if (trip.previewAudioUrl == null || !trip.previewAudioUrl.contains('/'))
     tripMessages.add('1;trip preview audio file is not loaded');
   else {
-    if (trip.audioOrigin == FileOrigin.Local) {
-      File audio = File(trip.previewAudioUrl);
-      if (!await audio.exists())
-        tripMessages.add('1;trip preview audio file does not exist');
-      else if ((await _player.setFilePath(audio.path)).inSeconds > 125)
-        tripMessages
-            .add('1;trip preview audio file length is greater than 2 minutes');
-    }
+    File audio = File(trip.previewAudioUrl);
+    if (!await audio.exists())
+      tripMessages.add('1;trip preview audio file does not exist');
+    else if ((await _player.setFilePath(audio.path)).inSeconds > 125)
+      tripMessages
+          .add('1;trip preview audio file length is greater than 2 minutes');
   }
 
   if (trip.languageNameId.length < 1 || trip.languageFlagId.length < 1)
@@ -65,11 +60,9 @@ void submitTrip(Trip trip, BuildContext context) async {
       if (place.imageUrl == null || !place.imageUrl.contains('/'))
         messages['messages'].add('1;place picture file is not loaded');
       else {
-        if (place.imageOrigin == FileOrigin.Local) {
-          File image = File(place.imageUrl);
-          if (!await image.exists())
-            messages['messages'].add('1;place picture file does not exist');
-        }
+        File image = File(place.imageUrl);
+        if (!await image.exists())
+          messages['messages'].add('1;place picture file does not exist');
       }
 
       if (place.price == null)
@@ -81,28 +74,24 @@ void submitTrip(Trip trip, BuildContext context) async {
       if (place.fullAudioUrl == null || !place.fullAudioUrl.contains('/'))
         messages['messages'].add('1;main audio file is not loaded');
       else {
-        if (place.fullAudioOrigin == FileOrigin.Local) {
-          File audio = File(place.fullAudioUrl);
-          if (!await audio.exists())
-            messages['messages'].add('1;main audio file does not exist');
-          else if ((await _player.setFilePath(audio.path)).inSeconds > 3600)
-            messages['messages']
-                .add('1;main audio file length is greater than 1 hour');
-        }
+        File audio = File(place.fullAudioUrl);
+        if (!await audio.exists())
+          messages['messages'].add('1;main audio file does not exist');
+        else if ((await _player.setFilePath(audio.path)).inSeconds > 3600)
+          messages['messages']
+              .add('1;main audio file length is greater than 1 hour');
       }
 
       //place warnings
       if (place.previewAudioUrl == null || !place.previewAudioUrl.contains('/'))
         messages['messages'].add('2;preview audio file is not loaded');
       else {
-        if (place.previewAudioOrigin == FileOrigin.Local) {
-          File audio = File(place.previewAudioUrl);
-          if (!await audio.exists())
-            messages['messages'].add('1;preview audio file does not exist');
-          else if ((await _player.setFilePath(audio.path)).inSeconds > 65)
-            messages['messages']
-                .add('1;preview audio file length is greater than 1 minute');
-        }
+        File audio = File(place.previewAudioUrl);
+        if (!await audio.exists())
+          messages['messages'].add('1;preview audio file does not exist');
+        else if ((await _player.setFilePath(audio.path)).inSeconds > 65)
+          messages['messages']
+              .add('1;preview audio file length is greater than 1 minute');
       }
 
       if (place.name.length < 5)
@@ -127,9 +116,6 @@ void submitTrip(Trip trip, BuildContext context) async {
       0) hasErrors = true;
 
   if (tripMessages.length > 0 || placeMessages.length > 0) hasWarnings = true;
-
-  print('errors $hasErrors');
-  print('warnings $hasWarnings');
 
   showDialog<bool>(
     context: context,

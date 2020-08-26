@@ -1,15 +1,30 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 
+part 'rating.model.g.dart';
+
+@HiveType(typeId: 4)
 class Rating {
+  @HiveField(0)
   int id;
+  @HiveField(1)
   int userId;
+  @HiveField(2)
   int tripId;
+  @HiveField(3)
   int placeId;
+  @HiveField(4)
   double rating;
+  @HiveField(5)
   int count;
+  @HiveField(6)
   DateTime createdAt;
+  @HiveField(7)
   DateTime updatedAt;
+  @HiveField(8)
   DateTime deletedAt;
+  @HiveField(9)
+  bool needSync;
   Rating({
     this.id,
     this.userId,
@@ -70,9 +85,9 @@ class Rating {
       placeId: map['placeId'],
       rating: double.parse(map['rating']),
       count: int.parse(map['count']),
-      createdAt: map['createdAt'],
-      updatedAt: map['updatedAt'],
-      deletedAt: map['deletedAt'],
+      createdAt: DateTime.tryParse(map['created_at']),
+      updatedAt: DateTime.tryParse(map['updated_at']),
+      // deletedAt: DateTime.tryParse(map['deleted_at']),
     );
   }
 

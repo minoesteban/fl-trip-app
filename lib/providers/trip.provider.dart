@@ -1,7 +1,5 @@
 import 'dart:async' show Future;
-import 'dart:io';
 import 'package:flutter/material.dart';
-import '../core/utils/utils.dart';
 import '../core/controllers/place.controller.dart';
 import '../core/models/place.model.dart';
 import '../core/controllers/trip.controller.dart';
@@ -10,208 +8,218 @@ import '../core/models/trip.model.dart';
 import '../providers/rating.provider.dart';
 
 class TripProvider with ChangeNotifier {
-  TripController _controller = TripController();
   PlaceController _placeController = PlaceController();
-  List<Trip> _trips;
+  TripController _controller = TripController();
+  List<int> tripIds = [];
+  // List<Trip> _trips;
 
   List<Trip> get trips {
-    return [..._trips];
+    return _controller.trips;
   }
 
-  Future<List<Trip>> loadTrips() async {
-    print('loadtrips');
-    _trips = await _controller
-        .getAllTrips()
-        .then((value) => value)
-        .catchError((err) {
-      throw err;
-    });
+  Future<List<int>> init() async {
+    return await _controller.init();
+  }
+
+  Future<void> loadTrips() async {
+    tripIds = await init();
+
+    //TODO: check connectivity before getting trips from api. work with local trips
+    bool connected = true;
+    if (connected) {
+      List<Trip> _trips = await _controller
+          .getAllTrips()
+          .then((value) => value)
+          .catchError((err) {
+        throw err;
+      });
+      _controller.setTripIds(_trips.map((e) => e.id).toList());
+      _controller.updateLocalTrips(_trips);
+    }
+
     notifyListeners();
-    return [..._trips];
+    return [...trips];
   }
 
-  Future<void> delete(int id) async {
-    await _controller.delete(id).catchError((err) => throw err);
-    _trips.removeWhere((element) => element.id == id);
+  Future<void> deleteLocal(Trip trip) async {
+    print('deletelocal');
+    await _controller.deleteLocal(trip);
     notifyListeners();
   }
 
-  Future<void> deletePlace(Place place) async {
-    int tripIndex = _trips.indexWhere((e) => e.id == place.tripId);
-    await _placeController.delete(place.tripId, place.id).then((_) async {
-      _trips[tripIndex].places.removeWhere((p) => p.id == place.id);
-      await orderPlacesinDB(_trips[tripIndex]);
-      notifyListeners();
-    }).catchError((err) => throw err);
+  Future<void> createLocal(Trip trip) async {
+    print('createlocal');
+    await _controller.orderPlaces(trip);
+    await _controller.createLocal(trip);
+    notifyListeners();
   }
 
-  Future<void> create(Trip trip) async {
+  Future<Trip> create(Trip trip) async {
     try {
-      orderPlaces(trip);
+      await _controller.orderPlaces(trip);
       Trip createdTrip = await _controller.create(trip);
-      _trips.add(createdTrip);
       notifyListeners();
 
-      if (createdTrip.id > 0 && createdTrip.places.length > 0) {
-        for (int i = 0; i <= createdTrip.places.length; i++) {
-          createdTrip.places[i].previewAudioOrigin = FileOrigin.Local;
-          createdTrip.places[i].fullAudioOrigin = FileOrigin.Local;
-          createdTrip.places[i].imageOrigin = FileOrigin.Local;
-          createdTrip.places[i] = await _placeController.uploadAudio(
-              createdTrip.places[i], createdTrip.places[i]);
-          createdTrip.places[i] = await _placeController.uploadImage(
-              createdTrip.places[i], createdTrip.places[i]);
-        }
+      if (createdTrip.id > 0) {
+        _controller.createLocal(createdTrip);
+        _controller.deleteLocal(trip);
       }
 
       notifyListeners();
+      return createdTrip;
     } catch (err) {
       throw err;
     }
   }
 
   Future<void> submit(Trip trip) async {
-    int tripIndex = _trips.indexWhere((t) => t.id == trip.id);
-    print('index $tripIndex');
-    print('trip in collection ${_trips[tripIndex].name}');
+    print('creating trip ${trip.name}');
     try {
+      Trip createdTrip = await create(trip);
       print(
-          'will update trip ${trip.name} image ${trip.imageUrl} audio ${trip.previewAudioUrl}');
-      await update(trip);
-      print(
-          'finished updating trip ${trip.name} image ${trip.imageUrl} audio ${trip.previewAudioUrl}');
-      for (Place place in _trips[tripIndex].places) {
-        print(
-            'will update place ${place.name} image ${place.imageUrl} audio ${place.previewAudioUrl} audio ${place.fullAudioUrl}');
-        await updatePlace(place);
-        print(
-            'finished updating place ${place.name} image ${place.imageUrl} audio ${place.previewAudioUrl} audio ${place.fullAudioUrl}');
+          'created trip ${createdTrip.id} ${createdTrip.name} image ${createdTrip.imageUrl} audio ${createdTrip.previewAudioUrl}');
+      if (createdTrip.id > 0) {
+        List<Place> updatedPlaces = [];
+        for (Place place in createdTrip.places) {
+          updatedPlaces.add(await updatePlace(place));
+          print(
+              'updated place ${place.name} image ${place.imageUrl} audio ${place.previewAudioUrl} audio ${place.fullAudioUrl}');
+        }
+        createdTrip.places = updatedPlaces;
+
+        Trip submittedTrip = await _controller.submit(createdTrip.id);
+        if (submittedTrip.submitted) {
+          createdTrip.submitted = true;
+          await updateLocal(createdTrip);
+          print(
+              'submitted trip ${_controller.tripBox.get(createdTrip.id).name} ${_controller.tripBox.get(createdTrip.id).submitted}');
+          notifyListeners();
+        }
       }
-
-      print('will submit trip ${trip.name} submitted ${trip.submitted}');
-      await _controller.submit(_trips[tripIndex].id);
-      print(
-          'finished submitting trip ${_trips[tripIndex].name} submitted ${_trips[tripIndex].submitted}');
     } catch (err) {
       throw err;
     }
   }
 
-  Future<void> update(Trip trip) async {
-    try {
-      List<Place> places = trip.places;
-      _trips[_trips.indexWhere((e) => e.id == trip.id)] =
-          await _controller.update(trip);
-      _trips[_trips.indexWhere((e) => e.id == trip.id)].places = places;
-      notifyListeners();
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  void addTrip(Trip trip) {
-    trip.id = _trips.last.id + 1;
-    _trips.add(trip);
+  Future<void> updateLocal(Trip trip) async {
+    print('updatelocal');
+    await _controller.updateLocal(trip);
     notifyListeners();
   }
 
-  Future<void> createPlace(Place place) async {
-    int tripIndex = _trips.indexWhere((trip) => trip.id == place.tripId);
-    await _placeController.create(place).then((createdPlace) async {
-      _trips[tripIndex].places.add(createdPlace);
-      await orderPlacesinDB(_trips[tripIndex]);
-      notifyListeners();
-    }).catchError((err) => throw err);
-  }
-
-  Future<void> updatePlace(Place place) async {
-    print('update place');
-    int tripIndex = _trips.indexWhere((trip) => trip.id == place.tripId);
-    int placeIndex =
-        _trips[tripIndex].places.indexWhere((p) => place.id == p.id);
-    await _placeController.update(place).then((updatedPlace) async {
-      _trips[tripIndex].places[placeIndex] = updatedPlace;
-      await orderPlacesinDB(_trips[tripIndex]);
-      notifyListeners();
-    }).catchError((err) => throw err);
+  Future<Place> updatePlace(Place place) async {
+    print('updateplace');
+    try {
+      Place updatedPlace = await _placeController.update(place);
+      return updatedPlace;
+    } catch (err) {
+      throw err;
+    }
   }
 
   Trip findById(int id) {
-    return _trips.firstWhere((element) => element.id == id);
+    return _controller.trips.firstWhere((element) => element.id == id);
   }
 
   List<Trip> findByGuide(int ownerId) {
-    return _trips.where((trip) => trip.ownerId == ownerId).toList();
+    return _controller.trips.where((trip) => trip.ownerId == ownerId).toList();
   }
 
   List<Trip> findByLanguage(String lang) {
-    return _trips.where((trip) => trip.languageNameId == lang);
+    return _controller.trips.where((trip) => trip.languageNameId == lang);
   }
 
   List<Trip> findByCity(String placeId) {
-    return _trips.where((trip) => trip.googlePlaceId == placeId);
+    return _controller.trips.where((trip) => trip.googlePlaceId == placeId);
   }
 
   Future<double> getAndSetTripRatings(int tripId) async {
-    print('tripprovider-getratings');
-    List<Rating> ratings = [];
-    ratings = _trips
+    List<double> ratings = [];
+
+    ratings = _controller.trips
         .firstWhere((trip) => trip.id == tripId)
         .places
-        .where((place) => place.rating != null)
-        .map((place) => place.rating)
+        .where((place) => place.ratingAvg != null)
+        .map((place) => place.ratingAvg)
         .toList();
 
     if (ratings.length > 0)
-      return ratings.map((e) => e.rating).reduce((a, b) => a + b) /
-          ratings.length;
+      return ratings.reduce((a, b) => a + b) / ratings.length;
 
-    ratings = [];
-    ratings = await RatingProvider().getRatingsBy(tripId, 0);
+    List<Rating> ratingsOnline = [];
+    ratingsOnline = await RatingProvider().getRatingsBy(tripId, 0);
 
-    if (ratings != null)
-      _trips.forEach((trip) {
-        if (trip.id == tripId)
-          trip.places.forEach((place) {
-            place.rating = ratings.firstWhere(
+    if (ratingsOnline != null) {
+      Trip trip = _controller.trips.firstWhere((t) => t.id == tripId);
+      trip.places.forEach((place) {
+        place.ratingAvg = ratingsOnline
+            .firstWhere(
               (rt) => rt.tripId == trip.id && rt.placeId == place.id,
               orElse: () => Rating(rating: 0.0, count: 0),
-            );
-          });
+            )
+            .rating;
+
+        place.ratingCount = ratingsOnline
+            .firstWhere(
+              (rt) => rt.tripId == trip.id && rt.placeId == place.id,
+              orElse: () => Rating(rating: 0.0, count: 0),
+            )
+            .count;
       });
+      updateLocal(trip);
+    }
     // notifyListeners();
 
-    return ratings.length > 0
-        ? ratings.map((e) => e.rating).reduce((a, b) => a + b) / ratings.length
+    return ratingsOnline.length > 0
+        ? ratingsOnline.map((e) => e.rating).reduce((a, b) => a + b) /
+            ratingsOnline.length
         : 0;
   }
 
-  void orderPlaces(Trip trip) {
-    for (int i = 0; i < trip.places.length; i++) {
-      trip.places[i].order = i + 1;
-    }
-  }
+  // Future<void> delete(int id) async {
+  //   await _controller.delete(id).catchError((err) => throw err);
+  //   notifyListeners();
+  // }
 
-  Future<void> orderPlacesinDB(Trip trip) async {
-    orderPlaces(trip);
-    trip.places.forEach((place) async {
-      await _placeController.order(place);
-    });
-    notifyListeners();
-  }
+  // Future<void> deletePlaceLocal(Place place) async {
+  //   Trip trip = _controller.trips.firstWhere((t) => t.id == place.tripId);
+  //   trip.places.removeWhere((p) => p.id == place.id);
+  //   return await _controller.updateLocal(trip);
+  // }
 
-  Future<void> updateImage(int id, File image) async {
-    _trips[_trips.indexWhere((e) => e.id == id)].imageUrl = image.path;
+  // Future<void> update(Trip trip) async {
+  //   try {
+  //     List<Place> places = trip.places;
+  //     Trip updatedTrip = await _controller.update(trip);
+  //     updatedTrip.places = places;
+  //     await _controller.updateLocal(trip);
+  //     notifyListeners();
+  //   } catch (err) {
+  //     throw err;
+  //   }
+  // }
 
-    _trips[_trips.indexWhere((e) => e.id == id)].imageOrigin = FileOrigin.Local;
-    notifyListeners();
+  // Future<void> deletePlace(Place place) async {
+  //   int tripIndex = _controller.trips.indexWhere((e) => e.id == place.tripId);
+  //   await _placeController.delete(place.tripId, place.id).then((_) async {
+  //     await orderPlacesinDB(_controller.trips[tripIndex]);
+  //     notifyListeners();
+  //   }).catchError((err) => throw err);
+  // }
 
-    String downloadUrl = await _controller.uploadImage(id, image);
-    if (downloadUrl != null) {
-      _trips[_trips.indexWhere((e) => e.id == id)].imageUrl = downloadUrl;
-      _trips[_trips.indexWhere((e) => e.id == id)].imageOrigin =
-          FileOrigin.Network;
-    }
-    notifyListeners();
-  }
+  // Future<void> createPlace(Place place) async {
+  //   int tripIndex =
+  //       _controller.trips.indexWhere((trip) => trip.id == place.tripId);
+  //   Trip trip = _controller.trips[tripIndex];
+  //   await _placeController.create(place).then((createdPlace) async {
+  //     trip.places.add(createdPlace);
+  //     _controller.updateLocal(trip);
+  //     notifyListeners();
+  //   }).catchError((err) => throw err);
+  // }
+
+  // Future<void> orderPlacesinDB(Trip trip) async {
+  //   await _controller.orderPlaces(trip);
+  //   notifyListeners();
+  // }
 }

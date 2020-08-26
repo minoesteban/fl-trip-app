@@ -1,30 +1,56 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
 import '../../core/models/place.model.dart';
 import '../../core/utils/utils.dart';
 
+part 'trip.model.g.dart';
+
+@HiveType(typeId: 2)
 class Trip {
+  @HiveField(0)
   int id;
+  @HiveField(1)
   String name;
+  @HiveField(2)
   int ownerId;
+  @HiveField(3)
   String googlePlaceId;
+  @HiveField(4)
   String locationName;
+  @HiveField(5)
   String countryId;
-  String previewAudioUrl;
-  FileOrigin audioOrigin;
-  String languageNameId;
-  String languageFlagId;
-  double price = 0;
-  String about;
-  bool submitted = false;
-  bool published = false;
-  String imageUrl;
+  @HiveField(6)
   FileOrigin imageOrigin;
+  @HiveField(7)
+  String imageUrl;
+  @HiveField(8)
+  FileOrigin audioOrigin;
+  @HiveField(9)
+  String previewAudioUrl;
+  @HiveField(10)
+  String languageNameId;
+  @HiveField(11)
+  String languageFlagId;
+  @HiveField(12)
+  double price = 0;
+  @HiveField(13)
+  String about;
+  @HiveField(14)
+  bool submitted = false;
+  @HiveField(15)
+  bool published = false;
+  @HiveField(16)
   List<Place> places = []; //not in DB model
+  @HiveField(17)
   DateTime createdAt;
+  @HiveField(18)
   DateTime updatedAt;
+  @HiveField(19)
   DateTime deletedAt;
+  @HiveField(20)
+  bool needSync;
   Trip({
     this.id,
     this.name,
@@ -106,9 +132,9 @@ class Trip {
       'published': published,
       'imageUrl': imageUrl,
       'places': places?.map((x) => x?.toMap())?.toList(),
-      'createdAt': createdAt?.millisecondsSinceEpoch,
-      'updatedAt': updatedAt?.millisecondsSinceEpoch,
-      'deletedAt': deletedAt?.millisecondsSinceEpoch,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -158,9 +184,9 @@ class Trip {
       published: map['published'],
       imageUrl: map['imageUrl'],
       places: _places,
-      createdAt: map['createdAt'],
-      updatedAt: map['updatedAt'],
-      deletedAt: map['deletedAt'],
+      createdAt: DateTime.tryParse(map['created_at']),
+      updatedAt: DateTime.tryParse(map['updated_at']),
+      // deletedAt: DateTime.tryParse(map['deleted_at']),
     );
   }
 

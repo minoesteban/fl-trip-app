@@ -38,7 +38,7 @@ class TripMain extends StatelessWidget {
           actions: [
             IconButton(
               icon: const Icon(Icons.share),
-              onPressed: () => print('share'),
+              onPressed: () {},
             ),
             Consumer<UserProvider>(
               builder: (_, user, __) => IconButton(
@@ -200,7 +200,9 @@ class TripMain extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          snapshot.data.toStringAsPrecision(2),
+                                          snapshot.data
+                                                  ?.toStringAsPrecision(2) ??
+                                              '-',
                                           style: TextStyle(
                                               color: Colors.amber[500],
                                               fontWeight: FontWeight.bold,

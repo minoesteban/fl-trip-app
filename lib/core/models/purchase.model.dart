@@ -44,9 +44,9 @@ class Purchase {
       'tripId': tripId,
       'userId': userId,
       'rating': rating,
-      'createdAt': createdAt?.millisecondsSinceEpoch,
-      'updatedAt': updatedAt?.millisecondsSinceEpoch,
-      'deletedAt': deletedAt?.millisecondsSinceEpoch,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'deletedAt': deletedAt,
     };
   }
 
@@ -58,9 +58,9 @@ class Purchase {
       tripId: map['tripId'],
       userId: map['userId'],
       rating: map['rating'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt']),
-      deletedAt: DateTime.fromMillisecondsSinceEpoch(map['deletedAt']),
+      createdAt: DateTime.tryParse(map['created_at']),
+      updatedAt: DateTime.tryParse(map['updated_at']),
+      // deletedAt: DateTime.tryParse(map['deleted_at']),
     );
   }
 

@@ -10,11 +10,4 @@ class RatingProvider with ChangeNotifier {
         .getRatingsBy(tripId, placeId)
         .catchError((err) => throw err);
   }
-
-  Future<double> getTripRating(int tripId) async {
-    final result = await _controller
-        .getRatingsBy(tripId, 0)
-        .catchError((err) => throw err);
-    return result.map((e) => e.rating).reduce((a, b) => a + b) / result.length;
-  }
 }

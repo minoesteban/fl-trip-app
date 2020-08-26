@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tripit/ui/utils/move-files.dart';
 import '../../core/utils/utils.dart';
 import '../../core/models/place.model.dart';
 import '../../providers/user.provider.dart';
@@ -47,7 +48,6 @@ class _PlaceNewState extends State<PlaceNew> {
     super.initState();
     _imageFocus.addListener(_updateImage);
     _newPlace = widget._place;
-    // if (_newPlace.id > 0) {
     _nameController.text = _newPlace.name ?? '';
     _aboutController.text = _newPlace.about ?? '';
     _priceController.text = _newPlace.price != null
@@ -57,16 +57,6 @@ class _PlaceNewState extends State<PlaceNew> {
     _locationController.text = _newPlace.locationName ?? '';
     _fullAudioController.text = _newPlace.fullAudioUrl;
     _previewAudioController.text = _newPlace.previewAudioUrl;
-    if (_newPlace.fullAudioUrl != null)
-      _newPlace.fullAudioOrigin = _newPlace.fullAudioUrl.startsWith('http')
-          ? FileOrigin.Network
-          : FileOrigin.Local;
-    if (_newPlace.previewAudioUrl != null)
-      _newPlace.previewAudioOrigin =
-          _newPlace.previewAudioUrl.startsWith('http')
-              ? FileOrigin.Network
-              : FileOrigin.Local;
-    // }
   }
 
   @override
@@ -138,7 +128,7 @@ class _PlaceNewState extends State<PlaceNew> {
             color: Colors.grey[300],
             height: MediaQuery.of(context).size.height / 3.5,
             width: MediaQuery.of(context).size.width,
-            child: _newPlace.imageOrigin == FileOrigin.Local
+            child: !_newPlace.imageUrl.startsWith('http')
                 ? Image.asset(
                     _newPlace.imageUrl,
                     fit: BoxFit.cover,
@@ -167,10 +157,9 @@ class _PlaceNewState extends State<PlaceNew> {
                   if (await onAddFileClicked(context, FileType.image)) {
                     File file = await FilePicker.getFile(type: FileType.image);
                     if (file != null) {
+                      File copiedFile = await moveFile(file, '');
                       setState(() {
-                        _imageController.text = file.path;
-                        _newPlace.imageUrl = _imageController.text;
-                        _newPlace.imageOrigin = FileOrigin.Local;
+                        _imageController.text = copiedFile.path;
                       });
                     }
                   }
@@ -217,7 +206,7 @@ class _PlaceNewState extends State<PlaceNew> {
 
               _newPlace.name = result.name;
               _newPlace.googlePlaceId = result.placeId;
-              _newPlace.coordinates = LatLng(
+              _newPlace.coordinates = Coordinates(
                   result.geometry.location.lat, result.geometry.location.lng);
 
               setState(() {
@@ -307,15 +296,12 @@ class _PlaceNewState extends State<PlaceNew> {
             ]);
 
         if (file != null) {
+          File copiedFile = await moveFile(file, '');
           setState(() {
             if (isFull) {
-              _fullAudioController.text = file.absolute.path;
-              _newPlace.fullAudioUrl = file.path;
-              _newPlace.fullAudioOrigin = FileOrigin.Local;
+              _fullAudioController.text = copiedFile.path;
             } else {
-              _previewAudioController.text = file.absolute.path;
-              _newPlace.previewAudioUrl = file.path;
-              _newPlace.previewAudioOrigin = FileOrigin.Local;
+              _previewAudioController.text = copiedFile.path;
             }
           });
         }
@@ -472,9 +458,12 @@ class _PlaceNewState extends State<PlaceNew> {
           child: Form(
             key: _form,
             onChanged: () {
+              print('actualiza newPlace desde form');
               _newPlace.name = _nameController.text;
               _newPlace.about = _aboutController.text;
               _newPlace.imageUrl = _imageController.text;
+              _newPlace.previewAudioUrl = _previewAudioController.text;
+              _newPlace.fullAudioUrl = _fullAudioController.text;
               _newPlace.locationName = _locationController.text;
               _newPlace.price = _priceController.text.isEmpty
                   ? 99999

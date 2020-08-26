@@ -28,7 +28,7 @@ class UserService {
   Future<int> update(User newUser) async {
     String url = '$_endpoint/users/${newUser.id}';
     final res = await http.patch(url,
-        headers: _headers, body: json.encode(newUser.toMap()));
+        headers: _headers, body: json.encode(newUser.toMapForDB()));
     if (res.statusCode == HttpStatus.ok) {
       //json.decode(res.body)['item'][1] --> updated record
       return json.decode(res.body)[0]; //# updated records

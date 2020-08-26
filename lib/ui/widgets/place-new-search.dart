@@ -125,10 +125,7 @@ class PlaceNewSearch extends SearchDelegate<PlaceDetails> {
                                       language:
                                           Platform.localeName.split('_')[0],
                                     );
-                                    if (!details.isOkay)
-                                      print(
-                                          'error en get place details ${details.errorMessage}');
-                                    else
+                                    if (details.isOkay)
                                       close(context, details.result);
                                   },
                                   leading: Icon(Icons.place),
@@ -161,10 +158,7 @@ class PlaceNewSearch extends SearchDelegate<PlaceDetails> {
                                       language:
                                           Platform.localeName.split('_')[0],
                                     );
-                                    if (!details.isOkay)
-                                      print(
-                                          'error en get place details ${details.errorMessage}');
-                                    else
+                                    if (details.isOkay)
                                       close(context, details.result);
                                   },
                                   leading: Icon(Icons.location_city),

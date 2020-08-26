@@ -104,8 +104,8 @@ class PlacesList extends StatelessWidget {
                         children: [
                           Consumer<TripProvider>(
                             builder: (_, trips, __) => Text(
-                              places[index].rating != null
-                                  ? '${trips.trips.firstWhere((trip) => trip.id == places[index].tripId).places[index].rating.rating.toStringAsPrecision(2)}'
+                              places[index].ratingAvg != null
+                                  ? '${trips.trips.firstWhere((trip) => trip.id == places[index].tripId).places[index].ratingAvg.toStringAsPrecision(2)}'
                                   : '0',
                               textAlign: TextAlign.center,
                               style: TextStyle(

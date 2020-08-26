@@ -10,10 +10,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tripit/ui/utils/move-files.dart';
 import '../../ui/utils/trip-submit.dart';
-import '../../core/utils/utils.dart';
 import '../../ui/screens/place-new.dart';
-import '../../ui/utils/show-message.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/trip.provider.dart';
 import '../../providers/user.provider.dart';
@@ -67,9 +66,18 @@ class _TripNewState extends State<TripNew> {
     super.initState();
     // _imageFocus.addListener(_updateImage);
     _localeName = Platform.localeName;
-    print(_localeName);
     _newTrip = widget.trip;
     _newPlaces = _newTrip.places ?? [];
+    // String point = json.encode({
+    //   'type': 'Point',
+    //   'coordinates': [
+    //     _newPlaces[0].coordinates.latitude,
+    //     _newPlaces[0].coordinates.longitude
+    //   ],
+    // });
+    // print(_newTrip.id);
+    // print(_newPlaces[0].id);
+    // print(json.encode(point));
     _nameController.text = _newTrip.name ?? '';
     _aboutController.text = _newTrip.about ?? '';
     _imageController.text = _newTrip.imageUrl ?? '';
@@ -87,15 +95,6 @@ class _TripNewState extends State<TripNew> {
             ? _newTrip.languageFlagId
             : _localeName.split('_')[0].toUpperCase()
         : _localeName.split('_')[0].toUpperCase();
-    if (_newTrip.imageUrl != null && _newTrip.imageUrl.length > 0)
-      _newTrip.imageOrigin = _newTrip.imageUrl.startsWith('http')
-          ? FileOrigin.Network
-          : FileOrigin.Local;
-    if (_newTrip.previewAudioUrl != null && _newTrip.previewAudioUrl.length > 0)
-      _newTrip.audioOrigin = _newTrip.previewAudioUrl.startsWith('http')
-          ? FileOrigin.Network
-          : FileOrigin.Local;
-
     _languages = Provider.of<LanguageProvider>(context, listen: false);
     _countries = Provider.of<CountryProvider>(context, listen: false);
     _userPosition =
@@ -146,12 +145,6 @@ class _TripNewState extends State<TripNew> {
     }
   }
 
-  // void _updateImage() {
-  //   if (!_imageFocus.hasFocus) {
-  //     setState(() {});
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     //get location name
@@ -181,7 +174,7 @@ class _TripNewState extends State<TripNew> {
                 color: Colors.grey[300],
                 height: MediaQuery.of(context).size.height / 3.5,
                 width: MediaQuery.of(context).size.width,
-                child: _newTrip.imageOrigin == FileOrigin.Local
+                child: !_newTrip.imageUrl.startsWith('http')
                     ? Image.asset(
                         _imageController.text,
                         fit: BoxFit.cover,
@@ -211,10 +204,9 @@ class _TripNewState extends State<TripNew> {
                         File file =
                             await FilePicker.getFile(type: FileType.image);
                         if (file != null) {
-                          if (file.path.contains(' '))
-                            file.renameSync(file.path.replaceAll(' ', ''));
+                          File copiedFile = await moveFile(file, '');
                           setState(() {
-                            _imageController.text = file.path;
+                            _imageController.text = copiedFile.path;
                           });
                         }
                       }
@@ -383,10 +375,9 @@ class _TripNewState extends State<TripNew> {
                   ]);
 
               if (file != null) {
+                File copiedFile = await moveFile(file, '');
                 setState(() {
-                  _audioController.text = file.absolute.path;
-                  _newTrip.previewAudioUrl = file.path;
-                  _newTrip.audioOrigin = FileOrigin.Local;
+                  _audioController.text = copiedFile.path;
                 });
               }
             }
@@ -503,6 +494,15 @@ class _TripNewState extends State<TripNew> {
       ];
     }
 
+    void updatePlace(int index, Place place, String action) {
+      setState(() {
+        if (action == 'add') _newPlaces.add(place);
+        if (action == 'delete')
+          _newPlaces.removeAt(index);
+        else if (action == 'create/update') _newPlaces[index] = place;
+      });
+    }
+
     Widget addPlaceButton(TripProvider tripProvider) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -525,14 +525,7 @@ class _TripNewState extends State<TripNew> {
                     )
                       .then((res) {
                       if (res != null) {
-                        if (res['item'].tripId > 0)
-                          tripProvider.createPlace(res['item']).catchError(
-                                (e) => showMessage(context, e, true),
-                              );
-                        else
-                          setState(() {
-                            _newPlaces.add(res['item']);
-                          });
+                        updatePlace(0, res['item'], 'add');
                       }
                     })
                   : showDialog(
@@ -589,7 +582,7 @@ class _TripNewState extends State<TripNew> {
                       height: 50,
                       child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(5)),
-                        child: _newPlaces[i].imageOrigin == FileOrigin.Local
+                        child: !_newPlaces[i].imageUrl.startsWith('http')
                             ? Image.asset(_newPlaces[i].imageUrl)
                             : CachedNetworkImage(
                                 fit: BoxFit.cover,
@@ -647,11 +640,7 @@ class _TripNewState extends State<TripNew> {
                           },
                         ).then((res) async {
                           if (res) {
-                            await tripProvider
-                                .deletePlace(_newPlaces[i])
-                                .catchError(
-                                  (e) => showMessage(context, e, true),
-                                );
+                            updatePlace(i, null, 'delete');
                           }
                         });
                       },
@@ -668,27 +657,7 @@ class _TripNewState extends State<TripNew> {
                       )
                           .then((res) {
                         if (res != null) {
-                          print('ressss $res');
-                          try {
-                            Place place = res['item'];
-                            if (place.tripId > 0) {
-                              if (res['action'] == 'delete')
-                                tripProvider.deletePlace(
-                                  res['item'],
-                                );
-                              else if (res['action'] == 'create/update')
-                                tripProvider.updatePlace(
-                                  res['item'],
-                                );
-                            } else {
-                              if (res['action'] == 'delete')
-                                _newPlaces.removeAt(i);
-                              else if (res['action'] == 'create/update')
-                                _newPlaces[i] = place;
-                            }
-                          } catch (e) {
-                            showMessage(context, e, true);
-                          }
+                          updatePlace(i, res['item'], res['action']);
                         }
                       });
                     },
@@ -733,6 +702,8 @@ class _TripNewState extends State<TripNew> {
             child: Form(
           key: _form,
           onChanged: () {
+            _newTrip.imageUrl = _imageController.text;
+            _newTrip..previewAudioUrl = _audioController.text;
             _newTrip.places = _newPlaces;
             _newTrip.name = _nameController.text;
             _newTrip.about = _aboutController.text;
@@ -741,10 +712,6 @@ class _TripNewState extends State<TripNew> {
             _newTrip.price = _priceController.text.isEmpty
                 ? 0
                 : double.parse(_priceController.text);
-            _newTrip.imageUrl = _imageController.text;
-            _newTrip.imageOrigin = _imageController.text.startsWith('http')
-                ? FileOrigin.Network
-                : FileOrigin.Local;
           },
           child: SingleChildScrollView(
             child: Column(

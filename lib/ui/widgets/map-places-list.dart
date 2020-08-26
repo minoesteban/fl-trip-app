@@ -171,7 +171,7 @@ class PlaceCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${_place.rating.rating.toStringAsPrecision(2)}',
+                          '${_place.ratingAvg.toStringAsPrecision(2)}',
                           style: TextStyle(
                               color: Colors.amber[500],
                               fontWeight: FontWeight.bold,

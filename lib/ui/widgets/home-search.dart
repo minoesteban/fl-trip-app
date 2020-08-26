@@ -56,9 +56,9 @@ class HomeSearch extends SearchDelegate<Geometry> {
     }
 
     return FutureBuilder(
-        future: Provider.of<TripProvider>(context).loadTrips(),
+        future: Provider.of<TripProvider>(context, listen: false).loadTrips(),
         builder: (context, dataSnapshot) {
-          _trips = dataSnapshot.data != null ? dataSnapshot.data : [];
+          _trips = Provider.of<TripProvider>(context, listen: false).trips;
           return IconButton(
               icon: AnimatedIcon(
                 icon: AnimatedIcons.menu_arrow,
@@ -108,10 +108,7 @@ class HomeSearch extends SearchDelegate<Geometry> {
                               _places[index]['id'],
                               language: Platform.localeName.split('_')[0],
                             );
-                            if (!details.isOkay)
-                              print(
-                                  'error en get place details ${details.errorMessage}');
-                            else
+                            if (details.isOkay)
                               close(context, details.result.geometry);
                           },
                           leading: Icon(Icons.place),
@@ -143,10 +140,7 @@ class HomeSearch extends SearchDelegate<Geometry> {
                               _tripNames[index]['id'],
                               language: Platform.localeName.split('_')[0],
                             );
-                            if (!details.isOkay)
-                              print(
-                                  'error en get place details ${details.errorMessage}');
-                            else
+                            if (details.isOkay)
                               close(context, details.result.geometry);
                           },
                           leading: Icon(Icons.map),
@@ -178,10 +172,7 @@ class HomeSearch extends SearchDelegate<Geometry> {
                               _cities[index]['id'],
                               language: Platform.localeName.split('_')[0],
                             );
-                            if (!details.isOkay)
-                              print(
-                                  'error en get place details ${details.errorMessage}');
-                            else
+                            if (details.isOkay)
                               close(context, details.result.geometry);
                           },
                           leading: Icon(Icons.location_city),
@@ -213,10 +204,7 @@ class HomeSearch extends SearchDelegate<Geometry> {
                               _countries[index]['id'],
                               language: Platform.localeName.split('_')[0],
                             );
-                            if (!details.isOkay)
-                              print(
-                                  'error en get place details ${details.errorMessage}');
-                            else
+                            if (details.isOkay)
                               close(context, details.result.geometry);
                           },
                           leading: Icon(Icons.flag),

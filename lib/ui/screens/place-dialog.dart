@@ -88,7 +88,7 @@ class PlaceDialog extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('${_place.rating.rating.toStringAsPrecision(2)}',
+                  Text('${_place.ratingAvg.toStringAsPrecision(2)}',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 32,
