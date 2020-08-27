@@ -1,5 +1,6 @@
 import 'dart:async' show Future;
 import 'package:flutter/material.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import '../core/controllers/place.controller.dart';
 import '../core/models/place.model.dart';
 import '../core/controllers/trip.controller.dart';
@@ -35,6 +36,10 @@ class TripProvider with ChangeNotifier {
       });
       _controller.setTripIds(_trips.map((e) => e.id).toList());
       _controller.updateLocalTrips(_trips);
+      for (Trip trip in _controller.trips) {
+        if (_trips.map((e) => e.id).toList().indexOf(trip.id) < 0)
+          _controller.deleteLocal(trip);
+      }
     }
 
     notifyListeners();
@@ -72,28 +77,34 @@ class TripProvider with ChangeNotifier {
     }
   }
 
-  Future<void> submit(Trip trip) async {
-    print('creating trip ${trip.name}');
+  Future<void> submit(Trip trip, ProgressDialog pr) async {
+    double progressPoint = 100 / (trip.places.length + 2);
+
+    pr.update(
+      message: 'Creating trip ${trip.name}',
+      progress: 0,
+    );
+
     try {
       Trip createdTrip = await create(trip);
-      print(
-          'created trip ${createdTrip.id} ${createdTrip.name} image ${createdTrip.imageUrl} audio ${createdTrip.previewAudioUrl}');
       if (createdTrip.id > 0) {
         List<Place> updatedPlaces = [];
         for (Place place in createdTrip.places) {
+          pr.update(
+            message: 'Uploading place ${place.name}',
+            progress: progressPoint * (createdTrip.places.indexOf(place) + 1),
+          );
           updatedPlaces.add(await updatePlace(place));
-          print(
-              'updated place ${place.name} image ${place.imageUrl} audio ${place.previewAudioUrl} audio ${place.fullAudioUrl}');
         }
         createdTrip.places = updatedPlaces;
-
+        pr.update(
+          message: 'Submitting trip',
+          progress: progressPoint * (trip.places.length + 2),
+        );
         Trip submittedTrip = await _controller.submit(createdTrip.id);
         if (submittedTrip.submitted) {
           createdTrip.submitted = true;
           await updateLocal(createdTrip);
-          print(
-              'submitted trip ${_controller.tripBox.get(createdTrip.id).name} ${_controller.tripBox.get(createdTrip.id).submitted}');
-          notifyListeners();
         }
       }
     } catch (err) {

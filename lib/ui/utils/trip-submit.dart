@@ -2,18 +2,39 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/place.model.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/trip.provider.dart';
 
 AudioPlayer _player = AudioPlayer();
+ProgressDialog pr;
 
 void submitTrip(Trip trip, BuildContext context) async {
   List<String> tripMessages = [];
   List<Map<String, List<String>>> placeMessages = [];
   bool hasErrors = false;
   bool hasWarnings = false;
+  pr = ProgressDialog(
+    context,
+    isDismissible: false,
+  )..style(
+      // borderRadius: 10,
+      // backgroundColor: Colors.white,
+      // elevation: 10,
+      // insetAnimCurve: Curves.easeInOut,
+      textAlign: TextAlign.start,
+      // progress: 0,
+      progressWidgetAlignment: Alignment.center,
+      progressWidget: Container(
+          padding: EdgeInsets.all(8.0), child: CircularProgressIndicator()),
+      // maxProgress: 100,
+      // progressTextStyle: TextStyle(
+      //     color: Colors.black, fontSize: 13.0, fontWeight: FontWeight.bold),
+      // messageTextStyle: TextStyle(
+      //     color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.bold),
+    );
 
   //trip errors
   if (trip.imageUrl == null || !trip.imageUrl.contains('/'))
@@ -175,7 +196,9 @@ void submitTrip(Trip trip, BuildContext context) async {
     ),
   ).then((res) async {
     if (res) {
-      await Provider.of<TripProvider>(context, listen: false).submit(trip);
+      await pr.show();
+      await Provider.of<TripProvider>(context, listen: false).submit(trip, pr);
+      await pr.hide();
       Navigator.of(context).pop();
     }
   });

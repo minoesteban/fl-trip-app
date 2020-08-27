@@ -9,7 +9,6 @@ class TripController {
 
   Future<List<int>> init() async {
     tripBox = await Hive.openBox('trips');
-
     return await Hive.openBox('lists')
         .then((value) => List.castFrom<dynamic, int>(value.get('tripIds')));
   }

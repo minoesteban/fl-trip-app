@@ -64,20 +64,9 @@ class _TripNewState extends State<TripNew> {
   @override
   void initState() {
     super.initState();
-    // _imageFocus.addListener(_updateImage);
     _localeName = Platform.localeName;
     _newTrip = widget.trip;
     _newPlaces = _newTrip.places ?? [];
-    // String point = json.encode({
-    //   'type': 'Point',
-    //   'coordinates': [
-    //     _newPlaces[0].coordinates.latitude,
-    //     _newPlaces[0].coordinates.longitude
-    //   ],
-    // });
-    // print(_newTrip.id);
-    // print(_newPlaces[0].id);
-    // print(json.encode(point));
     _nameController.text = _newTrip.name ?? '';
     _aboutController.text = _newTrip.about ?? '';
     _imageController.text = _newTrip.imageUrl ?? '';
