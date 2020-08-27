@@ -9,11 +9,10 @@ class UserProvider with ChangeNotifier {
   UserController _userController = UserController();
   User _user = User();
 
-  Future<User> getUser(int userId) async {
-    return await _userController
-        .getUser(userId)
-        .then((user) => _user = user)
-        .catchError((err) => throw err);
+  Future<User> getUser(int userId, bool isCurrentUser) async {
+    return await _userController.getUser(userId).then((user) {
+      if (isCurrentUser) _user = user;
+    }).catchError((err) => throw err);
   }
 
   Future<void> getUserPosition() async {

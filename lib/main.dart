@@ -46,7 +46,7 @@ void main() async {
 
   UserProvider _userProvider = UserProvider();
   //TODO: hacer el get dinamico segun login?
-  await _userProvider.getUser(8);
+  await _userProvider.getUser(8, true);
   await _userProvider.getUserPosition();
 
   TripProvider _trips = TripProvider();
@@ -95,7 +95,7 @@ void main() async {
           Home.routeName: (context) => Home(),
           MapMain.routeName: (context) => MapMain(),
           Store.routeName: (context) => Store(),
-          Profile.routeName: (context) => Profile(),
+          Profile.routeName: (context) => Profile(_userProvider.user.id),
           PlaceDialog.routeName: (context) => PlaceDialog(new Place()),
           CartMain.routeName: (context) => CartMain(),
         },

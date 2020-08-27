@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tripit/providers/user.provider.dart';
 import 'home-main.dart';
 import 'map-main.dart';
 import 'profile-main.dart';
@@ -24,7 +26,7 @@ class _TabNavigatorState extends State<TabNavigator> {
           MapMain(),
           Home(),
           Store(),
-          Profile(),
+          Profile(Provider.of<UserProvider>(context, listen: false).user.id),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

@@ -708,7 +708,7 @@ class _TripNewState extends State<TripNew> {
                 //cover image
                 ...buildCoverImage(),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 50),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 70),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,

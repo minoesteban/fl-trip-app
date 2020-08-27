@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../ui/widgets/collapsible-text.dart';
+import '../../core/models/user.model.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/language.provider.dart';
 import '../../providers/user.provider.dart';
@@ -16,12 +17,16 @@ import '../../ui/utils/show-message.dart';
 import '../../ui/screens/trip-main.dart';
 import '../../ui/screens/trip-new.dart';
 
-//TODO: Quitar espacios de los nombres de archivos seleccionados
 class Profile extends StatelessWidget {
   static const routeName = '/profile';
+  final int userId;
+
+  Profile(this.userId);
 
   @override
   Widget build(BuildContext context) {
+    User currentUser;
+    bool myProfile = false;
     List<Trip> _trips;
     Set<String> _userLanguages;
     Set<String> _countries;
@@ -33,6 +38,14 @@ class Profile extends StatelessWidget {
         Provider.of<TripProvider>(context, listen: false);
     UserProvider userProvider =
         Provider.of<UserProvider>(context, listen: false);
+
+    Future<void> setUser() async {
+      if (userProvider.user.id == userId) {
+        currentUser = userProvider.user;
+        myProfile = true;
+      } else
+        currentUser = await userProvider.getUser(userId, false);
+    }
 
     Future<void> getUserRating(TripProvider tripsProvider) async {
       if (_rating == 0) {
@@ -64,34 +77,35 @@ class Profile extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 8, right: 8),
                   child: CircleAvatar(
                     radius: 75,
-                    backgroundImage: userProvider.user.imageUrl != null
-                        ? !userProvider.user.imageUrl.startsWith('http')
-                            ? AssetImage(userProvider.user.imageUrl)
+                    backgroundImage: currentUser.imageUrl != null
+                        ? !currentUser.imageUrl.startsWith('http')
+                            ? AssetImage(currentUser.imageUrl)
                             : CachedNetworkImageProvider(
                                 userProvider.getImage())
                         : AssetImage('assets/images/avatar.png'),
                   ),
                 ),
-                IconButton(
-                  padding: const EdgeInsets.all(0),
-                  icon: Icon(Icons.camera_alt),
-                  color: Colors.grey[400],
-                  iconSize: 35,
-                  onPressed: () async {
-                    if (await onAddFileClicked(context, FileType.image)) {
-                      File image =
-                          await FilePicker.getFile(type: FileType.image);
-                      if (image != null) {
-                        userProvider.updateImage(image);
+                if (myProfile)
+                  IconButton(
+                    padding: const EdgeInsets.all(0),
+                    icon: Icon(Icons.camera_alt),
+                    color: Colors.grey[400],
+                    iconSize: 35,
+                    onPressed: () async {
+                      if (await onAddFileClicked(context, FileType.image)) {
+                        File image =
+                            await FilePicker.getFile(type: FileType.image);
+                        if (image != null) {
+                          userProvider.updateImage(image);
+                        }
                       }
-                    }
-                  },
-                ),
+                    },
+                  ),
               ],
             ),
             const SizedBox(height: 10),
             Text(
-              '${toBeginningOfSentenceCase(userProvider.user.firstName)} ${toBeginningOfSentenceCase(userProvider.user.lastName)}',
+              '${toBeginningOfSentenceCase(currentUser.firstName)} ${toBeginningOfSentenceCase(currentUser.lastName)}',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
             ),
             const Divider(height: 30),
@@ -103,7 +117,7 @@ class Profile extends StatelessWidget {
     List<Widget> buildStats() {
       return [
         Consumer<TripProvider>(builder: (context, tripProvider, _) {
-          _trips = tripsProvider.findByGuide(userProvider.user.id);
+          _trips = tripsProvider.findByGuide(currentUser.id);
           _countries = _countries ?? _trips.map((e) => e.countryId).toSet();
           _cities = _cities ?? _trips.map((trip) => trip.googlePlaceId).toSet();
           _trips.forEach((trip) {
@@ -234,8 +248,12 @@ class Profile extends StatelessWidget {
         Container(
           width: MediaQuery.of(context).size.width,
           child: Consumer<TripProvider>(builder: (context, tripsProvider, _) {
-            _trips = tripsProvider.findByGuide(userProvider.user.id);
-
+            List<Trip> _tripsRaw =
+                tripsProvider.findByGuide(currentUser.id).toList();
+            _trips.clear();
+            _trips.addAll(_tripsRaw.where((t) => !t.submitted));
+            _trips.addAll(_tripsRaw.where((t) => t.submitted && !t.published));
+            _trips.addAll(_tripsRaw.where((t) => t.submitted && t.published));
             return ListView.builder(
               physics: ClampingScrollPhysics(),
               shrinkWrap: true,
@@ -341,47 +359,57 @@ class Profile extends StatelessWidget {
           IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: null,
-        backgroundColor: Colors.red[800],
-        child: IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            Navigator.of(context)
-                .pushNamed<Map<String, dynamic>>(
-              TripNew.routeName,
-            )
-                .then((res) {
-              if (res != null) {
-                if (res['action'] == 'create/update')
-                  Provider.of<TripProvider>(context, listen: false)
-                      .createLocal(res['item'])
-                      .catchError((e) => showMessage(context, e, true));
-              }
-            }).catchError((e) => showMessage(context, e, true));
-          },
-        ),
-      ),
+      floatingActionButton: !myProfile
+          ? null
+          : FloatingActionButton(
+              onPressed: null,
+              backgroundColor: Colors.red[800],
+              child: IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () {
+                  Navigator.of(context)
+                      .pushNamed<Map<String, dynamic>>(
+                    TripNew.routeName,
+                  )
+                      .then((res) {
+                    if (res != null) {
+                      if (res['action'] == 'create/update')
+                        Provider.of<TripProvider>(context, listen: false)
+                            .createLocal(res['item'])
+                            .catchError((e) => showMessage(context, e, true));
+                    }
+                  }).catchError((e) => showMessage(context, e, true));
+                },
+              ),
+            ),
       body: SingleChildScrollView(
         physics: ClampingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //avatar & name
-              buildAvatar(),
-              //stats
-              ...buildStats(),
-              //about
-              ...buildDescription(
-                  Provider.of<UserProvider>(context).user.about ?? ''),
-              //languages
-              ...buildLanguages(),
-              //trips
-              ...buildTrips(),
-            ],
-          ),
+        child: FutureBuilder(
+          future: setUser(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center();
+            }
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  //avatar & name
+                  buildAvatar(),
+                  //stats
+                  ...buildStats(),
+                  //about
+                  ...buildDescription(
+                      Provider.of<UserProvider>(context).user.about ?? ''),
+                  //languages
+                  ...buildLanguages(),
+                  //trips
+                  ...buildTrips(),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
