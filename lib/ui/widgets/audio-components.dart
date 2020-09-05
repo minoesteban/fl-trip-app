@@ -3,13 +3,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:tripit/core/services/trip.service.dart';
 import 'package:tripit/ui/utils/show-message.dart';
+import 'package:tripit/core/services/place.service.dart';
 
 class Player extends StatefulWidget {
   final String url;
   final bool withSlider;
+  final bool isTrip; //if not, it is Place
 
-  Player(this.url, this.withSlider);
+  Player(this.url, this.withSlider, this.isTrip);
 
   @override
   _PlayerState createState() => _PlayerState();
@@ -36,7 +39,10 @@ class _PlayerState extends State<Player> {
 
   _loadAudio() async {
     try {
-      await _player.setUrl(widget.url);
+      widget.isTrip
+          ? await _player.setUrl(await TripService().getDownloadUrl(widget.url))
+          : await _player
+              .setUrl(await PlaceService().getDownloadUrl(widget.url, false));
     } catch (e) {
       showMessage(context, e, true);
     }
@@ -106,7 +112,7 @@ class PlayPause extends StatelessWidget {
               Icons.play_arrow,
               color: Colors.green,
             ),
-            iconSize: 45,
+            iconSize: 50,
             onPressed: player.play,
           );
         } else if (processingState != ProcessingState.completed) {
@@ -116,7 +122,7 @@ class PlayPause extends StatelessWidget {
               Icons.pause,
               color: Colors.green,
             ),
-            iconSize: 45,
+            iconSize: 50,
             onPressed: player.pause,
           );
         } else {
@@ -125,7 +131,7 @@ class PlayPause extends StatelessWidget {
               Icons.replay,
               color: Colors.green,
             ),
-            iconSize: 45,
+            iconSize: 50,
             onPressed: () => player.seek(Duration.zero, index: 0),
           );
         }

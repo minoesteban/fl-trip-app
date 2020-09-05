@@ -6,6 +6,7 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/core/utils/s3-auth-headers.dart';
 import '../../ui/widgets/collapsible-text.dart';
 import '../../core/models/user.model.dart';
 import '../../core/models/trip.model.dart';
@@ -26,7 +27,6 @@ class Profile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     User currentUser;
-    bool myProfile = false;
     List<Trip> _trips;
     Set<String> _userLanguages;
     Set<String> _countries;
@@ -38,12 +38,12 @@ class Profile extends StatelessWidget {
         Provider.of<TripProvider>(context, listen: false);
     UserProvider userProvider =
         Provider.of<UserProvider>(context, listen: false);
+    bool myProfile = userProvider.user.id == userId ? true : false;
 
     Future<void> setUser() async {
-      if (userProvider.user.id == userId) {
+      if (userProvider.user.id == userId)
         currentUser = userProvider.user;
-        myProfile = true;
-      } else
+      else
         currentUser = await userProvider.getUser(userId, false);
     }
 
@@ -323,11 +323,13 @@ class Profile extends StatelessWidget {
                                 ? 1
                                 : _trips[i].submitted == true ? 0.7 : 0.4,
                             child: !_trips[i].imageUrl.startsWith('http')
-                                ? Image.asset(
-                                    _trips[i].imageUrl,
+                                ? Image.file(
+                                    File(_trips[i].imageUrl),
                                     fit: BoxFit.cover,
                                   )
                                 : CachedNetworkImage(
+                                    httpHeaders:
+                                        generateAuthHeaders(_trips[i].imageUrl),
                                     imageUrl: _trips[i].imageUrl,
                                     fit: BoxFit.cover,
                                     errorWidget: (_, __, ___) => Container(
@@ -356,7 +358,7 @@ class Profile extends StatelessWidget {
             style: const TextStyle(
                 fontWeight: FontWeight.bold, letterSpacing: 1.2)),
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
       floatingActionButton: !myProfile

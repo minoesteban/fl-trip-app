@@ -2,6 +2,7 @@ import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/core/utils/s3-auth-headers.dart';
 import 'package:tripit/providers/user.provider.dart';
 import 'package:tripit/ui/screens/cart-main.dart';
 import '../../core/models/trip.model.dart';
@@ -41,6 +42,7 @@ class Home extends StatelessWidget {
                         }),
                     child: GridTile(
                       child: CachedNetworkImage(
+                        httpHeaders: generateAuthHeaders(trip.imageUrl),
                         imageUrl: trip.imageUrl,
                         fit: BoxFit.cover,
                       ),

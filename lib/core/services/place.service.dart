@@ -79,8 +79,6 @@ class PlaceService {
 
   Future<String> uploadAudio(
       int tripId, int id, File audio, bool isFullAudio) async {
-    //TODO: upload full audio to different -private- bucket (API).
-
     print('placeservice-uploadaudio $isFullAudio');
     String fileExtension = path.extension(audio.path).substring(1);
     String url =
@@ -112,6 +110,25 @@ class PlaceService {
         throw HttpException(res.body);
     } else
       throw HttpException(res.body);
+  }
+
+  Future<String> getDownloadUrl(String fileUrl, bool isFullAudio) async {
+    List<String> pathSegments = Uri.parse(fileUrl).pathSegments;
+    int tripId =
+        int.tryParse(pathSegments.elementAt(pathSegments.indexOf('trips') + 1));
+    int id = int.tryParse(
+        pathSegments.elementAt(pathSegments.indexOf('places') + 1));
+    String fileExtension = path.extension(Uri.parse(fileUrl).path).substring(1);
+    String fileName = path.basenameWithoutExtension(Uri.parse(fileUrl).path);
+    String url =
+        '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension;isFull=$isFullAudio;filename=$fileName';
+
+    var res = await http.get(url);
+    if (res.statusCode == HttpStatus.ok) {
+      return json.decode(res.body)['downloadUrl'];
+    } else {
+      throw HttpException(res.body.toString());
+    }
   }
 
   Future<void> downloadFullAudio(Place place) async {

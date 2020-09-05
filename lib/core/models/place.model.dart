@@ -50,6 +50,8 @@ class Place {
   DateTime deletedAt;
   @HiveField(20)
   bool needSync;
+  @HiveField(21)
+  double fullAudioLength;
   Place({
     this.id,
     this.name,
@@ -59,6 +61,7 @@ class Place {
     this.coordinates,
     this.fullAudioUrl,
     this.fullAudioOrigin,
+    this.fullAudioLength,
     this.previewAudioUrl,
     this.previewAudioOrigin,
     this.imageUrl,
@@ -81,6 +84,7 @@ class Place {
     GeoJsonPoint coordinates,
     String fullAudioUrl,
     FileOrigin fullAudioOrigin,
+    double fullAudioLength,
     String previewAudioUrl,
     FileOrigin previewAudioOrigin,
     String imageUrl,
@@ -102,6 +106,7 @@ class Place {
       coordinates: coordinates ?? this.coordinates,
       fullAudioUrl: fullAudioUrl ?? this.fullAudioUrl,
       fullAudioOrigin: fullAudioOrigin ?? this.fullAudioOrigin,
+      fullAudioLength: fullAudioLength ?? this.fullAudioLength,
       previewAudioUrl: previewAudioUrl ?? this.previewAudioUrl,
       previewAudioOrigin: previewAudioOrigin ?? this.previewAudioOrigin,
       imageUrl: imageUrl ?? this.imageUrl,
@@ -133,6 +138,7 @@ class Place {
       'coordinates': point,
       'fullAudioUrl': fullAudioUrl,
       'fullAudioOrigin': fullAudioOrigin,
+      'fullAudioLength': fullAudioLength,
       'previewAudioUrl': previewAudioUrl,
       'previewAudioOrigin': previewAudioOrigin,
       'imageUrl': imageUrl,
@@ -163,6 +169,7 @@ class Place {
       // 'coordinates': point,
       'coordinates': point,
       'fullAudioUrl': fullAudioUrl,
+      'fullAudioLength': fullAudioLength,
       'previewAudioUrl': previewAudioUrl,
       'imageUrl': imageUrl,
       'price': price,
@@ -198,6 +205,7 @@ class Place {
           map['coordinates']['coordinates'][1].toDouble()),
       fullAudioUrl: map['fullAudioUrl'],
       fullAudioOrigin: map['fullAudioOrigin'],
+      fullAudioLength: map['fullAudioLength']?.toDouble(),
       previewAudioUrl: map['previewAudioUrl'],
       previewAudioOrigin: map['previewAudioOrigin'],
       imageUrl: map['imageUrl'],
@@ -233,6 +241,7 @@ class Place {
         o.coordinates == coordinates &&
         o.fullAudioUrl == fullAudioUrl &&
         o.fullAudioOrigin == fullAudioOrigin &&
+        fullAudioLength == fullAudioLength &&
         o.previewAudioUrl == previewAudioUrl &&
         o.previewAudioOrigin == previewAudioOrigin &&
         o.imageUrl == imageUrl &&
@@ -255,6 +264,7 @@ class Place {
         coordinates.hashCode ^
         fullAudioUrl.hashCode ^
         fullAudioOrigin.hashCode ^
+        fullAudioLength.hashCode ^
         previewAudioUrl.hashCode ^
         previewAudioOrigin.hashCode ^
         imageUrl.hashCode ^

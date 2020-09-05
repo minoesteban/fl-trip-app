@@ -28,13 +28,18 @@ import 'ui/screens/tab-navigator.dart';
 import 'ui/screens/place-dialog.dart';
 import 'ui/screens/trip-main.dart';
 
+UserProvider _userProvider = UserProvider();
+TripProvider _trips = TripProvider();
+PurchaseProvider _purchases = PurchaseProvider();
+CountryProvider _countries = CountryProvider();
+LanguageProvider _languages = LanguageProvider();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
 
   Hive.initFlutter();
-
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(TripAdapter());
   Hive.registerAdapter(PlaceAdapter());
@@ -43,23 +48,6 @@ void main() async {
   Hive.registerAdapter(RatingAdapter());
   Hive.registerAdapter(CoordinatesAdapter());
   Hive.registerAdapter(FileOriginAdapter());
-
-  UserProvider _userProvider = UserProvider();
-  //TODO: hacer el get dinamico segun login?
-  await _userProvider.getUser(8, true);
-  await _userProvider.getUserPosition();
-
-  TripProvider _trips = TripProvider();
-  await _trips.loadTrips();
-
-  PurchaseProvider _purchases = PurchaseProvider();
-  await _purchases.getCounts();
-
-  CountryProvider _countries = CountryProvider();
-  await _countries.loadCountries();
-
-  LanguageProvider _languages = LanguageProvider();
-  await _languages.loadLanguages();
 
   runApp(
     MultiProvider(
@@ -95,7 +83,6 @@ void main() async {
           Home.routeName: (context) => Home(),
           MapMain.routeName: (context) => MapMain(),
           Store.routeName: (context) => Store(),
-          Profile.routeName: (context) => Profile(_userProvider.user.id),
           PlaceDialog.routeName: (context) => PlaceDialog(new Place()),
           CartMain.routeName: (context) => CartMain(),
         },
@@ -118,6 +105,13 @@ void main() async {
                   builder: (context) {
                     Trip trip = args['trip'];
                     return TripMain(trip);
+                  },
+                  settings: settings);
+            case Profile.routeName:
+              return MaterialPageRoute<Map<String, dynamic>>(
+                  builder: (context) {
+                    int userId = args['id'];
+                    return Profile(userId);
                   },
                   settings: settings);
             default:

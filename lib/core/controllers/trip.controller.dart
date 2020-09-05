@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:hive/hive.dart';
+import 'package:tripit/core/models/place.model.dart';
 import '../../core/services/trip.service.dart';
 import '../models/trip.model.dart';
 
@@ -22,11 +23,11 @@ class TripController {
         .then((box) => box.put('tripIds', tripIds));
   }
 
-  Future<void> orderPlaces(Trip trip) async {
+  Trip orderPlaces(Trip trip) {
     for (int i = 0; i < trip.places.length; i++) {
       trip.places[i].order = i + 1;
     }
-    await updateLocal(trip);
+    return trip;
   }
 
   Future<void> updateLocalTrips(List<Trip> trips) async {
@@ -38,6 +39,20 @@ class TripController {
           updateLocal(trip);
         else if (trip.updatedAt.isAfter(tripBox.get(trip.id).updatedAt))
           updateLocal(trip);
+        else {
+          tripsLoop:
+          for (Trip tripCloud in trips) {
+            Trip tripLocal = tripBox.get(tripCloud.id);
+            for (Place placeCloud in tripCloud.places) {
+              Place placeLocal =
+                  tripLocal.places.firstWhere((p) => p.id == placeCloud.id);
+              if (placeCloud.updatedAt.isAfter(placeLocal.updatedAt)) {
+                updateLocal(tripCloud);
+                continue tripsLoop;
+              }
+            }
+          }
+        }
       }
     });
   }
@@ -49,10 +64,9 @@ class TripController {
 
   Future<void> createLocal(Trip trip) async {
     trip.createdAt = DateTime.now();
-    if (trip.id > 0)
-      return await updateLocal(trip);
-    else
-      return await updateLocal(trip);
+    trip.published = false;
+    trip.submitted = false;
+    return await updateLocal(trip);
   }
 
   Future<Trip> create(Trip trip) async {
@@ -80,14 +94,14 @@ class TripController {
     if (trip.id > 0)
       return await tripBox.put(trip.id, trip);
     else
-      return await tripBox.put(trip.createdAt, trip);
+      return await tripBox.put(trip.createdAt.toIso8601String(), trip);
   }
 
   Future<void> deleteLocal(Trip trip) async {
     if (trip.id > 0)
       return await tripBox.delete(trip.id);
     else
-      return await tripBox.delete(trip.createdAt);
+      return await tripBox.delete(trip.createdAt.toIso8601String());
   }
 
   Future<String> uploadImage(int id, File image) async {

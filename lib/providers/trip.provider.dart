@@ -12,7 +12,6 @@ class TripProvider with ChangeNotifier {
   PlaceController _placeController = PlaceController();
   TripController _controller = TripController();
   List<int> tripIds = [];
-  // List<Trip> _trips;
 
   List<Trip> get trips {
     return _controller.trips;
@@ -36,9 +35,11 @@ class TripProvider with ChangeNotifier {
       });
       _controller.setTripIds(_trips.map((e) => e.id).toList());
       _controller.updateLocalTrips(_trips);
-      for (Trip trip in _controller.trips) {
-        if (_trips.map((e) => e.id).toList().indexOf(trip.id) < 0)
+      for (Trip trip in _controller.trips.where((t) => t.id > 0)) {
+        if (_trips.map((e) => e.id).toList().indexOf(trip.id) < 0) {
+          print(trip);
           _controller.deleteLocal(trip);
+        }
       }
     }
 
@@ -54,14 +55,14 @@ class TripProvider with ChangeNotifier {
 
   Future<void> createLocal(Trip trip) async {
     print('createlocal');
-    await _controller.orderPlaces(trip);
+    trip = _controller.orderPlaces(trip);
     await _controller.createLocal(trip);
     notifyListeners();
   }
 
   Future<Trip> create(Trip trip) async {
     try {
-      await _controller.orderPlaces(trip);
+      trip = _controller.orderPlaces(trip);
       Trip createdTrip = await _controller.create(trip);
       notifyListeners();
 
@@ -186,51 +187,4 @@ class TripProvider with ChangeNotifier {
             ratingsOnline.length
         : 0;
   }
-
-  // Future<void> delete(int id) async {
-  //   await _controller.delete(id).catchError((err) => throw err);
-  //   notifyListeners();
-  // }
-
-  // Future<void> deletePlaceLocal(Place place) async {
-  //   Trip trip = _controller.trips.firstWhere((t) => t.id == place.tripId);
-  //   trip.places.removeWhere((p) => p.id == place.id);
-  //   return await _controller.updateLocal(trip);
-  // }
-
-  // Future<void> update(Trip trip) async {
-  //   try {
-  //     List<Place> places = trip.places;
-  //     Trip updatedTrip = await _controller.update(trip);
-  //     updatedTrip.places = places;
-  //     await _controller.updateLocal(trip);
-  //     notifyListeners();
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // }
-
-  // Future<void> deletePlace(Place place) async {
-  //   int tripIndex = _controller.trips.indexWhere((e) => e.id == place.tripId);
-  //   await _placeController.delete(place.tripId, place.id).then((_) async {
-  //     await orderPlacesinDB(_controller.trips[tripIndex]);
-  //     notifyListeners();
-  //   }).catchError((err) => throw err);
-  // }
-
-  // Future<void> createPlace(Place place) async {
-  //   int tripIndex =
-  //       _controller.trips.indexWhere((trip) => trip.id == place.tripId);
-  //   Trip trip = _controller.trips[tripIndex];
-  //   await _placeController.create(place).then((createdPlace) async {
-  //     trip.places.add(createdPlace);
-  //     _controller.updateLocal(trip);
-  //     notifyListeners();
-  //   }).catchError((err) => throw err);
-  // }
-
-  // Future<void> orderPlacesinDB(Trip trip) async {
-  //   await _controller.orderPlaces(trip);
-  //   notifyListeners();
-  // }
 }

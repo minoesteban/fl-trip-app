@@ -115,12 +115,27 @@ class _MapState extends State<MapMain> {
         parallaxEnabled: true,
         parallaxOffset: .5,
         renderPanelSheet: false,
-        maxHeight: deviceSize.height / 3,
-        minHeight: 0,
+        maxHeight: deviceSize.height / 2.3,
+        minHeight: 50,
+        collapsed: _selectedPlaceId != null && _selectedPlaceId != ''
+            ? Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: FloatingActionButton(
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.keyboard_arrow_up,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () => _pc.open()),
+              )
+            : null,
         panelBuilder: (ScrollController sc) {
           return Center(
-            child: PlaceList(
-              selectedPlaceId: _selectedPlaceId,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 50),
+              child: PlaceList(
+                selectedPlaceId: _selectedPlaceId,
+              ),
             ),
           );
         },
@@ -128,8 +143,8 @@ class _MapState extends State<MapMain> {
           builder: (context, filters, _) => GoogleMap(
             trafficEnabled: false,
             compassEnabled: true,
-            mapToolbarEnabled: false,
-            myLocationButtonEnabled: false,
+            mapToolbarEnabled: true,
+            myLocationButtonEnabled: true,
             myLocationEnabled: true,
             mapType: MapType.normal,
             initialCameraPosition: CameraPosition(

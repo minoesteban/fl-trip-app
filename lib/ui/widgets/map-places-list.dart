@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
+import 'package:infinity_page_view/infinity_page_view.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/core/utils/s3-auth-headers.dart';
 
 import '../../providers/language.provider.dart';
 import '../../providers/trip.provider.dart';
@@ -41,7 +43,7 @@ class PlaceList extends StatelessWidget {
                                 0 &&
                             trip.published));
 
-                      return PageView.builder(
+                      return InfinityPageView(
                         itemCount: _trips.length,
                         itemBuilder: (context, index) {
                           return FutureBuilder(
@@ -100,7 +102,8 @@ class PlaceCard extends StatelessWidget {
               child: Stack(fit: StackFit.expand, children: [
                 CachedNetworkImage(
                   fit: BoxFit.cover,
-                  imageUrl: '${_place.imageUrl}',
+                  httpHeaders: generateAuthHeaders(_place.imageUrl),
+                  imageUrl: _place.imageUrl,
                   placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(
                       strokeWidth: 0.5,
@@ -145,6 +148,7 @@ class PlaceCard extends StatelessWidget {
                   textAlign: TextAlign.start,
                   softWrap: true,
                   maxLines: 2,
+                  overflow: TextOverflow.fade,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -156,6 +160,7 @@ class PlaceCard extends StatelessWidget {
                   textAlign: TextAlign.start,
                   softWrap: true,
                   maxLines: 2,
+                  overflow: TextOverflow.fade,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -167,26 +172,26 @@ class PlaceCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${_place.ratingAvg.toStringAsPrecision(2)}',
-                          style: TextStyle(
-                              color: Colors.amber[500],
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24),
-                        ),
-                        Icon(
-                          Icons.star,
-                          color: Colors.amber[500],
-                          size: 15,
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
+                    // Row(
+                    //   mainAxisSize: MainAxisSize.min,
+                    //   children: [
+                    //     Text(
+                    //       '${_place.ratingAvg.toStringAsPrecision(2)}',
+                    //       style: TextStyle(
+                    //           color: Colors.amber[500],
+                    //           fontWeight: FontWeight.bold,
+                    //           fontSize: 24),
+                    //     ),
+                    //     Icon(
+                    //       Icons.star,
+                    //       color: Colors.amber[500],
+                    //       size: 15,
+                    //     ),
+                    //   ],
+                    // ),
+                    // SizedBox(
+                    //   width: 20,
+                    // ),
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -209,7 +214,7 @@ class PlaceCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(width: 10),
-                    Player(_place.previewAudioUrl, false),
+                    Player(_place.previewAudioUrl, false, false),
                   ],
                 ),
               ),

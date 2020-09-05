@@ -126,4 +126,20 @@ class TripService {
     } else
       throw HttpException(res.body);
   }
+
+  Future<String> getDownloadUrl(String fileUrl) async {
+    List<String> pathSegments = Uri.parse(fileUrl).pathSegments;
+    int id =
+        int.tryParse(pathSegments.elementAt(pathSegments.indexOf('trips') + 1));
+    String fileExtension = path.extension(Uri.parse(fileUrl).path).substring(1);
+    String fileName = path.basenameWithoutExtension(Uri.parse(fileUrl).path);
+    String url =
+        '$_endpoint/trips/$id/files?type=$fileExtension;filename=$fileName';
+    var res = await http.get(url);
+    if (res.statusCode == HttpStatus.ok) {
+      return json.decode(res.body)['downloadUrl'];
+    } else {
+      throw HttpException(res.body.toString());
+    }
+  }
 }

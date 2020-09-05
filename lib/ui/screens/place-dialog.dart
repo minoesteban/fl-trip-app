@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/core/utils/s3-auth-headers.dart';
 import 'package:tripit/providers/purchase.provider.dart';
 import 'package:tripit/providers/trip.provider.dart';
 import 'package:tripit/ui/widgets/audio-components.dart';
@@ -18,9 +18,8 @@ class PlaceDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AudioPlayer _fullAudioPlayer = AudioPlayer();
-    _fullAudioPlayer.setUrl(_place.fullAudioUrl);
-
+    int fullAudioLength =
+        Duration(seconds: _place.fullAudioLength?.toInt() ?? 0).inMinutes;
     return AlertDialog(
       scrollable: true,
       titlePadding: const EdgeInsets.all(0),
@@ -29,7 +28,8 @@ class PlaceDialog extends StatelessWidget {
           tag: '${_place.id}_image',
           child: CachedNetworkImage(
             fit: BoxFit.fitWidth,
-            imageUrl: '${_place.imageUrl}',
+            httpHeaders: generateAuthHeaders(_place.imageUrl),
+            imageUrl: _place.imageUrl,
             placeholder: (context, url) => Center(
               child: CircularProgressIndicator(
                 strokeWidth: 0.5,
@@ -98,30 +98,18 @@ class PlaceDialog extends StatelessWidget {
                 ],
               ),
               const VerticalDivider(),
-              FutureBuilder(
-                  future: _fullAudioPlayer.setUrl(_place.fullAudioUrl),
-                  builder: (_, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(Colors.grey[300]),
-                        ),
-                      );
-                    }
-                    Duration duration = snapshot.data;
-
-                    return Column(
-                      children: [
-                        Text('${duration.inMinutes}\'', style: _statNumber),
-                        Text('audio', style: _statTitle),
-                      ],
-                    );
-                  }),
+              Column(
+                children: [
+                  Text(fullAudioLength > 0 ? '$fullAudioLength\'' : '-',
+                      style: _statNumber),
+                  Text('length', style: _statTitle),
+                ],
+              )
             ],
           ),
           const SizedBox(height: 10),
           //preview audio
-          Player(_place.previewAudioUrl, true),
+          Player(_place.previewAudioUrl, true, false),
           //about
           CollapsibleText(_place.about),
           const Divider(height: 20),

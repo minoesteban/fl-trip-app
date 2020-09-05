@@ -25,6 +25,7 @@ class PlaceAdapter extends TypeAdapter<Place> {
       coordinates: fields[5] as Coordinates,
       fullAudioUrl: fields[6] as String,
       fullAudioOrigin: fields[7] as FileOrigin,
+      fullAudioLength: fields[21] as double,
       previewAudioUrl: fields[8] as String,
       previewAudioOrigin: fields[9] as FileOrigin,
       imageUrl: fields[10] as String,
@@ -44,7 +45,7 @@ class PlaceAdapter extends TypeAdapter<Place> {
   @override
   void write(BinaryWriter writer, Place obj) {
     writer
-      ..writeByte(21)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -86,7 +87,9 @@ class PlaceAdapter extends TypeAdapter<Place> {
       ..writeByte(19)
       ..write(obj.deletedAt)
       ..writeByte(20)
-      ..write(obj.needSync);
+      ..write(obj.needSync)
+      ..writeByte(21)
+      ..write(obj.fullAudioLength);
   }
 
   @override

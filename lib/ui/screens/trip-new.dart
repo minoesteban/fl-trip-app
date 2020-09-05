@@ -163,9 +163,9 @@ class _TripNewState extends State<TripNew> {
                 color: Colors.grey[300],
                 height: MediaQuery.of(context).size.height / 3.5,
                 width: MediaQuery.of(context).size.width,
-                child: !_newTrip.imageUrl.startsWith('http')
-                    ? Image.asset(
-                        _imageController.text,
+                child: !_imageController.text.startsWith('http')
+                    ? Image.file(
+                        File(_imageController.text),
                         fit: BoxFit.cover,
                       )
                     : CachedNetworkImage(
@@ -228,6 +228,8 @@ class _TripNewState extends State<TripNew> {
           ),
           validator: (value) =>
               value.isEmpty ? 'insert a name for the trip' : null,
+          maxLength: 50,
+          maxLengthEnforced: true,
           textInputAction: TextInputAction.next,
           controller: _nameController,
           focusNode: _nameFocus,
@@ -424,9 +426,9 @@ class _TripNewState extends State<TripNew> {
                 _newTrip.languageFlagId = flagId;
                 _languageCodeController.text = langCode;
                 _languageFlagController.text = flagId;
-                Focus.of(context).requestFocus(_languageFlagFocus);
               },
             );
+            Focus.of(context).requestFocus(_languageFlagFocus);
           },
         ),
         const SizedBox(height: 30),
@@ -572,7 +574,7 @@ class _TripNewState extends State<TripNew> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(5)),
                         child: !_newPlaces[i].imageUrl.startsWith('http')
-                            ? Image.asset(_newPlaces[i].imageUrl)
+                            ? Image.file(File(_newPlaces[i].imageUrl))
                             : CachedNetworkImage(
                                 fit: BoxFit.cover,
                                 imageUrl: _newPlaces[i].imageUrl,
@@ -735,7 +737,7 @@ class _TripNewState extends State<TripNew> {
             ),
           ),
         )),
-        floatingActionButton: _newTrip.id > 0
+        floatingActionButton: _newTrip.createdAt != null
             ? FloatingActionButton.extended(
                 onPressed: () => submitTrip(_newTrip, context),
                 label: const Text(

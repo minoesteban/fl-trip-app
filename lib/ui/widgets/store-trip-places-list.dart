@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/core/utils/s3-auth-headers.dart';
 import 'package:tripit/providers/trip.provider.dart';
 import 'package:tripit/ui/screens/cart-main.dart';
 
@@ -66,7 +67,8 @@ class PlacesList extends StatelessWidget {
                   borderRadius: BorderRadius.all(Radius.circular(5)),
                   child: CachedNetworkImage(
                     fit: BoxFit.cover,
-                    imageUrl: '${places[index].imageUrl}',
+                    httpHeaders: generateAuthHeaders(places[index].imageUrl),
+                    imageUrl: places[index].imageUrl,
                     placeholder: (context, url) => Center(
                       child: CircularProgressIndicator(
                         strokeWidth: 0.5,

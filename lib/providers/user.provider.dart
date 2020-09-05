@@ -12,6 +12,7 @@ class UserProvider with ChangeNotifier {
   Future<User> getUser(int userId, bool isCurrentUser) async {
     return await _userController.getUser(userId).then((user) {
       if (isCurrentUser) _user = user;
+      return user;
     }).catchError((err) => throw err);
   }
 
@@ -100,7 +101,7 @@ class UserProvider with ChangeNotifier {
 
   String getImage() {
     // return '$_endpoint/${_user.imageUrl}';
-    return '${_user.imageUrl}';
+    return _user.imageUrl;
   }
 
   User get user {

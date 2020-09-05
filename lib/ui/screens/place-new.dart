@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
@@ -128,9 +129,9 @@ class _PlaceNewState extends State<PlaceNew> {
             color: Colors.grey[300],
             height: MediaQuery.of(context).size.height / 3.5,
             width: MediaQuery.of(context).size.width,
-            child: !_newPlace.imageUrl.startsWith('http')
-                ? Image.asset(
-                    _newPlace.imageUrl,
+            child: !_imageController.text.startsWith('http')
+                ? Image.file(
+                    File(_imageController.text),
                     fit: BoxFit.cover,
                   )
                 : CachedNetworkImage(
@@ -238,6 +239,8 @@ class _PlaceNewState extends State<PlaceNew> {
             helperText: 'custom place name',
           ),
           validator: (value) => value.isEmpty ? 'write a valid name!' : null,
+          maxLength: 50,
+          maxLengthEnforced: true,
           textInputAction: TextInputAction.next,
           controller: _nameController,
           focusNode: _nameFocus,
@@ -297,9 +300,12 @@ class _PlaceNewState extends State<PlaceNew> {
 
         if (file != null) {
           File copiedFile = await moveFile(file, '');
+          AudioPlayer _p = AudioPlayer();
+          Duration audioDuration = await _p.setFilePath(copiedFile.path);
           setState(() {
             if (isFull) {
               _fullAudioController.text = copiedFile.path;
+              _newPlace.fullAudioLength = audioDuration.inSeconds.toDouble();
             } else {
               _previewAudioController.text = copiedFile.path;
             }
