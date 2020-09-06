@@ -92,7 +92,6 @@ class Trip {
     DateTime updatedAt,
     DateTime deletedAt,
   }) {
-    print('copying with $places');
     return Trip(
       id: id ?? this.id,
       name: name ?? this.name,

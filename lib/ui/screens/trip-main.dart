@@ -1,11 +1,12 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/models/user.model.dart';
-import 'package:tripit/ui/screens/profile-main.dart';
-import 'package:tripit/ui/widgets/dropdown-menu.dart';
+import 'package:tripit/ui/utils/show-message.dart';
+import '../../core/models/user.model.dart';
 import '../../core/utils/s3-auth-headers.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/purchase.provider.dart';
@@ -19,6 +20,7 @@ import '../widgets/collapsible-text.dart';
 import '../widgets/image-list.dart';
 import '../widgets/store-trip-places-list.dart';
 import '../widgets/store-trip-map.dart';
+import 'profile-main.dart';
 import 'cart-main.dart';
 
 class TripMain extends StatelessWidget {
@@ -29,9 +31,6 @@ class TripMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Position userPosition =
-        Provider.of<UserProvider>(context, listen: false).user.position;
-
     Widget buildAppBar() {
       return SliverAppBar(
         centerTitle: true,
@@ -109,43 +108,11 @@ class TripMain extends StatelessWidget {
           style: _subtitleStyle,
         ),
         trailing: Consumer<UserProvider>(
-          builder: (_, user, __) => Builder(
-            builder: (ctx) => RaisedButton(
-                color: Colors.green[700],
-                child: Text(
-                  user.tripIsPurchased(trip.id)
-                      ? 'purchased'
-                      : trip.price == 0
-                          ? 'add to cart   (free)'
-                          : 'add to cart    \$${trip.price}',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      letterSpacing: 1.5),
-                ),
-                onPressed: user.tripIsPurchased(trip.id) ||
-                        trip.ownerId == user.user.id
-                    ? null
-                    : () {
-                        Provider.of<CartProvider>(context, listen: false)
-                            .addItem(trip, null);
-                        user.togglePurchasedTrip(trip.id);
-                        Scaffold.of(ctx).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: const Text('trip added to cart!'),
-                            action: SnackBarAction(
-                                label: 'GO TO CART',
-                                onPressed: () {
-                                  Scaffold.of(ctx).hideCurrentSnackBar();
-                                  Navigator.pushNamed(
-                                      context, CartMain.routeName);
-                                }),
-                          ),
-                        );
-                      }),
-          ),
+          builder: (_, user, __) => user.tripIsPurchased(trip.id) ||
+                  user.user.id == trip.ownerId
+              //TODO: switch to download trip audios locally + progress bar? or counter 1/5, 2/5, 3/5
+              ? DownloadButton(trip: trip, user: user)
+              : PurchaseButton(trip: trip),
         ),
       );
     }
@@ -274,7 +241,7 @@ class TripMain extends StatelessWidget {
         Text('places', style: _titleStyle),
         Container(
           margin: const EdgeInsets.all(10),
-          child: TripMap(trip, userPosition),
+          child: TripMap(trip),
         ),
         ExpansionTile(
           initiallyExpanded: true,
@@ -391,20 +358,158 @@ class TripMain extends StatelessWidget {
       ),
     );
   }
+}
 
-  final TextStyle _titleStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+final TextStyle _titleStyle =
+    TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
-  final TextStyle _titleBigStyle =
-      TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
+final TextStyle _titleBigStyle =
+    TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
 
-  final TextStyle _ownerNameStyle = TextStyle(
-      fontSize: 20, color: Colors.grey[700], fontWeight: FontWeight.bold);
+final TextStyle _ownerNameStyle =
+    TextStyle(fontSize: 20, color: Colors.black54, fontWeight: FontWeight.bold);
 
-  final TextStyle _subtitleStyle = TextStyle(
-    fontSize: 14,
-    color: Colors.black38,
-    fontWeight: FontWeight.bold,
-    letterSpacing: 1.1,
-  );
+final TextStyle _subtitleStyle = TextStyle(
+  fontSize: 14,
+  color: Colors.black38,
+  fontWeight: FontWeight.bold,
+  letterSpacing: 1.1,
+);
+
+class PurchaseButton extends StatelessWidget {
+  const PurchaseButton({@required this.trip});
+
+  final Trip trip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(
+      builder: (ctx) => RaisedButton(
+          color: Colors.green[700],
+          child: Text(
+            trip.price == 0
+                ? 'add to cart   (free)'
+                : 'add to cart    \$${trip.price}',
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: 1.5),
+          ),
+          onPressed: () {
+            Provider.of<CartProvider>(context, listen: false)
+                .addItem(trip, null);
+            Scaffold.of(ctx).showSnackBar(
+              SnackBar(
+                duration: const Duration(seconds: 1),
+                content: const Text('trip added to cart!'),
+                action: SnackBarAction(
+                    label: 'GO TO CART',
+                    onPressed: () {
+                      Scaffold.of(ctx).hideCurrentSnackBar();
+                      Navigator.pushNamed(context, CartMain.routeName);
+                    }),
+              ),
+            );
+          }),
+    );
+  }
+}
+
+class DownloadButton extends StatelessWidget {
+  const DownloadButton({
+    Key key,
+    @required this.trip,
+    @required this.user,
+  }) : super(key: key);
+
+  final Trip trip;
+  final UserProvider user;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<TripProvider>(builder: (context, trips, child) {
+      var tripStatus = trips.isDownloaded(trip.id);
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          tripStatus == TripDownloadStatus.Downloaded
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('downloaded', style: _subtitleStyle),
+                    const SizedBox(width: 10),
+                    Icon(Icons.check, size: 30, color: Colors.red[800])
+                  ],
+                )
+              : tripStatus == TripDownloadStatus.Downloading
+                  ? DownloadProgressBar(trips, user, trip)
+                  : Text('download', style: _subtitleStyle),
+          const SizedBox(width: 10),
+          Platform.isIOS
+              ? CupertinoSwitch(
+                  activeColor: Colors.red[800],
+                  value: user.tripIsDownloaded(trip.id),
+                  onChanged: (_) async {
+                    try {
+                      bool isDownloaded =
+                          await user.toggleDownloadedTrip(trip.id);
+
+                      if (!isDownloaded) {
+                        trips.deleteTripFiles(trip);
+                      } else if (trips.isDownloaded(trip.id) !=
+                          TripDownloadStatus.Downloaded) {
+                        await trips.downloadTripFiles(trip, context, user);
+                      }
+                    } catch (e) {
+                      await user.toggleDownloadedTrip(trip.id);
+                      showMessage(context, e, false);
+                    }
+                  })
+              : Switch(
+                  value: user.tripIsDownloaded(trip.id),
+                  onChanged: (_) async {
+                    try {
+                      bool isDownloaded =
+                          await user.toggleDownloadedTrip(trip.id);
+
+                      if (!isDownloaded) {
+                        trips.deleteTripFiles(trip);
+                      } else if (trips.isDownloaded(trip.id) !=
+                          TripDownloadStatus.Downloaded) {
+                        await trips.downloadTripFiles(trip, context, user);
+                      }
+                    } catch (e) {
+                      await user.toggleDownloadedTrip(trip.id);
+                      showMessage(context, e, false);
+                    }
+                  })
+        ],
+      );
+    });
+  }
+}
+
+class DownloadProgressBar extends StatelessWidget {
+  final TripProvider trips;
+  final Trip trip;
+  final UserProvider user;
+
+  DownloadProgressBar(this.trips, this.user, this.trip);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 180,
+          child: LinearProgressIndicator(
+            value: trips.downloadPercentage,
+          ),
+        ),
+      ],
+    );
+  }
 }

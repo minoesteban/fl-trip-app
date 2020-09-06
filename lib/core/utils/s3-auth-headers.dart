@@ -8,11 +8,9 @@ Map<String, String> generateAuthHeaders(String url) {
   String secretAccessKey = AWS_SECRET_ACCESS_KEY;
 
   String host = Uri.parse(url).host;
-  print(host);
   String region = 'us-east-1';
   String service = 's3';
   String key = Uri.parse(url).path.substring(1);
-  print(key);
   String payload = SigV4.hashCanonicalRequest('');
   String datetime = SigV4.generateDatetime();
   String canonicalRequest = '''GET

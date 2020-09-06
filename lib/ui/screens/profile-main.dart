@@ -117,7 +117,7 @@ class Profile extends StatelessWidget {
     List<Widget> buildStats() {
       return [
         Consumer<TripProvider>(builder: (context, tripProvider, _) {
-          _trips = tripsProvider.findByGuide(currentUser.id);
+          _trips = tripsProvider.findByOwner(currentUser.id);
           _countries = _countries ?? _trips.map((e) => e.countryId).toSet();
           _cities = _cities ?? _trips.map((trip) => trip.googlePlaceId).toSet();
           _trips.forEach((trip) {
@@ -249,7 +249,7 @@ class Profile extends StatelessWidget {
           width: MediaQuery.of(context).size.width,
           child: Consumer<TripProvider>(builder: (context, tripsProvider, _) {
             List<Trip> _tripsRaw =
-                tripsProvider.findByGuide(currentUser.id).toList();
+                tripsProvider.findByOwner(currentUser.id).toList();
             _trips.clear();
             _trips.addAll(_tripsRaw.where((t) => !t.submitted));
             _trips.addAll(_tripsRaw.where((t) => t.submitted && !t.published));

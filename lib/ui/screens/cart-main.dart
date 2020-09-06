@@ -1,7 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/core/utils/s3-auth-headers.dart';
 import 'package:tripit/providers/cart.provider.dart';
-import 'package:tripit/providers/user.provider.dart';
 
 class CartMain extends StatelessWidget {
   static const routeName = '/cart';
@@ -86,53 +87,90 @@ class CartMain extends StatelessWidget {
             : ListView.builder(
                 shrinkWrap: true,
                 itemCount: cart.items.length,
-                itemBuilder: (context, i) => Card(
-                  elevation: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.red[900],
-                        radius: 30,
-                        child: Text(
+                itemBuilder: (context, i) => Dismissible(
+                  key: ValueKey(cart.items[i].id),
+                  background: Container(
+                    child: Icon(
+                      Icons.delete,
+                      color: Colors.red[900],
+                      size: 40,
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    margin: EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 4,
+                    ),
+                  ),
+                  confirmDismiss: (direction) {
+                    return showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text('are you sure?'),
+                        content: Text(
+                            'do you want to remove the item from the cart?'),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: Text('NO'),
+                            onPressed: () => Navigator.of(ctx).pop(false),
+                          ),
+                          FlatButton(
+                            child: Text('YES'),
+                            onPressed: () => Navigator.of(ctx).pop(true),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  onDismissed: (direction) => cart.removeItem(cart.items[i].id),
+                  child: Card(
+                    elevation: 3,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          child: CachedNetworkImage(
+                            fit: BoxFit.fill,
+                            httpHeaders: generateAuthHeaders(
+                                cart.items[i].isTrip
+                                    ? cart.items[i].trip.imageUrl
+                                    : cart.items[i].place.imageUrl),
+                            imageUrl: cart.items[i].isTrip
+                                ? cart.items[i].trip.imageUrl
+                                : cart.items[i].place.imageUrl,
+                            placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 0.5,
+                                valueColor:
+                                    AlwaysStoppedAnimation(Colors.grey[100]),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error),
+                          ),
+                        ),
+                        title: Text(
+                          '${cart.items[i].isTrip ? cart.items[i].trip.name : cart.items[i].place.name}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        subtitle: Text(
+                          '${cart.items[i].isTrip ? 'trip' : 'place'}',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              letterSpacing: 1.1),
+                        ),
+                        trailing: Text(
                           cart.items[i].price > 0
                               ? '\$ ${cart.items[i].price.toStringAsPrecision(3)}'
                               : 'free',
                           style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.white),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[500]),
                         ),
-                      ),
-                      title: Text(
-                        '${cart.items[i].isTrip ? cart.items[i].trip.name : cart.items[i].place.name}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      subtitle: Text(
-                        '${cart.items[i].isTrip ? 'trip' : 'place'}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            letterSpacing: 1.1),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              cart.items[i].isTrip
-                                  ? Provider.of<UserProvider>(context,
-                                          listen: false)
-                                      .togglePurchasedTrip(
-                                          cart.items[i].trip.id)
-                                  : Provider.of<UserProvider>(context,
-                                          listen: false)
-                                      .togglePurchasedPlace(
-                                          cart.items[i].place.id);
-                              cart.removeItem(cart.items[i].id);
-                            },
-                          ),
-                        ],
                       ),
                     ),
                   ),

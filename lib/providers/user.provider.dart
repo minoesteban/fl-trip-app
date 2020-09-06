@@ -65,6 +65,37 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> toggleDownloadedTrip(int id) async {
+    if (_user.downloadedTrips.contains(id))
+      _user.downloadedTrips.removeWhere((trip) => trip == id);
+    else
+      _user.downloadedTrips.add(id);
+
+    //TODO: replace with local user update
+    await _userController.update(_user);
+    notifyListeners();
+
+    return _user.downloadedTrips.contains(id);
+  }
+
+  Future<void> removeFromDownloadedTrips(int id) async {
+    _user.downloadedTrips.removeWhere((trip) => trip == id);
+
+    //TODO: replace with local user update
+    await _userController.update(_user);
+    notifyListeners();
+  }
+
+  void toggleDownloadedPlace(int id) {
+    if (_user.downloadedPlaces.contains(id))
+      _user.downloadedPlaces.removeWhere((trip) => trip == id);
+    else
+      _user.downloadedPlaces.add(id);
+
+    _userController.update(_user).catchError((err) => throw err);
+    notifyListeners();
+  }
+
   bool tripIsFavourite(int id) {
     return _user.favouriteTrips.contains(id);
   }
@@ -73,12 +104,20 @@ class UserProvider with ChangeNotifier {
     return _user.purchasedTrips.contains(id);
   }
 
+  bool tripIsDownloaded(int id) {
+    return _user.downloadedTrips.contains(id);
+  }
+
   bool placeIsFavourite(int id) {
     return _user.favouritePlaces.contains(id);
   }
 
   bool placeIsPurchased(int id) {
     return _user.purchasedPlaces.contains(id);
+  }
+
+  bool placeIsDownloaded(int id) {
+    return _user.downloadedPlaces.contains(id);
   }
 
   Future<int> update(User newUser) async {

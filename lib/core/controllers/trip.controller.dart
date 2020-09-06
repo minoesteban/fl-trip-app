@@ -8,14 +8,14 @@ class TripController {
   TripService _service = TripService();
   Box<Trip> tripBox;
 
+  List<Trip> get trips {
+    return tripBox.values.toList();
+  }
+
   Future<List<int>> init() async {
     tripBox = await Hive.openBox('trips');
     return await Hive.openBox('lists')
         .then((value) => List.castFrom<dynamic, int>(value.get('tripIds')));
-  }
-
-  List<Trip> get trips {
-    return tripBox.values.toList();
   }
 
   Future<void> setTripIds(List<int> tripIds) async {
@@ -60,6 +60,10 @@ class TripController {
   Future<List<Trip>> getAllTrips() async {
     List<Trip> trips = await _service.getAll().catchError((err) => throw err);
     return trips;
+  }
+
+  Future<Trip> getByID(int id) async {
+    return await _service.getByID(id).catchError((err) => throw err);
   }
 
   Future<void> createLocal(Trip trip) async {

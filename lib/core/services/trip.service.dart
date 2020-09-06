@@ -21,6 +21,14 @@ class TripService {
       throw HttpException(res.body);
   }
 
+  Future<Trip> getByID(int id) async {
+    final res = await http.get('$_endpoint/trips/$id', headers: _headers);
+    if (res.statusCode == HttpStatus.ok) {
+      return await parse(res.body);
+    } else
+      throw HttpException(res.body);
+  }
+
   Future<Trip> create(Trip trip) async {
     String url = '$_endpoint/trips';
     final res = await http.post(url,

@@ -115,9 +115,12 @@ class Home extends StatelessWidget {
                 _ts = tripsData.trips.where((trip) => trip.published)?.toList();
                 _purchased = _ts
                     .where((trip) =>
-                        userData.user.purchasedTrips.contains(trip.id) ||
-                        userData.user.purchasedPlaces
-                            .contains(_ts.expand((t) => t.places)))
+                        (userData.user.purchasedTrips.contains(trip.id) ||
+                            userData.user.purchasedPlaces
+                                .contains(_ts.expand((t) => t.places))) ||
+                        (userData.user.downloadedTrips.contains(trip.id) ||
+                            userData.user.downloadedPlaces
+                                .contains(_ts.expand((t) => t.places))))
                     ?.toList();
 
                 _favourites = _ts

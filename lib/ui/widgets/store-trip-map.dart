@@ -2,15 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tripit/core/models/trip.model.dart';
 
 class TripMap extends StatelessWidget {
-  final Position userPosition;
   final Trip trip;
 
-  TripMap(this.trip, this.userPosition);
+  TripMap(this.trip);
 
   Set<Marker> _loadMarkers(Trip _trip) {
     Set<Marker> _markers = _trip.places

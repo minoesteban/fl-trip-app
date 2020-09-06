@@ -1,24 +1,33 @@
 import 'dart:async' show Future;
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import '../core/controllers/place.controller.dart';
-import '../core/models/place.model.dart';
 import '../core/controllers/trip.controller.dart';
 import '../core/models/rating.model.dart';
+import '../core/models/place.model.dart';
 import '../core/models/trip.model.dart';
-import '../providers/rating.provider.dart';
+import '../ui/utils/show-message.dart';
+import 'rating.provider.dart';
+import 'user.provider.dart';
 
 class TripProvider with ChangeNotifier {
-  PlaceController _placeController = PlaceController();
-  TripController _controller = TripController();
+  PlaceController placeController = PlaceController();
+  TripController controller = TripController();
+  double totalContentLength = 0;
+  double downloadPercentage = 0;
+  bool isDownloading = false;
   List<int> tripIds = [];
 
   List<Trip> get trips {
-    return _controller.trips;
+    return controller.trips;
   }
 
   Future<List<int>> init() async {
-    return await _controller.init();
+    return await controller.init();
   }
 
   Future<void> loadTrips() async {
@@ -27,18 +36,17 @@ class TripProvider with ChangeNotifier {
     //TODO: check connectivity before getting trips from api. work with local trips
     bool connected = true;
     if (connected) {
-      List<Trip> _trips = await _controller
+      List<Trip> _trips = await controller
           .getAllTrips()
           .then((value) => value)
           .catchError((err) {
         throw err;
       });
-      _controller.setTripIds(_trips.map((e) => e.id).toList());
-      _controller.updateLocalTrips(_trips);
-      for (Trip trip in _controller.trips.where((t) => t.id > 0)) {
+      controller.setTripIds(_trips.map((e) => e.id).toList());
+      controller.updateLocalTrips(_trips);
+      for (Trip trip in controller.trips.where((t) => t.id > 0)) {
         if (_trips.map((e) => e.id).toList().indexOf(trip.id) < 0) {
-          print(trip);
-          _controller.deleteLocal(trip);
+          controller.deleteLocal(trip);
         }
       }
     }
@@ -49,26 +57,26 @@ class TripProvider with ChangeNotifier {
 
   Future<void> deleteLocal(Trip trip) async {
     print('deletelocal');
-    await _controller.deleteLocal(trip);
+    await controller.deleteLocal(trip);
     notifyListeners();
   }
 
   Future<void> createLocal(Trip trip) async {
     print('createlocal');
-    trip = _controller.orderPlaces(trip);
-    await _controller.createLocal(trip);
+    trip = controller.orderPlaces(trip);
+    await controller.createLocal(trip);
     notifyListeners();
   }
 
   Future<Trip> create(Trip trip) async {
     try {
-      trip = _controller.orderPlaces(trip);
-      Trip createdTrip = await _controller.create(trip);
+      trip = controller.orderPlaces(trip);
+      Trip createdTrip = await controller.create(trip);
       notifyListeners();
 
       if (createdTrip.id > 0) {
-        _controller.createLocal(createdTrip);
-        _controller.deleteLocal(trip);
+        controller.createLocal(createdTrip);
+        controller.deleteLocal(trip);
       }
 
       notifyListeners();
@@ -102,7 +110,7 @@ class TripProvider with ChangeNotifier {
           message: 'Submitting trip',
           progress: progressPoint * (trip.places.length + 2),
         );
-        Trip submittedTrip = await _controller.submit(createdTrip.id);
+        Trip submittedTrip = await controller.submit(createdTrip.id);
         if (submittedTrip.submitted) {
           createdTrip.submitted = true;
           await updateLocal(createdTrip);
@@ -115,14 +123,14 @@ class TripProvider with ChangeNotifier {
 
   Future<void> updateLocal(Trip trip) async {
     print('updatelocal');
-    await _controller.updateLocal(trip);
+    await controller.updateLocal(trip);
     notifyListeners();
   }
 
   Future<Place> updatePlace(Place place) async {
     print('updateplace');
     try {
-      Place updatedPlace = await _placeController.update(place);
+      Place updatedPlace = await placeController.update(place);
       return updatedPlace;
     } catch (err) {
       throw err;
@@ -130,25 +138,25 @@ class TripProvider with ChangeNotifier {
   }
 
   Trip findById(int id) {
-    return _controller.trips.firstWhere((element) => element.id == id);
+    return controller.trips.firstWhere((element) => element.id == id);
   }
 
-  List<Trip> findByGuide(int ownerId) {
-    return _controller.trips.where((trip) => trip.ownerId == ownerId).toList();
+  List<Trip> findByOwner(int ownerId) {
+    return controller.trips.where((trip) => trip.ownerId == ownerId).toList();
   }
 
   List<Trip> findByLanguage(String lang) {
-    return _controller.trips.where((trip) => trip.languageNameId == lang);
+    return controller.trips.where((trip) => trip.languageNameId == lang);
   }
 
   List<Trip> findByCity(String placeId) {
-    return _controller.trips.where((trip) => trip.googlePlaceId == placeId);
+    return controller.trips.where((trip) => trip.googlePlaceId == placeId);
   }
 
   Future<double> getAndSetTripRatings(int tripId) async {
     List<double> ratings = [];
 
-    ratings = _controller.trips
+    ratings = controller.trips
         .firstWhere((trip) => trip.id == tripId)
         .places
         .where((place) => place.ratingAvg != null)
@@ -162,7 +170,7 @@ class TripProvider with ChangeNotifier {
     ratingsOnline = await RatingProvider().getRatingsBy(tripId, 0);
 
     if (ratingsOnline != null) {
-      Trip trip = _controller.trips.firstWhere((t) => t.id == tripId);
+      Trip trip = controller.trips.firstWhere((t) => t.id == tripId);
       trip.places.forEach((place) {
         place.ratingAvg = ratingsOnline
             .firstWhere(
@@ -187,4 +195,102 @@ class TripProvider with ChangeNotifier {
             ratingsOnline.length
         : 0;
   }
+
+  TripDownloadStatus isDownloaded(int tripId) {
+    Trip trip = controller.trips.firstWhere((t) => t.id == tripId);
+    var isDownloaded = TripDownloadStatus.Downloaded;
+
+    for (Place place in trip.places) {
+      if (!placeController.isDownloaded(place)) {
+        isDownloaded = TripDownloadStatus.NotDownloaded;
+        break;
+      }
+    }
+
+    if (isDownloading) isDownloaded = TripDownloadStatus.Downloading;
+
+    return isDownloaded;
+  }
+
+  Future<void> downloadTripFiles(
+      Trip trip, BuildContext context, UserProvider user) async {
+    //TODO: check network connectivity and ask for confirmation if not wifi
+    trip = await controller.getByID(trip.id);
+    await updateLocal(trip);
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    isDownloading = true;
+    int downloaded = 0;
+    totalContentLength = 0;
+    downloadPercentage = 0;
+    notifyListeners();
+    for (int i = 0; i < trip.places.length; i++) {
+      List<List<int>> chunks = new List();
+      String filename =
+          path.basename(Uri.parse(trip.places[i].fullAudioUrl).path);
+      String filePath = '$dir/$filename';
+
+      var response = placeController.downloadFullAudio(trip.places[i]);
+
+      response.asStream().listen(
+        (r) async {
+          if (r.statusCode == HttpStatus.ok) {
+            totalContentLength += r.contentLength;
+            r.stream.listen(
+              (List<int> chunk) {
+                downloadPercentage = downloaded / totalContentLength;
+                downloaded += chunk.length;
+                chunks.add(chunk);
+                notifyListeners();
+              },
+              onDone: () async {
+                downloadPercentage = downloaded / totalContentLength;
+                notifyListeners();
+
+                File file = new File(filePath);
+                final Uint8List bytes = Uint8List(r.contentLength);
+                int offset = 0;
+                for (List<int> chunk in chunks) {
+                  bytes.setRange(offset, offset + chunk.length, chunk);
+                  offset += chunk.length;
+                }
+                file = await file.writeAsBytes(bytes);
+                isDownloading = false;
+                notifyListeners();
+                trip.places[i].fullAudioUrl = filePath;
+                await updateLocal(trip);
+              },
+              onError: (error) async {
+                isDownloading = false;
+                notifyListeners();
+                user.removeFromDownloadedTrips(trip.id);
+                showMessage(context, 'something went wrong!', false);
+              },
+            );
+          } else {
+            isDownloading = false;
+            notifyListeners();
+            user.removeFromDownloadedTrips(trip.id);
+            showMessage(context, 'something went wrong!!', false);
+          }
+        },
+      );
+    }
+  }
+
+  void deleteTripFiles(Trip trip) {
+    if (trip.previewAudioUrl != null &&
+        !trip.previewAudioUrl.startsWith('http'))
+      File(trip.previewAudioUrl).deleteSync();
+
+    for (int i = 0; i < trip.places.length; i++) {
+      placeController.deletePlaceFiles(trip.places[i]);
+    }
+    notifyListeners();
+  }
+}
+
+enum TripDownloadStatus {
+  NotDownloaded,
+  Downloaded,
+  Downloading,
 }

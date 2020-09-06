@@ -149,7 +149,6 @@ class PlaceDialog extends StatelessWidget {
                           : () {
                               Provider.of<CartProvider>(context, listen: false)
                                   .addItem(null, _place);
-                              user.togglePurchasedPlace(_place.id);
                               Navigator.pop(
                                   context, user.placeIsPurchased(_place.id));
                             },

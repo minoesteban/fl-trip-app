@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
-import 'package:tripit/core/utils/utils.dart';
 import '../../config.dart';
+import '../../core/utils/utils.dart';
 import '../../core/models/place.model.dart';
 
 class PlaceService {
@@ -49,7 +50,6 @@ class PlaceService {
   }
 
   Future<String> uploadImage(int tripId, int id, File image) async {
-    print('placeservice-uploadimage');
     String fileExtension = path.extension(image.path).substring(1);
     String url =
         '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension';
@@ -79,7 +79,6 @@ class PlaceService {
 
   Future<String> uploadAudio(
       int tripId, int id, File audio, bool isFullAudio) async {
-    print('placeservice-uploadaudio $isFullAudio');
     String fileExtension = path.extension(audio.path).substring(1);
     String url =
         '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension;isFull=$isFullAudio';
@@ -89,7 +88,6 @@ class PlaceService {
       res = await http.put(json.decode(res.body)['uploadUrl'],
           body: audio.readAsBytesSync());
       if (res.statusCode == HttpStatus.ok) {
-        print('subio archivo . full ? $isFullAudio');
         String url = '$_endpoint/trips/$tripId/places/$id';
         res = await http.patch(
           url,
@@ -99,7 +97,6 @@ class PlaceService {
               : json.encode({'previewAudioUrl': downloadUrl}),
         );
         if (res.statusCode == HttpStatus.ok) {
-          print('actualizo place . full ? $isFullAudio');
           return isFullAudio
               ? json.decode(res.body)['place']['fullAudioUrl']
               : json.decode(res.body)['place']['previewAudioUrl'];
@@ -112,6 +109,14 @@ class PlaceService {
       throw HttpException(res.body);
   }
 
+  Future<StreamedResponse> downloadFullAudio(Place place) async {
+    try {
+      return await downloadFile(await getDownloadUrl(place.fullAudioUrl, true));
+    } catch (err) {
+      throw err;
+    }
+  }
+
   Future<String> getDownloadUrl(String fileUrl, bool isFullAudio) async {
     List<String> pathSegments = Uri.parse(fileUrl).pathSegments;
     int tripId =
@@ -120,9 +125,14 @@ class PlaceService {
         pathSegments.elementAt(pathSegments.indexOf('places') + 1));
     String fileExtension = path.extension(Uri.parse(fileUrl).path).substring(1);
     String fileName = path.basenameWithoutExtension(Uri.parse(fileUrl).path);
+
+    if (tripId == null ||
+        id == null ||
+        fileExtension == null ||
+        fileName == null) throw 'there is something wrong with the file URL';
+
     String url =
         '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension;isFull=$isFullAudio;filename=$fileName';
-
     var res = await http.get(url);
     if (res.statusCode == HttpStatus.ok) {
       return json.decode(res.body)['downloadUrl'];
@@ -131,8 +141,9 @@ class PlaceService {
     }
   }
 
-  Future<void> downloadFullAudio(Place place) async {
-    //TODO: download full audio from private bucket.
-    return Future.delayed(Duration(seconds: 0));
+  Future<StreamedResponse> downloadFile(String url) async {
+    var httpClient = http.Client();
+    var request = new http.Request('GET', Uri.parse(url));
+    return await httpClient.send(request);
   }
 }

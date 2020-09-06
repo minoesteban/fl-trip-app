@@ -119,6 +119,9 @@ void main() async {
           }
         },
         theme: ThemeData(
+          sliderTheme: SliderThemeData(
+            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
+          ),
           fontFamily: 'Nunito',
           primarySwatch: Colors.red,
           pageTransitionsTheme: PageTransitionsTheme(builders: {
