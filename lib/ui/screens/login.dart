@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tripit/providers/country.provider.dart';
+import 'package:tripit/providers/download.provider.dart';
 import 'package:tripit/providers/language.provider.dart';
 import 'package:tripit/providers/purchase.provider.dart';
 import 'package:tripit/providers/trip.provider.dart';
@@ -14,6 +15,7 @@ class LoginMain extends StatelessWidget {
     //TODO: hacer el get user dinamico segun login?
     await Provider.of<UserProvider>(context, listen: false).getUser(8, true);
     await Provider.of<UserProvider>(context, listen: false).getUserPosition();
+    await Provider.of<DownloadProvider>(context, listen: false).init();
     await Provider.of<TripProvider>(context, listen: false).loadTrips();
     await Provider.of<PurchaseProvider>(context, listen: false).getCounts();
     await Provider.of<CountryProvider>(context, listen: false).loadCountries();

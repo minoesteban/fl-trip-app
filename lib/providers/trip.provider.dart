@@ -1,18 +1,13 @@
 import 'dart:async' show Future;
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import '../core/controllers/place.controller.dart';
 import '../core/controllers/trip.controller.dart';
 import '../core/models/rating.model.dart';
 import '../core/models/place.model.dart';
 import '../core/models/trip.model.dart';
-import '../ui/utils/show-message.dart';
+
 import 'rating.provider.dart';
-import 'user.provider.dart';
 
 class TripProvider with ChangeNotifier {
   PlaceController placeController = PlaceController();
@@ -26,12 +21,8 @@ class TripProvider with ChangeNotifier {
     return controller.trips;
   }
 
-  Future<List<int>> init() async {
-    return await controller.init();
-  }
-
   Future<void> loadTrips() async {
-    tripIds = await init();
+    tripIds = await controller.init();
 
     //TODO: check connectivity before getting trips from api. work with local trips
     bool connected = true;
@@ -196,97 +187,93 @@ class TripProvider with ChangeNotifier {
         : 0;
   }
 
-  TripDownloadStatus isDownloaded(int tripId) {
-    Trip trip = controller.trips.firstWhere((t) => t.id == tripId);
-    var isDownloaded = TripDownloadStatus.Downloaded;
+  // TripDownloadStatus isDownloaded(int tripId) {
+  //   Trip trip = controller.trips.firstWhere((t) => t.id == tripId);
+  //   var status = TripDownloadStatus.Downloaded;
+  //   for (Place place in trip.places) {
+  //     if (!placeController.isDownloaded(place)) {
+  //       print('falta el archivo de ${place.name}. ${place.fullAudioUrl}');
+  //       status = TripDownloadStatus.NotDownloaded;
+  //       break;
+  //     }
+  //   }
+  //   if (isDownloading) status = TripDownloadStatus.Downloading;
+  //   return status;
+  // }
 
-    for (Place place in trip.places) {
-      if (!placeController.isDownloaded(place)) {
-        isDownloaded = TripDownloadStatus.NotDownloaded;
-        break;
-      }
-    }
+  // Future<void> downloadTripFiles(
+  //     Trip trip, BuildContext context, UserProvider user) async {
+  //   trip = await controller.getByID(trip.id);
+  //   await updateLocal(trip);
+  //   String dir = (await getApplicationDocumentsDirectory()).path;
+  //   isDownloading = true;
+  //   int downloaded = 0;
+  //   totalContentLength = 0;
+  //   downloadPercentage = 0;
+  //   notifyListeners();
+  //   for (int i = 0; i < trip.places.length; i++) {
+  //     List<List<int>> chunks = new List();
+  //     String filename =
+  //         path.basename(Uri.parse(trip.places[i].fullAudioUrl).path);
+  //     String filePath = '$dir/$filename';
 
-    if (isDownloading) isDownloaded = TripDownloadStatus.Downloading;
+  //     var response = placeController.downloadFullAudio(trip.places[i]);
 
-    return isDownloaded;
-  }
+  //     response.asStream().listen(
+  //       (r) async {
+  //         if (r.statusCode == HttpStatus.ok) {
+  //           totalContentLength += r.contentLength;
+  //           r.stream.listen(
+  //             (List<int> chunk) {
+  //               downloadPercentage = downloaded / totalContentLength;
+  //               downloaded += chunk.length;
+  //               chunks.add(chunk);
+  //               notifyListeners();
+  //             },
+  //             onDone: () async {
+  //               downloadPercentage = downloaded / totalContentLength;
+  //               notifyListeners();
 
-  Future<void> downloadTripFiles(
-      Trip trip, BuildContext context, UserProvider user) async {
-    //TODO: check network connectivity and ask for confirmation if not wifi
-    trip = await controller.getByID(trip.id);
-    await updateLocal(trip);
-    String dir = (await getApplicationDocumentsDirectory()).path;
-    isDownloading = true;
-    int downloaded = 0;
-    totalContentLength = 0;
-    downloadPercentage = 0;
-    notifyListeners();
-    for (int i = 0; i < trip.places.length; i++) {
-      List<List<int>> chunks = new List();
-      String filename =
-          path.basename(Uri.parse(trip.places[i].fullAudioUrl).path);
-      String filePath = '$dir/$filename';
+  //               File file = new File(filePath);
+  //               final Uint8List bytes = Uint8List(r.contentLength);
+  //               int offset = 0;
+  //               for (List<int> chunk in chunks) {
+  //                 bytes.setRange(offset, offset + chunk.length, chunk);
+  //                 offset += chunk.length;
+  //               }
+  //               file = await file.writeAsBytes(bytes);
+  //               isDownloading = false;
+  //               notifyListeners();
+  //               trip.places[i].fullAudioUrl = filePath;
+  //               await updateLocal(trip);
+  //             },
+  //             onError: (error) async {
+  //               isDownloading = false;
+  //               notifyListeners();
+  //               user.removeFromDownloadedTrips(trip.id);
+  //               showMessage(context, 'something went wrong!', false);
+  //             },
+  //           );
+  //         } else {
+  //           isDownloading = false;
+  //           notifyListeners();
+  //           user.removeFromDownloadedTrips(trip.id);
+  //           showMessage(context, 'something went wrong!!', false);
+  //         }
+  //       },
+  //     );
+  //   }
+  // }
+  // void deleteTripFiles(Trip trip) {
+  //   if (trip.previewAudioUrl != null &&
+  //       !trip.previewAudioUrl.startsWith('http'))
+  //     File(trip.previewAudioUrl).deleteSync();
 
-      var response = placeController.downloadFullAudio(trip.places[i]);
-
-      response.asStream().listen(
-        (r) async {
-          if (r.statusCode == HttpStatus.ok) {
-            totalContentLength += r.contentLength;
-            r.stream.listen(
-              (List<int> chunk) {
-                downloadPercentage = downloaded / totalContentLength;
-                downloaded += chunk.length;
-                chunks.add(chunk);
-                notifyListeners();
-              },
-              onDone: () async {
-                downloadPercentage = downloaded / totalContentLength;
-                notifyListeners();
-
-                File file = new File(filePath);
-                final Uint8List bytes = Uint8List(r.contentLength);
-                int offset = 0;
-                for (List<int> chunk in chunks) {
-                  bytes.setRange(offset, offset + chunk.length, chunk);
-                  offset += chunk.length;
-                }
-                file = await file.writeAsBytes(bytes);
-                isDownloading = false;
-                notifyListeners();
-                trip.places[i].fullAudioUrl = filePath;
-                await updateLocal(trip);
-              },
-              onError: (error) async {
-                isDownloading = false;
-                notifyListeners();
-                user.removeFromDownloadedTrips(trip.id);
-                showMessage(context, 'something went wrong!', false);
-              },
-            );
-          } else {
-            isDownloading = false;
-            notifyListeners();
-            user.removeFromDownloadedTrips(trip.id);
-            showMessage(context, 'something went wrong!!', false);
-          }
-        },
-      );
-    }
-  }
-
-  void deleteTripFiles(Trip trip) {
-    if (trip.previewAudioUrl != null &&
-        !trip.previewAudioUrl.startsWith('http'))
-      File(trip.previewAudioUrl).deleteSync();
-
-    for (int i = 0; i < trip.places.length; i++) {
-      placeController.deletePlaceFiles(trip.places[i]);
-    }
-    notifyListeners();
-  }
+  //   for (int i = 0; i < trip.places.length; i++) {
+  //     placeController.deletePlaceFiles(trip.places[i]);
+  //   }
+  //   notifyListeners();
+  // }
 }
 
 enum TripDownloadStatus {

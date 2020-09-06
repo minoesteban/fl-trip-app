@@ -81,7 +81,9 @@ class Profile extends StatelessWidget {
                         ? !currentUser.imageUrl.startsWith('http')
                             ? AssetImage(currentUser.imageUrl)
                             : CachedNetworkImageProvider(
-                                userProvider.getImage())
+                                userProvider.user.imageUrl,
+                                headers: generateAuthHeaders(
+                                    userProvider.user.imageUrl))
                         : AssetImage('assets/images/avatar.png'),
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tripit/core/utils/s3-auth-headers.dart';
+import 'package:tripit/providers/download.provider.dart';
 import 'package:tripit/providers/user.provider.dart';
 import 'package:tripit/ui/screens/cart-main.dart';
 import '../../core/models/trip.model.dart';
@@ -110,17 +111,15 @@ class Home extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             child: Container(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              child: Consumer2<TripProvider, UserProvider>(
-                  builder: (context, tripsData, userData, _) {
+              child: Consumer3<TripProvider, UserProvider, DownloadProvider>(
+                  builder: (context, tripsData, userData, downloads, _) {
                 _ts = tripsData.trips.where((trip) => trip.published)?.toList();
                 _purchased = _ts
                     .where((trip) =>
                         (userData.user.purchasedTrips.contains(trip.id) ||
                             userData.user.purchasedPlaces
                                 .contains(_ts.expand((t) => t.places))) ||
-                        (userData.user.downloadedTrips.contains(trip.id) ||
-                            userData.user.downloadedPlaces
-                                .contains(_ts.expand((t) => t.places))))
+                        (downloads.existsByTrip(trip.id)))
                     ?.toList();
 
                 _favourites = _ts

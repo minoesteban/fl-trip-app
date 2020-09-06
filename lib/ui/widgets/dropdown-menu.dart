@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tripit/core/models/trip.model.dart';
 
 enum tripOption { save, details, places }
 

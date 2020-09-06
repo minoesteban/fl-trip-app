@@ -5,7 +5,7 @@ import 'package:flag/flag.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/ui/utils/show-message.dart';
+import '../../providers/download.provider.dart';
 import '../../core/models/user.model.dart';
 import '../../core/utils/s3-auth-headers.dart';
 import '../../core/models/trip.model.dart';
@@ -428,13 +428,12 @@ class DownloadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TripProvider>(builder: (context, trips, child) {
-      var tripStatus = trips.isDownloaded(trip.id);
+    return Consumer<DownloadProvider>(builder: (_, downloads, __) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          tripStatus == TripDownloadStatus.Downloaded
+          downloads.existsByTrip(trip.id)
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -443,47 +442,27 @@ class DownloadButton extends StatelessWidget {
                     Icon(Icons.check, size: 30, color: Colors.red[800])
                   ],
                 )
-              : tripStatus == TripDownloadStatus.Downloading
-                  ? DownloadProgressBar(trips, user, trip)
+              : downloads.isDownloading
+                  ? DownloadProgressBar(downloads, user, trip)
                   : Text('download', style: _subtitleStyle),
           const SizedBox(width: 10),
           Platform.isIOS
               ? CupertinoSwitch(
                   activeColor: Colors.red[800],
-                  value: user.tripIsDownloaded(trip.id),
-                  onChanged: (_) async {
-                    try {
-                      bool isDownloaded =
-                          await user.toggleDownloadedTrip(trip.id);
-
-                      if (!isDownloaded) {
-                        trips.deleteTripFiles(trip);
-                      } else if (trips.isDownloaded(trip.id) !=
-                          TripDownloadStatus.Downloaded) {
-                        await trips.downloadTripFiles(trip, context, user);
-                      }
-                    } catch (e) {
-                      await user.toggleDownloadedTrip(trip.id);
-                      showMessage(context, e, false);
-                    }
+                  value: downloads.existsByTrip(trip.id),
+                  onChanged: (value) async {
+                    if (!value)
+                      downloads.deleteByTrip(trip.id);
+                    else
+                      await downloads.createByTrip(trip, context);
                   })
               : Switch(
-                  value: user.tripIsDownloaded(trip.id),
-                  onChanged: (_) async {
-                    try {
-                      bool isDownloaded =
-                          await user.toggleDownloadedTrip(trip.id);
-
-                      if (!isDownloaded) {
-                        trips.deleteTripFiles(trip);
-                      } else if (trips.isDownloaded(trip.id) !=
-                          TripDownloadStatus.Downloaded) {
-                        await trips.downloadTripFiles(trip, context, user);
-                      }
-                    } catch (e) {
-                      await user.toggleDownloadedTrip(trip.id);
-                      showMessage(context, e, false);
-                    }
+                  value: downloads.existsByTrip(trip.id),
+                  onChanged: (value) async {
+                    if (!value)
+                      downloads.deleteByTrip(trip.id);
+                    else
+                      await downloads.createByTrip(trip, context);
                   })
         ],
       );
@@ -492,11 +471,11 @@ class DownloadButton extends StatelessWidget {
 }
 
 class DownloadProgressBar extends StatelessWidget {
-  final TripProvider trips;
-  final Trip trip;
+  final DownloadProvider downloads;
   final UserProvider user;
+  final Trip trip;
 
-  DownloadProgressBar(this.trips, this.user, this.trip);
+  DownloadProgressBar(this.downloads, this.user, this.trip);
 
   @override
   Widget build(BuildContext context) {
@@ -506,7 +485,7 @@ class DownloadProgressBar extends StatelessWidget {
         Container(
           width: 180,
           child: LinearProgressIndicator(
-            value: trips.downloadPercentage,
+            value: downloads.downloadPercentage,
           ),
         ),
       ],

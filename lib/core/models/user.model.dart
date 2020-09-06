@@ -187,9 +187,6 @@ class User {
       lastName: map['lastName'],
       imageUrl: map['imageUrl'],
       about: map['about'],
-      selectedLanguages: map['selectedLanguages'] != null
-          ? List<String>.from(map['selectedLanguages'])
-          : [],
       favouriteTrips: map['favouriteTrips'] != null
           ? List<int>.from(map['favouriteTrips'])
           : [],
@@ -202,12 +199,6 @@ class User {
       purchasedPlaces: map['purchasedPlaces'] != null
           ? List<int>.from(map['purchasedPlaces'])
           : [],
-      downloadedTrips: map['downloadedTrips'] != null
-          ? List<int>.from(map['downloadedTrips'])
-          : [],
-      downloadedPlaces: map['downloadedPlaces'] != null
-          ? List<int>.from(map['downloadedPlaces'])
-          : [],
       position:
           map['position'] != null ? Position.fromMap(map['position']) : null,
       onlyNearest: map['onlyNearest'],
@@ -216,7 +207,6 @@ class User {
       active: map['active'],
       createdAt: DateTime.tryParse(map['created_at']),
       updatedAt: DateTime.tryParse(map['updated_at']),
-      // deletedAt: DateTime.tryParse(map['deleted_at'] ?? ''),
     );
   }
 

@@ -8,6 +8,8 @@ import 'package:tripit/core/models/cart.model.dart';
 import 'package:tripit/core/models/rating.model.dart';
 import 'package:tripit/core/models/user.model.dart';
 import 'package:tripit/core/utils/utils.dart';
+import 'package:tripit/providers/download.provider.dart';
+import 'core/models/download.model.dart';
 import 'core/models/place.model.dart';
 import 'core/models/trip.model.dart';
 import 'providers/cart.provider.dart';
@@ -33,6 +35,7 @@ TripProvider _trips = TripProvider();
 PurchaseProvider _purchases = PurchaseProvider();
 CountryProvider _countries = CountryProvider();
 LanguageProvider _languages = LanguageProvider();
+DownloadProvider _downloads = DownloadProvider();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,8 +47,9 @@ void main() async {
   Hive.registerAdapter(TripAdapter());
   Hive.registerAdapter(PlaceAdapter());
   Hive.registerAdapter(CartAdapter());
-  Hive.registerAdapter(CartItemAdapter());
   Hive.registerAdapter(RatingAdapter());
+  Hive.registerAdapter(CartItemAdapter());
+  Hive.registerAdapter(DownloadAdapter());
   Hive.registerAdapter(CoordinatesAdapter());
   Hive.registerAdapter(FileOriginAdapter());
 
@@ -66,6 +70,9 @@ void main() async {
         ),
         ChangeNotifierProvider<LanguageProvider>.value(
           value: _languages,
+        ),
+        ChangeNotifierProvider<DownloadProvider>.value(
+          value: _downloads,
         ),
         ChangeNotifierProvider<CartProvider>(
           create: (_) => CartProvider(),
