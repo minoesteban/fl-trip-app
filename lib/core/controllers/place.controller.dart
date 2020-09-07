@@ -77,6 +77,10 @@ class PlaceController {
     }
   }
 
+  Future<String> getDownloadUrl(String url, bool isFullAudio) async {
+    return await service.getDownloadUrl(url, isFullAudio);
+  }
+
   bool isDownloaded(Place place) {
     if (!place.fullAudioUrl.startsWith('http')) {
       File file = File(place.fullAudioUrl);

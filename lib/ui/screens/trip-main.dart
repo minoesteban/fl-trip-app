@@ -461,8 +461,8 @@ class StartButton extends StatelessWidget {
                 letterSpacing: 1.5),
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => TripPlayer()));
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => TripPlayer(trip)));
           });
     else
       return Container();

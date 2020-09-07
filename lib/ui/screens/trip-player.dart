@@ -1,17 +1,29 @@
 import 'dart:math';
 
 import 'package:audio_session/audio_session.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:provider/provider.dart';
+import 'package:tripit/core/models/trip.model.dart';
+import 'package:tripit/core/utils/s3-auth-headers.dart';
+import 'package:tripit/providers/download.provider.dart';
+import 'package:tripit/providers/trip.provider.dart';
 
 class TripPlayer extends StatefulWidget {
+  final Trip _trip;
+  TripPlayer(this._trip);
+
   @override
   _TripPlayerState createState() => _TripPlayerState();
 }
 
 class _TripPlayerState extends State<TripPlayer> {
+  // ConcatenatingAudioSource _playlist;
   AudioPlayer _player;
+  Trip trip;
+
   ConcatenatingAudioSource _playlist = ConcatenatingAudioSource(children: [
     LoopingAudioSource(
       count: 2,
@@ -52,14 +64,48 @@ class _TripPlayerState extends State<TripPlayer> {
   @override
   void initState() {
     super.initState();
+    trip = widget._trip;
     _player = AudioPlayer();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
+
     _init();
   }
 
   _init() async {
+    DownloadProvider downloads =
+        Provider.of<DownloadProvider>(context, listen: false);
+    TripProvider trips = Provider.of<TripProvider>(context, listen: false);
+
+    _playlist = ConcatenatingAudioSource(
+      children:
+          await Future.wait(trip.places.map<Future<AudioSource>>((place) async {
+        if (downloads.existsByPlace(place.id)) {
+          print('local ${downloads.getByPlace(place.id).first.filePath}');
+          //Load local audio file
+          return AudioSource.uri(
+            Uri.parse(
+                'file://${downloads.getByPlace(place.id).first.filePath}'),
+            tag: AudioMetadata(
+                album: trip.name,
+                title: '${place.order}. ${place.name}',
+                artwork: place.imageUrl),
+          );
+        } else {
+          //Load audio file from URL
+          return AudioSource.uri(
+            Uri.parse(
+                await trips.getPlaceDownloadUrl(place.fullAudioUrl, true)),
+            tag: AudioMetadata(
+                album: trip.name,
+                title: '${place.order}. ${place.name}',
+                artwork: place.imageUrl),
+          );
+        }
+      }).toList()),
+    );
+
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
     try {
@@ -90,7 +136,7 @@ class _TripPlayerState extends State<TripPlayer> {
         centerTitle: true,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.red[800]),
-        backgroundColor: Colors.white54,
+        backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
         child: Column(
@@ -110,7 +156,11 @@ class _TripPlayerState extends State<TripPlayer> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Center(child: Image.network(metadata.artwork)),
+                          child: Center(
+                              child: CachedNetworkImage(
+                            imageUrl: metadata.artwork,
+                            httpHeaders: generateAuthHeaders(metadata.artwork),
+                          )),
                         ),
                       ),
                       Text(metadata.album ?? '',
@@ -173,11 +223,9 @@ class _TripPlayerState extends State<TripPlayer> {
                   },
                 ),
                 Expanded(
-                  child: Text(
-                    "Playlist",
-                    style: Theme.of(context).textTheme.headline6,
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text('places',
+                      style: Theme.of(context).textTheme.headline6,
+                      textAlign: TextAlign.center),
                 ),
                 StreamBuilder<bool>(
                   stream: _player.shuffleModeEnabledStream,

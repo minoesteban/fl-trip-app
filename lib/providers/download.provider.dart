@@ -142,11 +142,11 @@ class DownloadProvider extends ChangeNotifier {
   }
 
   List<Download> getByTrip(int id) {
-    return controller.downloads.where((d) => d.tripId == id);
+    return controller.downloads.where((d) => d.tripId == id).toList();
   }
 
   List<Download> getByPlace(int id) {
-    return controller.downloads.where((d) => d.placeId == id);
+    return controller.downloads.where((d) => d.placeId == id).toList();
   }
 
   bool existsByTrip(int id, int placesQty) {

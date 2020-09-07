@@ -254,7 +254,11 @@ class StartButton extends StatelessWidget {
                 fontSize: 18,
                 letterSpacing: 1.5),
           ),
-          onPressed: () {}),
+          onPressed: () {
+            // Provider.of<TripProvider>(context, listen: false)
+            //     .trips
+            //     .firstWhere((t) => t.id == place.tripId);
+          }),
     );
   }
 }
