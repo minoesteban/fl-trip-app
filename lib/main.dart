@@ -127,7 +127,7 @@ void main() async {
         },
         theme: ThemeData(
           sliderTheme: SliderThemeData(
-            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
+            thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
           ),
           fontFamily: 'Nunito',
           primarySwatch: Colors.red,

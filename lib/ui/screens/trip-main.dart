@@ -5,6 +5,7 @@ import 'package:flag/flag.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/ui/screens/trip-player.dart';
 import '../../providers/download.provider.dart';
 import '../../core/models/user.model.dart';
 import '../../core/utils/s3-auth-headers.dart';
@@ -20,6 +21,7 @@ import '../widgets/collapsible-text.dart';
 import '../widgets/image-list.dart';
 import '../widgets/store-trip-places-list.dart';
 import '../widgets/store-trip-map.dart';
+import 'map-main.dart';
 import 'profile-main.dart';
 import 'cart-main.dart';
 
@@ -121,7 +123,7 @@ class TripMain extends StatelessWidget {
       );
     }
 
-    Widget buildDownloadsRatingLanguage() {
+    Widget buildStats() {
       return Padding(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 5),
         child: Row(
@@ -313,6 +315,8 @@ class TripMain extends StatelessWidget {
     }
 
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: StartButton(trip),
       body: CustomScrollView(
         slivers: [
           buildAppBar(),
@@ -327,31 +331,25 @@ class TripMain extends StatelessWidget {
                     children: <Widget>[
                       if (trip.submitted && !trip.published)
                         ...buildSubmittedMessage(),
-
                       buildLocationAndPurchase(),
                       const Divider(height: 10),
-                      buildDownloadsRatingLanguage(),
+                      buildStats(),
                       const Divider(height: 30),
-
                       //preview audio
                       if (trip.previewAudioUrl != null)
                         Player(trip.previewAudioUrl, true, true),
                       if (trip.previewAudioUrl != null)
                         const SizedBox(height: 30),
-
                       buildPictures(),
                       const SizedBox(height: 40),
-
                       //about text
                       Text('about the trip', style: _titleStyle),
                       CollapsibleText(trip.about),
                       const SizedBox(height: 20),
-
                       ...buildCreator(),
                       const SizedBox(height: 40),
-
                       ...buildMapAndPlacesList(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 70),
                     ],
                   ),
                 ),
@@ -428,27 +426,46 @@ class DownloadButton extends StatelessWidget {
                           value: downloads.downloadPercentage))
                   : Text('download', style: _subtitleStyle),
           const SizedBox(width: 10),
-          Platform.isIOS
-              ? CupertinoSwitch(
-                  activeColor: Colors.red[800],
-                  value: downloads.existsByTrip(trip.id, trip.places.length),
-                  onChanged: (value) async {
-                    if (!value)
-                      downloads.deleteByTrip(trip.id);
-                    else
-                      await downloads.createByTrip(trip, context);
-                  })
-              : Switch(
-                  value: downloads.existsByTrip(trip.id, trip.places.length),
-                  onChanged: (value) async {
-                    if (!value)
-                      downloads.deleteByTrip(trip.id);
-                    else
-                      await downloads.createByTrip(trip, context);
-                  })
+          CupertinoSwitch(
+              activeColor: Colors.red[800],
+              value: downloads.existsByTrip(trip.id, trip.places.length),
+              onChanged: (value) async {
+                if (!value)
+                  downloads.deleteByTrip(trip.id);
+                else
+                  await downloads.createByTrip(trip, context);
+              })
         ],
       );
     });
+  }
+}
+
+class StartButton extends StatelessWidget {
+  const StartButton(this.trip);
+  final Trip trip;
+
+  @override
+  Widget build(BuildContext context) {
+    var user = Provider.of<UserProvider>(context, listen: false);
+    if (user.tripIsPurchased(trip.id) || user.user.id == trip.ownerId)
+      return FloatingActionButton.extended(
+          backgroundColor: Colors.red[900],
+          icon: Icon(Icons.directions_walk, color: Colors.white),
+          label: Text(
+            'start trip!',
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: 1.5),
+          ),
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => TripPlayer()));
+          });
+    else
+      return Container();
   }
 }
 

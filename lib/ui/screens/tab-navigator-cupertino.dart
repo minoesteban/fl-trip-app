@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tripit/providers/user.provider.dart';
@@ -18,7 +19,46 @@ class _TabNavigatorState extends State<TabNavigator> {
   PageController _pc = PageController(initialPage: 1);
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+        // CupertinoTabScaffold(
+        //   tabBar: CupertinoTabBar(
+        //       iconSize: 25,
+        //       currentIndex: _currentIndex,
+        //       onTap: (index) {
+        //         _pc.animateToPage(index,
+        //             duration: Duration(milliseconds: 200), curve: Curves.easeIn);
+        //         setState(() {
+        //           _currentIndex = index;
+        //         });
+        //       },
+        //       items: [
+        //         BottomNavigationBarItem(
+        //             backgroundColor: Colors.red[900],
+        //             title: Text('map'),
+        //             icon: Icon(Icons.location_on)),
+        //         BottomNavigationBarItem(
+        //             backgroundColor: Colors.red[900],
+        //             title: Text('home'),
+        //             icon: Icon(Icons.home)),
+        //         BottomNavigationBarItem(
+        //             backgroundColor: Colors.red[900],
+        //             title: Text('store'),
+        //             icon: Icon(Icons.shop)),
+        //         BottomNavigationBarItem(
+        //           backgroundColor: Colors.red[900],
+        //           title: Text('profile'),
+        //           icon: Icon(Icons.person),
+        //         )
+        //       ]),
+        //   tabBuilder: (context, index) {
+        //     CupertinoTabView(
+        //       builder: (context) {
+        //         CupertinoPageScaffold(child: null)
+        //       },
+        //     );
+        //   },
+        // );
+        Scaffold(
       body: PageView(
         physics: NeverScrollableScrollPhysics(),
         controller: _pc,

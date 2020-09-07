@@ -4,16 +4,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
-import 'package:tripit/providers/download.provider.dart';
-import 'package:tripit/providers/purchase.provider.dart';
-import 'package:tripit/providers/trip.provider.dart';
-import 'package:tripit/ui/screens/cart-main.dart';
-import 'package:tripit/ui/widgets/audio-components.dart';
-import 'package:tripit/ui/widgets/collapsible-text.dart';
 import '../../core/models/place.model.dart';
+import '../../core/utils/s3-auth-headers.dart';
+import '../../providers/download.provider.dart';
+import '../../providers/purchase.provider.dart';
+import '../../providers/trip.provider.dart';
 import '../../providers/cart.provider.dart';
 import '../../providers/user.provider.dart';
+import '../widgets/audio-components.dart';
+import '../widgets/collapsible-text.dart';
 
 class PlaceDialog extends StatelessWidget {
   static const routeName = '/trip/place-dialog';
@@ -25,10 +24,9 @@ class PlaceDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     int fullAudioLength =
         Duration(seconds: _place.fullAudioLength?.toInt() ?? 0).inMinutes;
-    return AlertDialog(
-      scrollable: true,
-      titlePadding: const EdgeInsets.all(0),
-      title: Stack(alignment: Alignment.bottomCenter, children: [
+
+    Widget buildHeader() {
+      return Stack(alignment: Alignment.bottomCenter, children: [
         Hero(
           tag: '${_place.id}_image',
           child: CachedNetworkImage(
@@ -71,82 +69,94 @@ class PlaceDialog extends StatelessWidget {
             ),
           ),
         ),
-      ]),
+      ]);
+    }
+
+    Widget buildStats() {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
+            children: [
+              Text(
+                  Provider.of<PurchaseProvider>(context, listen: false)
+                      .getCountBy(_place.tripId, _place.id)
+                      .toString(),
+                  style: _statNumber),
+              const Text('downloads', style: _statTitle),
+            ],
+          ),
+          const VerticalDivider(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${_place.ratingAvg.toStringAsPrecision(2)}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 32,
+                      color: Colors.amber[500],
+                      fontWeight: FontWeight.bold)),
+              Icon(Icons.star, color: Colors.amber[500], size: 18),
+            ],
+          ),
+          const VerticalDivider(),
+          Column(
+            children: [
+              Text(fullAudioLength > 0 ? '$fullAudioLength\'' : '-',
+                  style: _statNumber),
+              Text('length', style: _statTitle),
+            ],
+          )
+        ],
+      );
+    }
+
+    Widget buildPurchaseDownload() {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        child: Consumer<UserProvider>(
+          builder: (context, user, __) => user.placeIsPurchased(_place.id) ||
+                  user.tripIsPurchased(_place.tripId) ||
+                  user.user.id ==
+                      Provider.of<TripProvider>(context, listen: false)
+                          .trips
+                          .firstWhere((t) => t.id == _place.tripId)
+                          .ownerId
+              ? Column(
+                  children: [
+                    DownloadButton(_place),
+                    const Divider(height: 30),
+                    StartButton(_place)
+                  ],
+                )
+              : _place.price == 99999
+                  ? Center()
+                  : SizedBox(
+                      height: 40,
+                      width: MediaQuery.of(context).size.width - 40,
+                      child: PurchaseButton(_place)),
+        ),
+      );
+    }
+
+    return AlertDialog(
+      scrollable: true,
+      titlePadding: const EdgeInsets.all(0),
+      title: buildHeader(),
       content: Column(
         children: [
           //stats
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                children: [
-                  Text(
-                      Provider.of<PurchaseProvider>(context, listen: false)
-                          .getCountBy(_place.tripId, _place.id)
-                          .toString(),
-                      style: _statNumber),
-                  const Text('downloads', style: _statTitle),
-                ],
-              ),
-              const VerticalDivider(),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('${_place.ratingAvg.toStringAsPrecision(2)}',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 32,
-                          color: Colors.amber[500],
-                          fontWeight: FontWeight.bold)),
-                  Icon(Icons.star, color: Colors.amber[500], size: 18),
-                ],
-              ),
-              const VerticalDivider(),
-              Column(
-                children: [
-                  Text(fullAudioLength > 0 ? '$fullAudioLength\'' : '-',
-                      style: _statNumber),
-                  Text('length', style: _statTitle),
-                ],
-              )
-            ],
-          ),
-          const SizedBox(height: 10),
+          buildStats(),
+          const SizedBox(height: 20),
           //preview audio
           Player(_place.previewAudioUrl, true, false),
+          const SizedBox(height: 10),
           //about
           CollapsibleText(_place.about),
           //purchase / download
-          const Divider(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child:
-                // SizedBox(
-                // height: 40,
-                // width: MediaQuery.of(context).size.width - 40,
-                // child: Builder(
-                //   builder: (ctx) =>
-                Consumer<UserProvider>(
-              builder: (context, user, __) =>
-                  user.placeIsPurchased(_place.id) ||
-                          user.tripIsPurchased(_place.tripId) ||
-                          user.user.id ==
-                              Provider.of<TripProvider>(context, listen: false)
-                                  .trips
-                                  .firstWhere((t) => t.id == _place.tripId)
-                                  .ownerId
-                      ? DownloadButton(_place)
-                      : _place.price == 99999
-                          ? Center()
-                          : SizedBox(
-                              height: 40,
-                              width: MediaQuery.of(context).size.width - 40,
-                              child: PurchaseButton(_place)),
-            ),
-            // ),
-          ),
-          // ),
+          const Divider(height: 30),
+          buildPurchaseDownload(),
         ],
       ),
     );
@@ -208,28 +218,44 @@ class DownloadButton extends StatelessWidget {
                             value: downloads.downloadPercentage))
                     : Text('download', style: _statTitle),
             const SizedBox(width: 10),
-            Platform.isIOS
-                ? CupertinoSwitch(
-                    activeColor: Colors.red[800],
-                    value: downloads.existsByPlace(place.id),
-                    onChanged: (value) async {
-                      if (!value)
-                        downloads.deleteByPlace(place.id);
-                      else
-                        await downloads.createByPlace(place, context);
-                    })
-                : Switch(
-                    value: downloads.existsByPlace(place.id),
-                    onChanged: (value) async {
-                      if (!value)
-                        downloads.deleteByPlace(place.id);
-                      else
-                        await downloads.createByPlace(place, context);
-                    })
+            CupertinoSwitch(
+                activeColor: Colors.red[800],
+                value: downloads.existsByPlace(place.id),
+                onChanged: (value) async {
+                  if (!value)
+                    downloads.deleteByPlace(place.id);
+                  else
+                    await downloads.createByPlace(place, context);
+                })
           ],
         ),
       );
     });
+  }
+}
+
+class StartButton extends StatelessWidget {
+  const StartButton(this.place);
+  final Place place;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      width: MediaQuery.of(context).size.width - 40,
+      child: RaisedButton.icon(
+          color: Colors.red[900],
+          icon: Icon(Icons.directions_walk, color: Colors.white),
+          label: Text(
+            'start trip!',
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: 1.5),
+          ),
+          onPressed: () {}),
+    );
   }
 }
 
