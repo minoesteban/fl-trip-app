@@ -24,7 +24,6 @@ class DownloadProvider extends ChangeNotifier {
 
   Future<void> init() async {
     await controller.init();
-    print(controller.downloads.map((e) => e).toList());
     notifyListeners();
   }
 
