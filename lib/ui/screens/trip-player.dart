@@ -10,6 +10,7 @@ import 'package:tripit/core/models/trip.model.dart';
 import 'package:tripit/core/utils/s3-auth-headers.dart';
 import 'package:tripit/providers/download.provider.dart';
 import 'package:tripit/providers/trip.provider.dart';
+import 'package:tripit/ui/widgets/store-trip-map.dart';
 
 class TripPlayer extends StatefulWidget {
   final Trip _trip;
@@ -125,6 +126,7 @@ class _TripPlayerState extends State<TripPlayer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: Colors.grey[800],
       appBar: AppBar(
         title: Text(
           'tripit',
@@ -157,15 +159,25 @@ class _TripPlayerState extends State<TripPlayer> {
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Center(
-                              child: CachedNetworkImage(
-                            imageUrl: metadata.artwork,
-                            httpHeaders: generateAuthHeaders(metadata.artwork),
-                          )),
+                            child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                    border:
+                                        Border.all(color: Colors.grey[400])),
+                                child: TripMap(trip)),
+                            // CachedNetworkImage(
+                            //   fit: BoxFit.fill,
+                            //   imageUrl: metadata.artwork,
+                            //   httpHeaders:
+                            //       generateAuthHeaders(metadata.artwork),
+                            // ),
+                          ),
                         ),
                       ),
-                      Text(metadata.album ?? '',
-                          style: Theme.of(context).textTheme.headline6),
-                      Text(metadata.title ?? ''),
+                      Text(metadata.album ?? '', style: _titleStyle),
+                      Text(metadata.title ?? '', style: _subtitleStyle),
                     ],
                   );
                 },
@@ -203,8 +215,8 @@ class _TripPlayerState extends State<TripPlayer> {
                     final loopMode = snapshot.data ?? LoopMode.off;
                     const icons = [
                       Icon(Icons.repeat, color: Colors.grey),
-                      Icon(Icons.repeat, color: Colors.orange),
-                      Icon(Icons.repeat_one, color: Colors.orange),
+                      Icon(Icons.repeat, color: Colors.red),
+                      Icon(Icons.repeat_one, color: Colors.red),
                     ];
                     const cycleModes = [
                       LoopMode.off,
@@ -224,8 +236,7 @@ class _TripPlayerState extends State<TripPlayer> {
                 ),
                 Expanded(
                   child: Text('places',
-                      style: Theme.of(context).textTheme.headline6,
-                      textAlign: TextAlign.center),
+                      style: _titleBigStyle, textAlign: TextAlign.center),
                 ),
                 StreamBuilder<bool>(
                   stream: _player.shuffleModeEnabledStream,
@@ -233,7 +244,7 @@ class _TripPlayerState extends State<TripPlayer> {
                     final shuffleModeEnabled = snapshot.data ?? false;
                     return IconButton(
                       icon: shuffleModeEnabled
-                          ? Icon(Icons.shuffle, color: Colors.orange)
+                          ? Icon(Icons.shuffle, color: Colors.red)
                           : Icon(Icons.shuffle, color: Colors.grey),
                       onPressed: () {
                         _player.setShuffleModeEnabled(!shuffleModeEnabled);
@@ -244,7 +255,7 @@ class _TripPlayerState extends State<TripPlayer> {
               ],
             ),
             Container(
-              height: 240.0,
+              height: 200.0,
               child: StreamBuilder<SequenceState>(
                 stream: _player.sequenceStateStream,
                 builder: (context, snapshot) {
@@ -257,7 +268,10 @@ class _TripPlayerState extends State<TripPlayer> {
                           ? Colors.grey.shade300
                           : null,
                       child: ListTile(
-                        title: Text(sequence[index].tag.title),
+                        title: Text(
+                          sequence[index].tag.title,
+                          style: _itemStyle,
+                        ),
                         onTap: () {
                           _player.seek(Duration.zero, index: index);
                         },
@@ -285,6 +299,7 @@ class ControlButtons extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
+          color: Colors.grey[800],
           icon: Icon(Icons.volume_up),
           onPressed: () {
             _showSliderDialog(
@@ -301,6 +316,7 @@ class ControlButtons extends StatelessWidget {
         StreamBuilder<SequenceState>(
           stream: player.sequenceStateStream,
           builder: (context, snapshot) => IconButton(
+            color: Colors.grey[800],
             icon: Icon(Icons.skip_previous),
             onPressed: player.hasPrevious ? player.seekToPrevious : null,
           ),
@@ -317,22 +333,27 @@ class ControlButtons extends StatelessWidget {
                 margin: EdgeInsets.all(8.0),
                 width: 64.0,
                 height: 64.0,
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(Colors.grey[400]),
+                ),
               );
             } else if (playing != true) {
               return IconButton(
+                color: Colors.grey[800],
                 icon: Icon(Icons.play_arrow),
                 iconSize: 64.0,
                 onPressed: player.play,
               );
             } else if (processingState != ProcessingState.completed) {
               return IconButton(
+                color: Colors.grey[800],
                 icon: Icon(Icons.pause),
                 iconSize: 64.0,
                 onPressed: player.pause,
               );
             } else {
               return IconButton(
+                color: Colors.grey[800],
                 icon: Icon(Icons.replay),
                 iconSize: 64.0,
                 onPressed: () => player.seek(Duration.zero, index: 0),
@@ -343,6 +364,7 @@ class ControlButtons extends StatelessWidget {
         StreamBuilder<SequenceState>(
           stream: player.sequenceStateStream,
           builder: (context, snapshot) => IconButton(
+            color: Colors.grey[800],
             icon: Icon(Icons.skip_next),
             onPressed: player.hasNext ? player.seekToNext : null,
           ),
@@ -350,6 +372,7 @@ class ControlButtons extends StatelessWidget {
         StreamBuilder<double>(
           stream: player.speedStream,
           builder: (context, snapshot) => IconButton(
+            color: Colors.grey[800],
             icon: Text("${snapshot.data?.toStringAsFixed(1)}x",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             onPressed: () {
@@ -396,6 +419,8 @@ class _SeekBarState extends State<SeekBar> {
       children: [
         Slider(
           min: 0.0,
+          activeColor: Colors.red[700],
+          // inactiveColor: Colors.red[300],
           max: widget.duration.inMilliseconds.toDouble(),
           value: min(_dragValue ?? widget.position.inMilliseconds.toDouble(),
               widget.duration.inMilliseconds.toDouble()),
@@ -478,3 +503,19 @@ class AudioMetadata {
 
   AudioMetadata({this.album, this.title, this.artwork});
 }
+
+final TextStyle _titleStyle =
+    TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+
+final TextStyle _titleBigStyle = TextStyle(
+    fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey[900]);
+
+final TextStyle _itemStyle = TextStyle(
+    fontSize: 18, color: Colors.grey[800], fontWeight: FontWeight.bold);
+
+final TextStyle _subtitleStyle = TextStyle(
+  fontSize: 16,
+  color: Colors.black38,
+  fontWeight: FontWeight.bold,
+  letterSpacing: 1.1,
+);

@@ -43,13 +43,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.4.2"
+  audio_service:
+    dependency: "direct main"
+    description:
+      name: audio_service
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.14.1"
   audio_session:
     dependency: transitive
     description:
       name: audio_session
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.3"
+    version: "0.0.5"
   badges:
     dependency: "direct main"
     description:
@@ -300,6 +307,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.7.0"
+  flutter_isolate:
+    dependency: transitive
+    description:
+      name: flutter_isolate
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0+14"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
