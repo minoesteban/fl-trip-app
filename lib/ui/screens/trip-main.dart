@@ -107,12 +107,16 @@ class TripMain extends StatelessWidget {
           'location',
           style: _subtitleStyle,
         ),
-        trailing: Consumer<UserProvider>(
-          builder: (_, user, __) => user.tripIsPurchased(trip.id) ||
-                  user.user.id == trip.ownerId
-              //TODO: switch to download trip audios locally + progress bar? or counter 1/5, 2/5, 3/5
-              ? DownloadButton(trip: trip, user: user)
-              : PurchaseButton(trip: trip),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Consumer<UserProvider>(
+              builder: (_, user, __) =>
+                  user.tripIsPurchased(trip.id) || user.user.id == trip.ownerId
+                      ? DownloadButton(trip)
+                      : PurchaseButton(trip),
+            ),
+          ],
         ),
       );
     }
@@ -360,25 +364,8 @@ class TripMain extends StatelessWidget {
   }
 }
 
-final TextStyle _titleStyle =
-    TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
-
-final TextStyle _titleBigStyle =
-    TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
-
-final TextStyle _ownerNameStyle =
-    TextStyle(fontSize: 20, color: Colors.black54, fontWeight: FontWeight.bold);
-
-final TextStyle _subtitleStyle = TextStyle(
-  fontSize: 14,
-  color: Colors.black38,
-  fontWeight: FontWeight.bold,
-  letterSpacing: 1.1,
-);
-
 class PurchaseButton extends StatelessWidget {
-  const PurchaseButton({@required this.trip});
-
+  const PurchaseButton(this.trip);
   final Trip trip;
 
   @override
@@ -417,23 +404,15 @@ class PurchaseButton extends StatelessWidget {
 }
 
 class DownloadButton extends StatelessWidget {
-  const DownloadButton({
-    Key key,
-    @required this.trip,
-    @required this.user,
-  }) : super(key: key);
-
+  const DownloadButton(this.trip);
   final Trip trip;
-  final UserProvider user;
 
   @override
   Widget build(BuildContext context) {
     return Consumer<DownloadProvider>(builder: (_, downloads, __) {
       return Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          downloads.existsByTrip(trip.id)
+          downloads.existsByTrip(trip.id, trip.places.length)
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -443,13 +422,16 @@ class DownloadButton extends StatelessWidget {
                   ],
                 )
               : downloads.isDownloading
-                  ? DownloadProgressBar(downloads, user, trip)
+                  ? Container(
+                      width: 180,
+                      child: LinearProgressIndicator(
+                          value: downloads.downloadPercentage))
                   : Text('download', style: _subtitleStyle),
           const SizedBox(width: 10),
           Platform.isIOS
               ? CupertinoSwitch(
                   activeColor: Colors.red[800],
-                  value: downloads.existsByTrip(trip.id),
+                  value: downloads.existsByTrip(trip.id, trip.places.length),
                   onChanged: (value) async {
                     if (!value)
                       downloads.deleteByTrip(trip.id);
@@ -457,7 +439,7 @@ class DownloadButton extends StatelessWidget {
                       await downloads.createByTrip(trip, context);
                   })
               : Switch(
-                  value: downloads.existsByTrip(trip.id),
+                  value: downloads.existsByTrip(trip.id, trip.places.length),
                   onChanged: (value) async {
                     if (!value)
                       downloads.deleteByTrip(trip.id);
@@ -470,25 +452,18 @@ class DownloadButton extends StatelessWidget {
   }
 }
 
-class DownloadProgressBar extends StatelessWidget {
-  final DownloadProvider downloads;
-  final UserProvider user;
-  final Trip trip;
+final TextStyle _titleStyle =
+    TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
 
-  DownloadProgressBar(this.downloads, this.user, this.trip);
+final TextStyle _titleBigStyle =
+    TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 180,
-          child: LinearProgressIndicator(
-            value: downloads.downloadPercentage,
-          ),
-        ),
-      ],
-    );
-  }
-}
+final TextStyle _ownerNameStyle =
+    TextStyle(fontSize: 20, color: Colors.black54, fontWeight: FontWeight.bold);
+
+final TextStyle _subtitleStyle = TextStyle(
+  fontSize: 14,
+  color: Colors.black38,
+  fontWeight: FontWeight.bold,
+  letterSpacing: 1.1,
+);

@@ -119,7 +119,7 @@ class Home extends StatelessWidget {
                         (userData.user.purchasedTrips.contains(trip.id) ||
                             userData.user.purchasedPlaces
                                 .contains(_ts.expand((t) => t.places))) ||
-                        (downloads.existsByTrip(trip.id)))
+                        (downloads.existsByTrip(trip.id, trip.places.length)))
                     ?.toList();
 
                 _favourites = _ts

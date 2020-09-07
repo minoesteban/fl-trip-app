@@ -24,16 +24,17 @@ class DownloadController {
 
   Future<void> updateLocal(Download download) async {
     await downloadBox.put(download.id, download);
+    print(downloadBox.values.map((e) => 'trip ${e.tripId} place ${e.placeId}'));
   }
 
   Future<void> deleteLocal(Download download) async {
     await downloadBox.delete(download.id);
   }
 
-  bool existsByTrip(int id) {
+  bool existsByTrip(int id, int placesQty) {
     bool exists = true;
     var downloads = downloadBox.values.where((d) => d.tripId == id).toList();
-    if (downloads.length > 0)
+    if (downloads.length > 0 && downloads.length >= placesQty)
       downloads.forEach((d) {
         if (!File(d.filePath).existsSync()) exists = false;
       });
@@ -44,9 +45,13 @@ class DownloadController {
 
   bool existsByPlace(int id) {
     bool exists = true;
-    downloadBox.values.where((d) => d.placeId == id).toList().forEach((d) {
-      if (!File(d.filePath).existsSync()) exists = false;
-    });
+    var downloads = downloadBox.values.where((d) => d.placeId == id).toList();
+    if (downloads.length > 0)
+      downloads.forEach((d) {
+        if (!File(d.filePath).existsSync()) exists = false;
+      });
+    else
+      exists = false;
     return exists;
   }
 }

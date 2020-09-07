@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tripit/core/utils/s3-auth-headers.dart';
+import 'package:tripit/providers/download.provider.dart';
 import 'package:tripit/providers/purchase.provider.dart';
 import 'package:tripit/providers/trip.provider.dart';
+import 'package:tripit/ui/screens/cart-main.dart';
 import 'package:tripit/ui/widgets/audio-components.dart';
 import 'package:tripit/ui/widgets/collapsible-text.dart';
 import '../../core/models/place.model.dart';
@@ -112,55 +117,119 @@ class PlaceDialog extends StatelessWidget {
           Player(_place.previewAudioUrl, true, false),
           //about
           CollapsibleText(_place.about),
+          //purchase / download
           const Divider(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: SizedBox(
-              height: 40,
-              width: MediaQuery.of(context).size.width - 40,
-              child: Builder(
-                builder: (ctx) => Consumer2<UserProvider, TripProvider>(
-                  builder: (context, user, trips, _) {
-                    return RaisedButton(
-                      color: Colors.green[700],
-                      child: Text(
-                        user.placeIsPurchased(_place.id) ||
-                                user.tripIsPurchased(
-                                    trips.findById(_place.tripId).id)
-                            ? 'purchased'
-                            : _place.price == 0
-                                ? 'add to cart   (free)'
-                                : _place.price == 99999
-                                    ? 'not purchaseable'
-                                    : 'add to cart   (\$${_place.price.toStringAsPrecision(3)})',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            letterSpacing: 1.5),
-                      ),
-                      onPressed: user.placeIsPurchased(_place.id) ||
-                              user.tripIsPurchased(
-                                  trips.findById(_place.tripId).id) ||
-                              trips.findById(_place.tripId).ownerId ==
-                                  user.user.id ||
-                              _place.price == 99999
-                          ? null
-                          : () {
-                              Provider.of<CartProvider>(context, listen: false)
-                                  .addItem(null, _place);
-                              Navigator.pop(
-                                  context, user.placeIsPurchased(_place.id));
-                            },
-                    );
-                  },
-                ),
-              ),
+            child:
+                // SizedBox(
+                // height: 40,
+                // width: MediaQuery.of(context).size.width - 40,
+                // child: Builder(
+                //   builder: (ctx) =>
+                Consumer<UserProvider>(
+              builder: (context, user, __) =>
+                  user.placeIsPurchased(_place.id) ||
+                          user.tripIsPurchased(_place.tripId) ||
+                          user.user.id ==
+                              Provider.of<TripProvider>(context, listen: false)
+                                  .trips
+                                  .firstWhere((t) => t.id == _place.tripId)
+                                  .ownerId
+                      ? DownloadButton(_place)
+                      : _place.price == 99999
+                          ? Center()
+                          : SizedBox(
+                              height: 40,
+                              width: MediaQuery.of(context).size.width - 40,
+                              child: PurchaseButton(_place)),
             ),
+            // ),
           ),
+          // ),
         ],
       ),
     );
+  }
+}
+
+class PurchaseButton extends StatelessWidget {
+  const PurchaseButton(this.place);
+  final Place place;
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(
+      builder: (ctx) => RaisedButton(
+          color: Colors.green[700],
+          child: Text(
+            place.price == 0
+                ? 'add to cart   (free)'
+                : 'add to cart   \$${place.price}',
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: 1.5),
+          ),
+          onPressed: () {
+            Provider.of<CartProvider>(context, listen: false)
+                .addItem(null, place);
+            Navigator.pop(context, true);
+          }),
+    );
+  }
+}
+
+class DownloadButton extends StatelessWidget {
+  const DownloadButton(this.place);
+  final Place place;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<DownloadProvider>(builder: (_, downloads, __) {
+      return Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            downloads.existsByPlace(place.id)
+                ? Row(
+                    children: [
+                      Text('downloaded', style: _statTitle),
+                      const SizedBox(width: 10),
+                      Icon(Icons.check, size: 30, color: Colors.red[800])
+                    ],
+                  )
+                : downloads.isDownloading
+                    ? Container(
+                        width: 180,
+                        child: LinearProgressIndicator(
+                            value: downloads.downloadPercentage))
+                    : Text('download', style: _statTitle),
+            const SizedBox(width: 10),
+            Platform.isIOS
+                ? CupertinoSwitch(
+                    activeColor: Colors.red[800],
+                    value: downloads.existsByPlace(place.id),
+                    onChanged: (value) async {
+                      if (!value)
+                        downloads.deleteByPlace(place.id);
+                      else
+                        await downloads.createByPlace(place, context);
+                    })
+                : Switch(
+                    value: downloads.existsByPlace(place.id),
+                    onChanged: (value) async {
+                      if (!value)
+                        downloads.deleteByPlace(place.id);
+                      else
+                        await downloads.createByPlace(place, context);
+                    })
+          ],
+        ),
+      );
+    });
   }
 }
 

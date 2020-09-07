@@ -14,7 +14,8 @@ class DownloadProvider extends ChangeNotifier {
   DownloadController controller = DownloadController();
   PlaceController placeController = PlaceController();
   bool isDownloading = false;
-  double totalContentLength = 0;
+  int totalContentLength = 0;
+  int downloadedContentLength = 0;
   double downloadPercentage = 0;
 
   List<Download> get downloads {
@@ -23,6 +24,7 @@ class DownloadProvider extends ChangeNotifier {
 
   Future<void> init() async {
     await controller.init();
+    print(controller.downloads.map((e) => e).toList());
     notifyListeners();
   }
 
@@ -37,64 +39,77 @@ class DownloadProvider extends ChangeNotifier {
 
   Future<void> createByTrip(Trip trip, BuildContext context) async {
     //TODO: check network connectivity and ask for confirmation if not wifi
-    String dir = (await getApplicationDocumentsDirectory()).path;
-    isDownloading = true;
     totalContentLength = 0;
     downloadPercentage = 0;
-    int downloaded = 0;
-    notifyListeners();
+    downloadedContentLength = 0;
     for (Place place in trip.places) {
-      List<List<int>> chunks = new List();
-      String filename = path.basename(Uri.parse(place.fullAudioUrl).path);
-      Directory fileDir = Directory('$dir/${trip.id}/${place.id}')
-        ..create(recursive: true);
-      String finalFilePath = '${fileDir.path}/$filename';
-
-      var response = placeController.downloadFullAudio(place);
-
-      response.asStream().listen(
-        (r) async {
-          if (r.statusCode == HttpStatus.ok) {
-            totalContentLength += r.contentLength;
-            r.stream.listen(
-              (List<int> chunk) {
-                downloadPercentage = downloaded / totalContentLength;
-                downloaded += chunk.length;
-                chunks.add(chunk);
-                notifyListeners();
-              },
-              onDone: () async {
-                downloadPercentage = downloaded / totalContentLength;
-                notifyListeners();
-
-                File file = new File(finalFilePath);
-                final Uint8List bytes = Uint8List(r.contentLength);
-                int offset = 0;
-                for (List<int> chunk in chunks) {
-                  bytes.setRange(offset, offset + chunk.length, chunk);
-                  offset += chunk.length;
-                }
-                //TODO:save file encrypted, not flat
-                file = await file.writeAsBytes(bytes);
-                isDownloading = false;
-                notifyListeners();
-                await createLocal(Download(
-                    tripId: trip.id, placeId: place.id, filePath: file.path));
-              },
-              onError: (error) async {
-                isDownloading = false;
-                notifyListeners();
-                showMessage(context, 'something went wrong!', false);
-              },
-            );
-          } else {
-            isDownloading = false;
-            notifyListeners();
-            showMessage(context, 'something went wrong!!', false);
-          }
-        },
-      );
+      if (!existsByPlace(place.id)) {
+        await downloadByPlace(place, context);
+      }
     }
+  }
+
+  Future<void> createByPlace(Place place, BuildContext context) async {
+    //TODO: check network connectivity and ask for confirmation if not wifi
+    totalContentLength = 0;
+    downloadPercentage = 0;
+    downloadedContentLength = 0;
+    await downloadByPlace(place, context);
+  }
+
+  Future downloadByPlace(Place place, BuildContext context) async {
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    isDownloading = true;
+    notifyListeners();
+    List<List<int>> chunks = new List();
+    String filename = path.basename(Uri.parse(place.fullAudioUrl).path);
+    Directory fileDir = Directory('$dir/${place.tripId}/${place.id}')
+      ..create(recursive: true);
+    String finalFilePath = '${fileDir.path}/$filename';
+
+    placeController.downloadFullAudio(place).asStream().listen(
+      (r) async {
+        if (r.statusCode == HttpStatus.ok) {
+          totalContentLength += r.contentLength;
+          r.stream.listen(
+            (List<int> chunk) {
+              downloadPercentage = downloadedContentLength / totalContentLength;
+              downloadedContentLength += chunk.length;
+              chunks.add(chunk);
+              notifyListeners();
+            },
+            onDone: () async {
+              downloadPercentage = downloadedContentLength / totalContentLength;
+              notifyListeners();
+
+              File file = new File(finalFilePath);
+              final Uint8List bytes = Uint8List(r.contentLength);
+              int offset = 0;
+              for (List<int> chunk in chunks) {
+                bytes.setRange(offset, offset + chunk.length, chunk);
+                offset += chunk.length;
+              }
+              //TODO:save file encrypted, not flat
+              file = await file.writeAsBytes(bytes);
+              isDownloading = false;
+              await createLocal(Download(
+                  tripId: place.tripId,
+                  placeId: place.id,
+                  filePath: file.path));
+            },
+            onError: (error) async {
+              isDownloading = false;
+              notifyListeners();
+              showMessage(context, 'something went wrong!', false);
+            },
+          );
+        } else {
+          isDownloading = false;
+          notifyListeners();
+          showMessage(context, 'something went wrong!!', false);
+        }
+      },
+    );
   }
 
   Future<void> updateLocal(Download download) async {
@@ -135,8 +150,8 @@ class DownloadProvider extends ChangeNotifier {
     return controller.downloads.where((d) => d.placeId == id);
   }
 
-  bool existsByTrip(int id) {
-    return controller.existsByTrip(id);
+  bool existsByTrip(int id, int placesQty) {
+    return controller.existsByTrip(id, placesQty);
   }
 
   bool existsByPlace(int id) {
