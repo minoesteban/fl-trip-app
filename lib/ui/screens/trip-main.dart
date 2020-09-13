@@ -420,6 +420,7 @@ class DownloadButton extends StatelessWidget {
                   ? Container(
                       width: 180,
                       child: LinearProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(Colors.red[600]),
                           value: downloads.downloadPercentage))
                   : Text('download', style: _subtitleStyle),
           const SizedBox(width: 10),
