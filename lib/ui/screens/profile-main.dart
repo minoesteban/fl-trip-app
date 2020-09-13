@@ -222,7 +222,7 @@ class Profile extends StatelessWidget {
                   mainAxisSpacing: 20,
                   crossAxisCount: 3,
                   shrinkWrap: true,
-                  childAspectRatio: 1.8,
+                  childAspectRatio: 1.6,
                   children: _userLanguages
                       .map((language) => Column(children: <Widget>[
                             Flag(language.split(',')[0],

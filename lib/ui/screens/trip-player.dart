@@ -1,13 +1,12 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:audio_session/audio_session.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
 import 'package:tripit/providers/download.provider.dart';
 import 'package:tripit/providers/trip.provider.dart';
 import 'package:tripit/ui/widgets/store-trip-map.dart';
@@ -21,52 +20,16 @@ class TripPlayer extends StatefulWidget {
 }
 
 class _TripPlayerState extends State<TripPlayer> {
-  // ConcatenatingAudioSource _playlist;
-  AudioPlayer _player;
+  AudioPlayer player = AudioPlayer();
+  ConcatenatingAudioSource _playlist;
+  // AudioPlayer player;
   Trip trip;
-
-  ConcatenatingAudioSource _playlist = ConcatenatingAudioSource(children: [
-    LoopingAudioSource(
-      count: 2,
-      child: ClippingAudioSource(
-        start: Duration(seconds: 60),
-        end: Duration(seconds: 65),
-        child: AudioSource.uri(Uri.parse(
-            "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")),
-        tag: AudioMetadata(
-          album: "Science Friday",
-          title: "A Salute To Head-Scratching Science (5 seconds)",
-          artwork:
-              "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-        ),
-      ),
-    ),
-    AudioSource.uri(
-      Uri.parse(
-          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3"),
-      tag: AudioMetadata(
-        album: "Science Friday",
-        title: "A Salute To Head-Scratching Science",
-        artwork:
-            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-      ),
-    ),
-    AudioSource.uri(
-      Uri.parse("https://s3.amazonaws.com/scifri-segments/scifri201711241.mp3"),
-      tag: AudioMetadata(
-        album: "Science Friday",
-        title: "From Cat Rheology To Operatic Incompetence",
-        artwork:
-            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-      ),
-    ),
-  ]);
 
   @override
   void initState() {
     super.initState();
     trip = widget._trip;
-    _player = AudioPlayer();
+    player = AudioPlayer();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
@@ -83,7 +46,6 @@ class _TripPlayerState extends State<TripPlayer> {
       children:
           await Future.wait(trip.places.map<Future<AudioSource>>((place) async {
         if (downloads.existsByPlace(place.id)) {
-          print('local ${downloads.getByPlace(place.id).first.filePath}');
           //Load local audio file
           return AudioSource.uri(
             Uri.parse(
@@ -110,7 +72,7 @@ class _TripPlayerState extends State<TripPlayer> {
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
     try {
-      await _player.load(_playlist);
+      await player.load(_playlist);
     } catch (e) {
       // catch load errors: 404, invalid url ...
       print("An error occured $e");
@@ -119,7 +81,7 @@ class _TripPlayerState extends State<TripPlayer> {
 
   @override
   void dispose() {
-    _player.dispose();
+    player.dispose();
     super.dispose();
   }
 
@@ -145,51 +107,43 @@ class _TripPlayerState extends State<TripPlayer> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            //trip map
             Expanded(
-              child: StreamBuilder<SequenceState>(
-                stream: _player.sequenceStateStream,
-                builder: (context, snapshot) {
-                  final state = snapshot.data;
-                  if (state?.sequence?.isEmpty ?? true) return SizedBox();
-                  final metadata = state.currentSource.tag as AudioMetadata;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Center(
-                            child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
-                                    border:
-                                        Border.all(color: Colors.grey[400])),
-                                child: TripMap(trip)),
-                            // CachedNetworkImage(
-                            //   fit: BoxFit.fill,
-                            //   imageUrl: metadata.artwork,
-                            //   httpHeaders:
-                            //       generateAuthHeaders(metadata.artwork),
-                            // ),
-                          ),
-                        ),
-                      ),
-                      Text(metadata.album ?? '', style: _titleStyle),
-                      Text(metadata.title ?? '', style: _subtitleStyle),
-                    ],
-                  );
-                },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          border: Border.all(color: Colors.grey[400])),
+                      child: TripMap(trip)),
+                ),
               ),
             ),
-            ControlButtons(_player),
+            //trip & place name
+            StreamBuilder<SequenceState>(
+              stream: player.sequenceStateStream,
+              builder: (context, snapshot) {
+                final state = snapshot.data;
+                if (state?.sequence?.isEmpty ?? true) return SizedBox();
+                final metadata = state.currentSource.tag as AudioMetadata;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(metadata.album ?? '', style: _titleStyle),
+                    Text(metadata.title ?? '', style: _subtitleStyle),
+                  ],
+                );
+              },
+            ),
+            ControlButtons(player),
             StreamBuilder<Duration>(
-              stream: _player.durationStream,
+              stream: player.durationStream,
               builder: (context, snapshot) {
                 final duration = snapshot.data ?? Duration.zero;
                 return StreamBuilder<Duration>(
-                  stream: _player.positionStream,
+                  stream: player.positionStream,
                   builder: (context, snapshot) {
                     var position = snapshot.data ?? Duration.zero;
                     if (position > duration) {
@@ -199,7 +153,7 @@ class _TripPlayerState extends State<TripPlayer> {
                       duration: duration,
                       position: position,
                       onChangeEnd: (newPosition) {
-                        _player.seek(newPosition);
+                        player.seek(newPosition);
                       },
                     );
                   },
@@ -210,7 +164,7 @@ class _TripPlayerState extends State<TripPlayer> {
             Row(
               children: [
                 StreamBuilder<LoopMode>(
-                  stream: _player.loopModeStream,
+                  stream: player.loopModeStream,
                   builder: (context, snapshot) {
                     final loopMode = snapshot.data ?? LoopMode.off;
                     const icons = [
@@ -227,7 +181,7 @@ class _TripPlayerState extends State<TripPlayer> {
                     return IconButton(
                       icon: icons[index],
                       onPressed: () {
-                        _player.setLoopMode(cycleModes[
+                        player.setLoopMode(cycleModes[
                             (cycleModes.indexOf(loopMode) + 1) %
                                 cycleModes.length]);
                       },
@@ -239,7 +193,7 @@ class _TripPlayerState extends State<TripPlayer> {
                       style: _titleBigStyle, textAlign: TextAlign.center),
                 ),
                 StreamBuilder<bool>(
-                  stream: _player.shuffleModeEnabledStream,
+                  stream: player.shuffleModeEnabledStream,
                   builder: (context, snapshot) {
                     final shuffleModeEnabled = snapshot.data ?? false;
                     return IconButton(
@@ -247,7 +201,7 @@ class _TripPlayerState extends State<TripPlayer> {
                           ? Icon(Icons.shuffle, color: Colors.red)
                           : Icon(Icons.shuffle, color: Colors.grey),
                       onPressed: () {
-                        _player.setShuffleModeEnabled(!shuffleModeEnabled);
+                        player.setShuffleModeEnabled(!shuffleModeEnabled);
                       },
                     );
                   },
@@ -257,7 +211,7 @@ class _TripPlayerState extends State<TripPlayer> {
             Container(
               height: 200.0,
               child: StreamBuilder<SequenceState>(
-                stream: _player.sequenceStateStream,
+                stream: player.sequenceStateStream,
                 builder: (context, snapshot) {
                   final state = snapshot.data;
                   final sequence = state?.sequence ?? [];
@@ -273,7 +227,7 @@ class _TripPlayerState extends State<TripPlayer> {
                           style: _itemStyle,
                         ),
                         onTap: () {
-                          _player.seek(Duration.zero, index: index);
+                          player.seek(Duration.zero, index: index);
                         },
                       ),
                     ),

@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/ui/screens/trip-player.dart';
 import '../../providers/download.provider.dart';
 import '../../core/models/user.model.dart';
 import '../../core/utils/s3-auth-headers.dart';
@@ -21,9 +18,9 @@ import '../widgets/collapsible-text.dart';
 import '../widgets/image-list.dart';
 import '../widgets/store-trip-places-list.dart';
 import '../widgets/store-trip-map.dart';
-import 'map-main.dart';
 import 'profile-main.dart';
 import 'cart-main.dart';
+import 'trip-player.dart';
 
 class TripMain extends StatelessWidget {
   static const routeName = '/trip';
@@ -310,7 +307,7 @@ class TripMain extends StatelessWidget {
                     ),
                   ),
                 ));
-            })
+            }),
       ];
     }
 
@@ -341,13 +338,13 @@ class TripMain extends StatelessWidget {
                       if (trip.previewAudioUrl != null)
                         const SizedBox(height: 30),
                       buildPictures(),
-                      const SizedBox(height: 40),
+                      const Divider(height: 40),
                       //about text
                       Text('about the trip', style: _titleStyle),
                       CollapsibleText(trip.about),
-                      const SizedBox(height: 20),
+                      const Divider(height: 20),
                       ...buildCreator(),
-                      const SizedBox(height: 40),
+                      const Divider(height: 40),
                       ...buildMapAndPlacesList(),
                       const SizedBox(height: 70),
                     ],

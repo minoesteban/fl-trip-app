@@ -28,10 +28,7 @@ class DownloadProvider extends ChangeNotifier {
   }
 
   Future<void> createLocal(Download download) async {
-    download.id = 1;
-    var ids = controller.ids;
-    if (ids.length > 0) download.id = ids.last + 1;
-
+    download.id = '${download.tripId}-${download.placeId}';
     await controller.createLocal(download);
     notifyListeners();
   }
@@ -91,10 +88,12 @@ class DownloadProvider extends ChangeNotifier {
               //TODO:save file encrypted, not flat
               file = await file.writeAsBytes(bytes);
               isDownloading = false;
-              await createLocal(Download(
-                  tripId: place.tripId,
-                  placeId: place.id,
-                  filePath: file.path));
+              await createLocal(
+                Download(
+                    tripId: place.tripId,
+                    placeId: place.id,
+                    filePath: file.path),
+              );
             },
             onError: (error) async {
               isDownloading = false;

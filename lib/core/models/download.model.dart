@@ -7,7 +7,7 @@ part 'download.model.g.dart';
 @HiveType(typeId: 9)
 class Download {
   @HiveField(0)
-  int id;
+  String id;
   @HiveField(1)
   int tripId;
   @HiveField(2)
