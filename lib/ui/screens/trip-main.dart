@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/cupertino.dart';
@@ -439,9 +440,119 @@ class DownloadButton extends StatelessWidget {
   }
 }
 
+enum StartTripOptions { DoNothing, StartNewTrip, ContinueCurrentTrip }
+
 class StartButton extends StatelessWidget {
   const StartButton(this.trip);
   final Trip trip;
+
+  Future<StartTripOptions> startNewTripDialog(
+      BuildContext context, String currentTripName) async {
+    return showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: RichText(
+              text: TextSpan(
+                text: currentTripName,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Nunito',
+                ),
+                children: [
+                  TextSpan(
+                    text: ' is currently on queue',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal,
+                      fontFamily: 'Nunito',
+                    ),
+                  )
+                ],
+              ),
+            ),
+            content: RichText(
+              text: TextSpan(
+                text: 'do you wish to continue with ',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontFamily: 'Nunito',
+                ),
+                children: [
+                  TextSpan(
+                    text: currentTripName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ', or ',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                      fontFamily: 'Nunito',
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'start trip ',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.green,
+                      fontFamily: 'Nunito',
+                    ),
+                  ),
+                  TextSpan(
+                    text: '${trip.name}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' ?',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                      fontFamily: 'Nunito',
+                    ),
+                  )
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  'CANCEL',
+                ),
+                onPressed: () =>
+                    Navigator.of(context).pop(StartTripOptions.DoNothing),
+              ),
+              FlatButton(
+                child: Text(
+                  'CONTINUE',
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                  ),
+                ),
+                onPressed: () => Navigator.of(context)
+                    .pop(StartTripOptions.ContinueCurrentTrip),
+              ),
+              FlatButton(
+                child: Text(
+                  'START TRIP',
+                  style: TextStyle(
+                    color: Colors.green,
+                  ),
+                ),
+                onPressed: () =>
+                    Navigator.of(context).pop(StartTripOptions.StartNewTrip),
+              ),
+            ],
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -458,9 +569,36 @@ class StartButton extends StatelessWidget {
                 fontSize: 18,
                 letterSpacing: 1.5),
           ),
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => TripPlayer(trip)));
+          onPressed: () async {
+            if (AudioService.playbackState?.processingState != null &&
+                AudioService.playbackState?.processingState !=
+                    AudioProcessingState.none &&
+                AudioService.queue?.first?.album != trip.name) {
+              Trip currentPlayingTrip =
+                  Provider.of<TripProvider>(context, listen: false)
+                      .findById(AudioService.currentMediaItem.extras['tripId']);
+              var res = await startNewTripDialog(
+                  context, AudioService.queue.first.album);
+              switch (res) {
+                case StartTripOptions.StartNewTrip:
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TripPlayer(trip)));
+                  break;
+                case StartTripOptions.ContinueCurrentTrip:
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              TripPlayer(currentPlayingTrip)));
+                  break;
+                default:
+                  return;
+              }
+            } else
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => TripPlayer(trip)));
           });
     else
       return Container();

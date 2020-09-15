@@ -7,13 +7,22 @@ import 'package:tripit/core/models/trip.model.dart';
 
 class TripMap extends StatelessWidget {
   final Trip trip;
+  final int selectedPlaceId;
+  TripMap(this.trip, [this.selectedPlaceId = 0]);
 
-  TripMap(this.trip);
+  void markSelectedPlace(int id) {}
 
   Set<Marker> _loadMarkers(Trip _trip) {
     Set<Marker> _markers = _trip.places
         .map(
           (t) => Marker(
+            icon: selectedPlaceId == null || selectedPlaceId == 0
+                ? BitmapDescriptor.defaultMarker
+                : selectedPlaceId == t.id
+                    ? BitmapDescriptor.defaultMarker
+                    : BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueAzure,
+                      ),
             markerId: MarkerId(t.id.toString()),
             draggable: false,
             position: LatLng(t.coordinates.latitude, t.coordinates.longitude),
@@ -38,7 +47,7 @@ class TripMap extends StatelessWidget {
       }
     }
     return LatLngBounds(
-        northeast: LatLng(x1 + 0.005, y1 + 0.005),
+        northeast: LatLng(x1 + 0.01, y1 + 0.005),
         southwest: LatLng(x0 - 0.005, y0 - 0.005));
   }
 
