@@ -14,7 +14,7 @@ import '../../providers/language.provider.dart';
 import '../../providers/country.provider.dart';
 import '../../providers/user.provider.dart';
 import '../../providers/trip.provider.dart';
-import '../widgets/audio-components.dart';
+import '../widgets/flat-player.dart';
 import '../widgets/collapsible-text.dart';
 import '../widgets/image-list.dart';
 import '../widgets/store-trip-places-list.dart';

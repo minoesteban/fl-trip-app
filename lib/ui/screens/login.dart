@@ -45,7 +45,11 @@ class LoginMain extends StatelessWidget {
                   },
                   child: Text(
                     'LOGIN',
-                    style: TextStyle(fontSize: 50),
+                    style: TextStyle(
+                        fontSize: 50,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 1.1),
                   ));
             },
           ),

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tripit/ui/screens/trip-main.dart';
 import '../../core/models/place.model.dart';
 import '../../core/utils/s3-auth-headers.dart';
 import '../../providers/download.provider.dart';
@@ -9,7 +10,7 @@ import '../../providers/purchase.provider.dart';
 import '../../providers/trip.provider.dart';
 import '../../providers/cart.provider.dart';
 import '../../providers/user.provider.dart';
-import '../widgets/audio-components.dart';
+import '../widgets/flat-player.dart';
 import '../widgets/collapsible-text.dart';
 
 class PlaceDialog extends StatelessWidget {
@@ -118,14 +119,21 @@ class PlaceDialog extends StatelessWidget {
                   user.tripIsPurchased(_place.tripId) ||
                   user.user.id ==
                       Provider.of<TripProvider>(context, listen: false)
-                          .trips
-                          .firstWhere((t) => t.id == _place.tripId)
+                          .findById(_place.tripId)
                           .ownerId
               ? Column(
                   children: [
                     DownloadButton(_place),
                     const Divider(height: 30),
-                    StartButton(_place)
+                    SizedBox(
+                      height: 40,
+                      width: MediaQuery.of(context).size.width - 40,
+                      child: Expanded(
+                        child: StartButton(
+                            Provider.of<TripProvider>(context, listen: false)
+                                .findById(_place.tripId)),
+                      ),
+                    )
                   ],
                 )
               : _place.price == 99999
@@ -232,34 +240,34 @@ class DownloadButton extends StatelessWidget {
   }
 }
 
-class StartButton extends StatelessWidget {
-  const StartButton(this.place);
-  final Place place;
+// class StartButton extends StatelessWidget {
+//   const StartButton(this.place);
+//   final Place place;
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      width: MediaQuery.of(context).size.width - 40,
-      child: RaisedButton.icon(
-          color: Colors.red[900],
-          icon: Icon(Icons.directions_walk, color: Colors.white),
-          label: Text(
-            'start trip!',
-            style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                letterSpacing: 1.5),
-          ),
-          onPressed: () {
-            // Provider.of<TripProvider>(context, listen: false)
-            //     .trips
-            //     .firstWhere((t) => t.id == place.tripId);
-          }),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return SizedBox(
+//       height: 40,
+//       width: MediaQuery.of(context).size.width - 40,
+//       child: RaisedButton.icon(
+//           color: Colors.red[900],
+//           icon: Icon(Icons.directions_walk, color: Colors.white),
+//           label: Text(
+//             'start trip!',
+//             style: TextStyle(
+//                 color: Colors.white,
+//                 fontWeight: FontWeight.bold,
+//                 fontSize: 18,
+//                 letterSpacing: 1.5),
+//           ),
+//           onPressed: () {
+//             // Provider.of<TripProvider>(context, listen: false)
+//             //     .trips
+//             //     .firstWhere((t) => t.id == place.tripId);
+//           }),
+//     );
+//   }
+// }
 
 const _statNumber = TextStyle(fontWeight: FontWeight.bold, fontSize: 22);
 

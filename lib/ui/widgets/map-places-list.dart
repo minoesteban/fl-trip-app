@@ -11,7 +11,7 @@ import '../../providers/user.provider.dart';
 import '../../core/models/place.model.dart';
 import '../../core/models/trip.model.dart';
 import '../screens/trip-main.dart';
-import 'audio-components.dart';
+import 'flat-player.dart';
 
 class PlaceList extends StatelessWidget {
   final String selectedPlaceId;

@@ -1,7 +1,5 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:tripit/core/services/trip.service.dart';
 import 'package:tripit/ui/utils/show-message.dart';
@@ -31,21 +29,6 @@ class _PlayerState extends State<Player> {
   void initState() {
     super.initState();
     _player = AudioPlayer();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.black,
-    ));
-    _loadAudio();
-  }
-
-  _loadAudio() async {
-    try {
-      widget.isTrip
-          ? await _player.setUrl(await TripService().getDownloadUrl(widget.url))
-          : await _player
-              .setUrl(await PlaceService().getDownloadUrl(widget.url, false));
-    } catch (e) {
-      showMessage(context, e, true);
-    }
   }
 
   @override
@@ -53,7 +36,7 @@ class _PlayerState extends State<Player> {
     return Row(
       mainAxisSize: MainAxisSize.max,
       children: [
-        PlayPause(_player),
+        PlayPause(_player, widget.url, widget.isTrip, widget.withSlider),
         if (widget.withSlider)
           StreamBuilder<Duration>(
             stream: _player.durationStream,
@@ -84,11 +67,24 @@ class _PlayerState extends State<Player> {
 
 class PlayPause extends StatelessWidget {
   final AudioPlayer player;
-
-  PlayPause(this.player);
+  final String url;
+  final bool withSlider;
+  final bool isTrip;
+  PlayPause(this.player, this.url, this.isTrip, this.withSlider);
 
   @override
   Widget build(BuildContext context) {
+    Future<void> loadAudio() async {
+      try {
+        isTrip
+            ? await player.setUrl(await TripService().getDownloadUrl(url))
+            : await player
+                .setUrl(await PlaceService().getDownloadUrl(url, false));
+      } catch (e) {
+        showMessage(context, e, true);
+      }
+    }
+
     return StreamBuilder<PlayerState>(
       stream: player.playerStateStream,
       builder: (context, snapshot) {
@@ -107,14 +103,16 @@ class PlayPause extends StatelessWidget {
           );
         } else if (playing != true) {
           return IconButton(
-            padding: const EdgeInsets.all(0),
-            icon: Icon(
-              Icons.play_arrow,
-              color: Colors.green,
-            ),
-            iconSize: 50,
-            onPressed: player.play,
-          );
+              padding: const EdgeInsets.all(0),
+              icon: Icon(
+                Icons.play_arrow,
+                color: Colors.green,
+              ),
+              iconSize: 50,
+              onPressed: () async {
+                if (processingState == ProcessingState.none) await loadAudio();
+                player.play();
+              });
         } else if (processingState != ProcessingState.completed) {
           return IconButton(
             padding: const EdgeInsets.all(0),
@@ -191,16 +189,8 @@ class _SeekBarState extends State<SeekBar> {
               },
             ),
           ),
-          Text(
-              RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
-                      .firstMatch("$_remaining")
-                      ?.group(1) ??
-                  '$_remaining',
-              style: Theme.of(context).textTheme.caption),
         ],
       ),
     );
   }
-
-  Duration get _remaining => widget.duration - widget.position;
 }
