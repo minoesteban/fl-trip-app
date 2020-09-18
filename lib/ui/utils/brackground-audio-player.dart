@@ -44,10 +44,10 @@ init(BuildContext context, Trip trip) async {
 
     return {
       'id': id,
-      'album': trip.name,
+      'album': trip.name.toLowerCase(),
       'title': '${place.order} . ${place.name}',
-      'displayTitle': place.name,
-      'displaySubtitle': trip.name,
+      'displayTitle': place.name.toLowerCase(),
+      'displaySubtitle': trip.name.toLowerCase(),
       'artUri': place.imageUrl,
       // 'duration': duration.inMilliseconds,
       'duration': place.fullAudioLength.round() * 1000,

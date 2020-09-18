@@ -3,12 +3,12 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:tripit/core/models/trip.model.dart';
 import 'package:tripit/ui/utils/brackground-audio-player.dart';
 import 'package:tripit/ui/widgets/store-trip-map.dart';
 
 class TripPlayer extends StatefulWidget {
+  static const routeName = '/trip/player';
   final Trip _trip;
   TripPlayer(this._trip);
 
@@ -24,9 +24,9 @@ class _TripPlayerState extends State<TripPlayer> {
   void initState() {
     super.initState();
     trip = widget._trip;
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.black,
-    ));
+    // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    //   statusBarColor: Colors.black,
+    // ));
 
     init(context, trip);
   }
@@ -193,7 +193,7 @@ class ControlButtons extends StatelessWidget {
   final Function init;
   ControlButtons(this.screenState, this.init, this.trip);
 
-  void initAndPlay(BuildContext context, Trip trip) async {
+  void initAndPlay(BuildContext context) async {
     await init(context, trip);
     AudioService.play();
   }
@@ -242,7 +242,7 @@ class ControlButtons extends StatelessWidget {
                 iconSize: 74.0,
                 onPressed: () => processingState == null ||
                         processingState == AudioProcessingState.none
-                    ? initAndPlay(context, trip)
+                    ? initAndPlay(context)
                     : AudioService.play(),
               )
             else if (processingState != AudioProcessingState.completed)

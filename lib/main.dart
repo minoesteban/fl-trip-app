@@ -9,6 +9,7 @@ import 'package:tripit/core/models/rating.model.dart';
 import 'package:tripit/core/models/user.model.dart';
 import 'package:tripit/core/utils/utils.dart';
 import 'package:tripit/providers/download.provider.dart';
+import 'package:tripit/ui/screens/trip-player.dart';
 import 'core/models/download.model.dart';
 import 'core/models/place.model.dart';
 import 'core/models/trip.model.dart';
@@ -112,6 +113,13 @@ void main() async {
                   builder: (context) {
                     Trip trip = args['trip'];
                     return TripMain(trip);
+                  },
+                  settings: settings);
+            case TripPlayer.routeName:
+              return MaterialPageRoute<Map<String, dynamic>>(
+                  builder: (context) {
+                    Trip trip = args['trip'];
+                    return TripPlayer(trip);
                   },
                   settings: settings);
             case Profile.routeName:

@@ -581,24 +581,19 @@ class StartButton extends StatelessWidget {
                   context, AudioService.queue.first.album);
               switch (res) {
                 case StartTripOptions.StartNewTrip:
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => TripPlayer(trip)));
+                  Navigator.of(context).pushNamed(TripPlayer.routeName,
+                      arguments: {'trip': trip});
                   break;
                 case StartTripOptions.ContinueCurrentTrip:
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              TripPlayer(currentPlayingTrip)));
+                  Navigator.of(context).pushNamed(TripPlayer.routeName,
+                      arguments: {'trip': currentPlayingTrip});
                   break;
                 default:
                   return;
               }
             } else
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => TripPlayer(trip)));
+              Navigator.of(context)
+                  .pushNamed(TripPlayer.routeName, arguments: {'trip': trip});
           });
     else
       return Container();
