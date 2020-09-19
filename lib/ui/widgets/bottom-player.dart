@@ -18,9 +18,6 @@ class BottomPlayer extends StatelessWidget {
         final MediaItem mediaItem = screenState?.mediaItem;
         final PlaybackState state = screenState?.playbackState;
 
-        print(AudioService.running);
-        print(state);
-
         if (!AudioService.running ||
             (state?.processingState == AudioProcessingState.none ||
                 state == null))

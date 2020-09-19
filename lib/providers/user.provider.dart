@@ -16,12 +16,15 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> getUserPosition() async {
-    await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((value) {
-      _user.position = value;
+    try {
+      Position position = await getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 2));
+      _user.position = position;
       notifyListeners();
-    }).catchError((err) => throw err);
+    } catch (err) {
+      throw err;
+    }
   }
 
   void toggleFavouriteTrip(int id) {

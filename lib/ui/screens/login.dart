@@ -13,12 +13,19 @@ class LoginMain extends StatelessWidget {
 
   Future<void> init(BuildContext context) async {
     //TODO: hacer el get user dinamico segun login?
+    print('getuser');
     await Provider.of<UserProvider>(context, listen: false).getUser(8, true);
+    print('position');
     await Provider.of<UserProvider>(context, listen: false).getUserPosition();
+    print('init');
     await Provider.of<DownloadProvider>(context, listen: false).init();
+    print('loadtrips');
     await Provider.of<TripProvider>(context, listen: false).loadTrips();
+    print('getcounts');
     await Provider.of<PurchaseProvider>(context, listen: false).getCounts();
+    print('loadcountries');
     await Provider.of<CountryProvider>(context, listen: false).loadCountries();
+    print('loadlanguages');
     await Provider.of<LanguageProvider>(context, listen: false).loadLanguages();
   }
 

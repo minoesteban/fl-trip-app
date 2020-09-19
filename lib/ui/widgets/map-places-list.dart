@@ -143,28 +143,32 @@ class PlaceCard extends StatelessWidget {
             footer: Container(
               color: Colors.black38,
               child: GridTileBar(
-                title: Text(
-                  '${_place.name}',
-                  textAlign: TextAlign.start,
-                  softWrap: true,
-                  maxLines: 2,
-                  overflow: TextOverflow.fade,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
+                title: FittedBox(
+                  child: Text(
+                    '${_place.name}',
+                    textAlign: TextAlign.start,
+                    softWrap: true,
+                    maxLines: 2,
+                    overflow: TextOverflow.fade,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                    ),
                   ),
                 ),
-                subtitle: Text(
-                  '${trip.name}',
-                  textAlign: TextAlign.start,
-                  softWrap: true,
-                  maxLines: 2,
-                  overflow: TextOverflow.fade,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Nunito',
+                subtitle: FittedBox(
+                  child: Text(
+                    '${trip.name}',
+                    textAlign: TextAlign.start,
+                    softWrap: true,
+                    maxLines: 2,
+                    overflow: TextOverflow.fade,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Nunito',
+                    ),
                   ),
                 ),
                 trailing: Row(

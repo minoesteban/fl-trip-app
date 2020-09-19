@@ -48,10 +48,12 @@ class PlaceDialog extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${_place.name}',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white),
+                Expanded(
+                  child: Text(
+                    '${_place.name}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
                 ),
                 Consumer<UserProvider>(
                   builder: (_, user, __) => IconButton(

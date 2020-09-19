@@ -22,53 +22,62 @@ class _TabNavigatorState extends State<TabNavigator> {
   Widget build(BuildContext context) {
     return AudioServiceWidget(
       child: Scaffold(
-          body: PageView(
-            physics: NeverScrollableScrollPhysics(),
-            controller: _pc,
-            children: [
-              MapMain(),
-              Home(),
-              Store(),
-              Profile(
-                  Provider.of<UserProvider>(context, listen: false).user.id),
-            ],
-          ),
-          bottomNavigationBar: BottomNavigationBar(
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            elevation: 5,
-            iconSize: 25,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.red[300],
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              _pc.animateToPage(index,
-                  duration: Duration(milliseconds: 200), curve: Curves.easeIn);
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            items: [
-              BottomNavigationBarItem(
+        body: PageView(
+          physics: NeverScrollableScrollPhysics(),
+          controller: _pc,
+          children: [
+            MapMain(),
+            Home(),
+            Store(),
+            Profile(Provider.of<UserProvider>(context, listen: false).user.id),
+          ],
+        ),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BottomPlayer(),
+            BottomNavigationBar(
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              elevation: 5,
+              iconSize: 25,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.red[300],
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                _pc.animateToPage(
+                  index,
+                  duration: Duration(milliseconds: 200),
+                  curve: Curves.easeIn,
+                );
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              items: [
+                BottomNavigationBarItem(
+                    backgroundColor: Colors.red[900],
+                    title: Text('map'),
+                    icon: Icon(Icons.location_on)),
+                BottomNavigationBarItem(
+                    backgroundColor: Colors.red[900],
+                    title: Text('home'),
+                    icon: Icon(Icons.home)),
+                BottomNavigationBarItem(
+                    backgroundColor: Colors.red[900],
+                    title: Text('store'),
+                    icon: Icon(Icons.shop)),
+                BottomNavigationBarItem(
                   backgroundColor: Colors.red[900],
-                  title: Text('map'),
-                  icon: Icon(Icons.location_on)),
-              BottomNavigationBarItem(
-                  backgroundColor: Colors.red[900],
-                  title: Text('home'),
-                  icon: Icon(Icons.home)),
-              BottomNavigationBarItem(
-                  backgroundColor: Colors.red[900],
-                  title: Text('store'),
-                  icon: Icon(Icons.shop)),
-              BottomNavigationBarItem(
-                backgroundColor: Colors.red[900],
-                title: Text('profile'),
-                icon: Icon(Icons.person),
-              ),
-            ],
-          ),
-          bottomSheet: BottomPlayer()),
+                  title: Text('profile'),
+                  icon: Icon(Icons.person),
+                ),
+              ],
+            ),
+          ],
+        ),
+        // bottomSheet: _currentIndex == 1 ? BottomPlayer() : null,
+      ),
     );
   }
 }
