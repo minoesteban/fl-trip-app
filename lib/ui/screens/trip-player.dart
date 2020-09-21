@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tripit/core/models/trip.model.dart';
 import 'package:tripit/ui/utils/brackground-audio-player.dart';
 import 'package:tripit/ui/widgets/store-trip-map.dart';
@@ -77,110 +78,115 @@ class _TripPlayerState extends State<TripPlayer> {
         MediaQuery.of(context).padding.top -
         MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'tripit',
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-              color: Colors.red[800]),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.red[800]),
-        backgroundColor: Colors.transparent,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
       ),
-      body: SafeArea(
-        child: StreamBuilder<ScreenState>(
-          stream: screenStateStream,
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            final ScreenState screenState = snapshot.data;
-            final List<MediaItem> queue = screenState?.queue;
-            final MediaItem mediaItem = screenState?.mediaItem;
-            final PlaybackState state = screenState?.playbackState;
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'tripit',
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                color: Colors.red[800]),
+          ),
+          centerTitle: true,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.red[800]),
+          backgroundColor: Colors.transparent,
+        ),
+        body: SafeArea(
+          child: StreamBuilder<ScreenState>(
+            stream: screenStateStream,
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              final ScreenState screenState = snapshot.data;
+              final List<MediaItem> queue = screenState?.queue;
+              final MediaItem mediaItem = screenState?.mediaItem;
+              final PlaybackState state = screenState?.playbackState;
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                //trip map
-                buildMap(
-                    mediaItem?.extras != null ? mediaItem.extras['id'] : 0),
-                Container(
-                  height: availableHeight * 0.6,
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      Column(
-                        children: [
-                          //trip & place name
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const SizedBox(height: 8.0),
-                              Text(mediaItem?.album ?? trip.name,
-                                  style: _titleStyle),
-                              Text(mediaItem?.displayTitle ?? '',
-                                  style: _subtitleStyle),
-                              const SizedBox(height: 8.0),
-                              buildSeekBar(mediaItem, state),
-                              ControlButtons(screenState, init, trip),
-                            ],
-                          ),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //trip map
+                  buildMap(
+                      mediaItem?.extras != null ? mediaItem.extras['id'] : 0),
+                  Container(
+                    height: availableHeight * 0.6,
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        Column(
+                          children: [
+                            //trip & place name
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 8.0),
+                                Text(mediaItem?.album ?? trip.name,
+                                    style: _titleStyle),
+                                Text(mediaItem?.displayTitle ?? '',
+                                    style: _subtitleStyle),
+                                const SizedBox(height: 8.0),
+                                buildSeekBar(mediaItem, state),
+                                ControlButtons(screenState, init, trip),
+                              ],
+                            ),
 
-                          //seek bar
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8),
-                                child: Text('places',
-                                    style: _titleBigStyle,
-                                    textAlign: TextAlign.center),
-                              ),
-                              ListView.builder(
-                                physics: ClampingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: queue != null && queue.length > 0
-                                    ? queue?.length
-                                    : trip.places.length,
-                                itemBuilder: (context, index) =>
-                                    queue != null && queue.length > 0
-                                        ? Material(
-                                            color: index ==
-                                                    queue.indexOf(mediaItem)
-                                                ? Colors.grey.shade300
-                                                : null,
-                                            child: ListTile(
-                                              title: Text(queue[index].title,
-                                                  style: _itemStyle),
-                                              onTap: () {
-                                                AudioService.skipToQueueItem(
-                                                    queue[index].id);
-                                              },
+                            //seek bar
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: Text('places',
+                                      style: _titleBigStyle,
+                                      textAlign: TextAlign.center),
+                                ),
+                                ListView.builder(
+                                  physics: ClampingScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: queue != null && queue.length > 0
+                                      ? queue?.length
+                                      : trip.places.length,
+                                  itemBuilder: (context, index) =>
+                                      queue != null && queue.length > 0
+                                          ? Material(
+                                              color: index ==
+                                                      queue.indexOf(mediaItem)
+                                                  ? Colors.grey.shade300
+                                                  : null,
+                                              child: ListTile(
+                                                title: Text(queue[index].title,
+                                                    style: _itemStyle),
+                                                onTap: () {
+                                                  AudioService.skipToQueueItem(
+                                                      queue[index].id);
+                                                },
+                                              ),
+                                            )
+                                          : Material(
+                                              child: ListTile(
+                                                title: Text(
+                                                    '${trip.places[index].order} . ${trip.places[index].name}',
+                                                    style: _itemDisabledStyle),
+                                              ),
                                             ),
-                                          )
-                                        : Material(
-                                            child: ListTile(
-                                              title: Text(
-                                                  '${trip.places[index].order} . ${trip.places[index].name}',
-                                                  style: _itemDisabledStyle),
-                                            ),
-                                          ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

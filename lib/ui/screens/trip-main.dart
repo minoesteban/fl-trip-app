@@ -95,6 +95,38 @@ class TripMain extends StatelessWidget {
     }
 
     Widget buildLocationAndPurchase() {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  Provider.of<CountryProvider>(context, listen: false)
+                      .getName(trip.countryId),
+                  softWrap: true,
+                  style: _titleStyle,
+                ),
+                Text(
+                  'location',
+                  style: _subtitleStyle,
+                ),
+              ],
+            ),
+            Consumer<UserProvider>(
+              builder: (_, user, __) =>
+                  user.tripIsPurchased(trip.id) || user.user.id == trip.ownerId
+                      ? DownloadButton(trip)
+                      : PurchaseButton(trip),
+            ),
+          ],
+        ),
+      );
       return ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 15),
         title: Text(
@@ -419,10 +451,12 @@ class DownloadButton extends StatelessWidget {
                 )
               : downloads.isDownloading
                   ? Container(
-                      width: 180,
+                      constraints: BoxConstraints(maxWidth: 180, minWidth: 100),
+                      width: 150,
                       child: LinearProgressIndicator(
                           valueColor: AlwaysStoppedAnimation(Colors.red[600]),
-                          value: downloads.downloadPercentage))
+                          value: downloads.downloadPercentage),
+                    )
                   : Text('download', style: _subtitleStyle),
           const SizedBox(width: 10),
           CupertinoSwitch(
