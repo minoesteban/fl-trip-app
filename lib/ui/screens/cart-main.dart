@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
-import 'package:tripit/providers/cart.provider.dart';
+import 'package:tripper/core/utils/s3-auth-headers.dart';
+import 'package:tripper/providers/cart.provider.dart';
 
 class CartMain extends StatelessWidget {
   static const routeName = '/cart';

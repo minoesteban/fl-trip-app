@@ -1,9 +1,9 @@
 // import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
-// import 'package:tripit/providers/user-position.provider.dart';
-// import 'package:tripit/core/models/trip.model.dart';
-// import 'package:tripit/ui/screens/trip-main.dart';
+// import 'package:tripper/providers/user-position.provider.dart';
+// import 'package:tripper/core/models/trip.model.dart';
+// import 'package:tripper/ui/screens/trip-main.dart';
 
 // class ProfileTripsList extends StatelessWidget {
 //   final List<Trip> _trips;

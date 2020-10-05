@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tripit/core/controllers/language.controller.dart';
+import 'package:tripper/core/controllers/language.controller.dart';
 import '../core/models/language.model.dart';
 
 class LanguageProvider with ChangeNotifier {

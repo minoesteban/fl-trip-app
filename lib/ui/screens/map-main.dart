@@ -73,7 +73,7 @@ class _MapState extends State<MapMain> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
-          'tripit',
+          'tripper',
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
         centerTitle: true,

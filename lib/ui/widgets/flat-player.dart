@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:tripit/core/services/trip.service.dart';
-import 'package:tripit/ui/utils/show-message.dart';
-import 'package:tripit/core/services/place.service.dart';
+import 'package:tripper/core/services/trip.service.dart';
+import 'package:tripper/ui/utils/show-message.dart';
+import 'package:tripper/core/services/place.service.dart';
 
 class Player extends StatefulWidget {
   final String url;

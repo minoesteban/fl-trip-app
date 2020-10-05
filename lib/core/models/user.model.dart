@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/core/utils/utils.dart';
+import 'package:tripper/core/utils/utils.dart';
 
 part 'user.model.g.dart';
 

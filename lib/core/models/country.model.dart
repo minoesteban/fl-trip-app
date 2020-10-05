@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:tripit/core/models/language.model.dart';
+import 'package:tripper/core/models/language.model.dart';
 
 class Country {
   String code;

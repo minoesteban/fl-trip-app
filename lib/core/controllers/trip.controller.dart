@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:hive/hive.dart';
-import 'package:tripit/core/models/place.model.dart';
+import 'package:tripper/core/models/place.model.dart';
 import '../../core/services/trip.service.dart';
 import '../models/trip.model.dart';
 

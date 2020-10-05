@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:tripit/providers/country.provider.dart';
-import 'package:tripit/providers/download.provider.dart';
-import 'package:tripit/providers/language.provider.dart';
-import 'package:tripit/providers/purchase.provider.dart';
-import 'package:tripit/providers/trip.provider.dart';
-import 'package:tripit/providers/user.provider.dart';
-import 'package:tripit/ui/screens/tab-navigator.dart';
+import 'package:tripper/providers/country.provider.dart';
+import 'package:tripper/providers/download.provider.dart';
+import 'package:tripper/providers/language.provider.dart';
+import 'package:tripper/providers/purchase.provider.dart';
+import 'package:tripper/providers/trip.provider.dart';
+import 'package:tripper/providers/user.provider.dart';
+import 'package:tripper/ui/screens/tab-navigator.dart';
 
 class LoginMain extends StatelessWidget {
   static const routeName = '/login';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tripit/core/models/cart-item.model.dart';
+import 'package:tripper/core/models/cart-item.model.dart';
 import '../core/models/place.model.dart';
 import '../core/models/trip.model.dart';
 import '../core/models/cart.model.dart';

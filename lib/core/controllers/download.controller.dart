@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:hive/hive.dart';
-import 'package:tripit/core/models/download.model.dart';
+import 'package:tripper/core/models/download.model.dart';
 
 class DownloadController {
   Box<Download> downloadBox;

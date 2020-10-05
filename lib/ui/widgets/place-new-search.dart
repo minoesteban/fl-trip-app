@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:tripit/config.dart';
+import 'package:tripper/config.dart';
 
 final places = GoogleMapsPlaces(apiKey: PLACES_API_KEY);
 

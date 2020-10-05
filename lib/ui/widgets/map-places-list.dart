@@ -3,7 +3,7 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:infinity_page_view/infinity_page_view.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
+import 'package:tripper/core/utils/s3-auth-headers.dart';
 
 import '../../providers/language.provider.dart';
 import '../../providers/trip.provider.dart';

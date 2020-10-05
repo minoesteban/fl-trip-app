@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:tripit/core/models/trip.model.dart';
+import 'package:tripper/core/models/trip.model.dart';
 
 class TripMap extends StatelessWidget {
   final Trip trip;

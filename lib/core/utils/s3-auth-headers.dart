@@ -1,5 +1,5 @@
 import 'package:amazon_cognito_identity_dart_2/sig_v4.dart';
-import 'package:tripit/credentials.dart';
+import 'package:tripper/credentials.dart';
 
 Map<String, String> generateAuthHeaders(String url) {
   Map<String, String> headers;

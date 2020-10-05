@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/user.provider.dart';
+import 'package:tripper/providers/user.provider.dart';
 
 enum AuthMode { Signup, Login }
 

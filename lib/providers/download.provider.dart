@@ -3,12 +3,12 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tripit/core/controllers/download.controller.dart';
-import 'package:tripit/core/controllers/place.controller.dart';
-import 'package:tripit/core/models/download.model.dart';
-import 'package:tripit/core/models/place.model.dart';
-import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/ui/utils/show-message.dart';
+import 'package:tripper/core/controllers/download.controller.dart';
+import 'package:tripper/core/controllers/place.controller.dart';
+import 'package:tripper/core/models/download.model.dart';
+import 'package:tripper/core/models/place.model.dart';
+import 'package:tripper/core/models/trip.model.dart';
+import 'package:tripper/ui/utils/show-message.dart';
 
 class DownloadProvider extends ChangeNotifier {
   DownloadController controller = DownloadController();

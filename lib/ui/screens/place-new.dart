@@ -7,7 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:tripit/ui/utils/move-files.dart';
+import 'package:tripper/ui/utils/move-files.dart';
 import '../../core/utils/utils.dart';
 import '../../core/models/place.model.dart';
 import '../../providers/user.provider.dart';
@@ -52,7 +52,9 @@ class _PlaceNewState extends State<PlaceNew> {
     _nameController.text = _newPlace.name ?? '';
     _aboutController.text = _newPlace.about ?? '';
     _priceController.text = _newPlace.price != null
-        ? _newPlace.price != 99999 ? _newPlace.price.toString() : ''
+        ? _newPlace.price != 99999
+            ? _newPlace.price.toString()
+            : ''
         : '';
     _imageController.text = _newPlace.imageUrl ?? '';
     _locationController.text = _newPlace.locationName ?? '';

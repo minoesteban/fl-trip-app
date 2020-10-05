@@ -2,10 +2,10 @@ import 'package:audio_service/audio_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
-import 'package:tripit/providers/trip.provider.dart';
-import 'package:tripit/ui/screens/trip-player.dart';
-import 'package:tripit/ui/utils/brackground-audio-player.dart';
+import 'package:tripper/core/utils/s3-auth-headers.dart';
+import 'package:tripper/providers/trip.provider.dart';
+import 'package:tripper/ui/screens/trip-player.dart';
+import 'package:tripper/ui/utils/brackground-audio-player.dart';
 
 class BottomPlayer extends StatelessWidget {
   @override

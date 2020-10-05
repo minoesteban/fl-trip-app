@@ -12,7 +12,7 @@ class Store extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('tripit',
+        title: Text('tripper',
             style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
         centerTitle: true,
         backgroundColor: Colors.red[900],

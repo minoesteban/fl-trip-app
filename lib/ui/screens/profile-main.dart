@@ -6,7 +6,7 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
+import 'package:tripper/core/utils/s3-auth-headers.dart';
 import '../../ui/widgets/collapsible-text.dart';
 import '../../core/models/user.model.dart';
 import '../../core/models/trip.model.dart';
@@ -323,7 +323,9 @@ class Profile extends StatelessWidget {
                           child: Opacity(
                             opacity: _trips[i].published == true
                                 ? 1
-                                : _trips[i].submitted == true ? 0.7 : 0.4,
+                                : _trips[i].submitted == true
+                                    ? 0.7
+                                    : 0.4,
                             child: !_trips[i].imageUrl.startsWith('http')
                                 ? Image.file(
                                     File(_trips[i].imageUrl),

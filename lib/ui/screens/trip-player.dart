@@ -4,9 +4,9 @@ import 'dart:math';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/ui/utils/brackground-audio-player.dart';
-import 'package:tripit/ui/widgets/store-trip-map.dart';
+import 'package:tripper/core/models/trip.model.dart';
+import 'package:tripper/ui/utils/brackground-audio-player.dart';
+import 'package:tripper/ui/widgets/store-trip-map.dart';
 
 class TripPlayer extends StatefulWidget {
   static const routeName = '/trip/player';
@@ -85,7 +85,7 @@ class _TripPlayerState extends State<TripPlayer> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'tripit',
+            'tripper',
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,

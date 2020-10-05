@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/providers/download.provider.dart';
-import 'package:tripit/providers/trip.provider.dart';
+import 'package:tripper/core/models/trip.model.dart';
+import 'package:tripper/providers/download.provider.dart';
+import 'package:tripper/providers/trip.provider.dart';
 
 void audioPlayerTaskEntrypoint() async {
   AudioServiceBackground.run(() => AudioPlayerTask());
@@ -57,7 +57,7 @@ init(BuildContext context, Trip trip) async {
 
   AudioService.start(
     backgroundTaskEntrypoint: audioPlayerTaskEntrypoint,
-    androidNotificationChannelName: 'tripit',
+    androidNotificationChannelName: 'tripper',
     params: {'items': json.encode(_items)},
     // Enable this if you want the Android service to exit the foreground state on pause.
     androidStopForegroundOnPause: true,

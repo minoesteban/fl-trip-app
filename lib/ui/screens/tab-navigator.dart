@@ -1,7 +1,7 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/providers/user.provider.dart';
+import 'package:tripper/providers/user.provider.dart';
 import 'home-main.dart';
 import 'map-main.dart';
 import 'profile-main.dart';

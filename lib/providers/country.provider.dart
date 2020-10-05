@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tripit/core/controllers/country.controller.dart';
+import 'package:tripper/core/controllers/country.controller.dart';
 import '../core/models/country.model.dart';
 
 class CountryProvider with ChangeNotifier {

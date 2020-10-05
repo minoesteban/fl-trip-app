@@ -1,6 +1,6 @@
-# tripit
+# tripper
 
-tripit
+tripper
 
 ## Getting Started
 

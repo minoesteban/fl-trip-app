@@ -10,7 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:tripit/ui/utils/move-files.dart';
+import 'package:tripper/ui/utils/move-files.dart';
 import '../../ui/utils/trip-submit.dart';
 import '../../ui/screens/place-new.dart';
 import '../../core/models/trip.model.dart';

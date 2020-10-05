@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/models/trip.model.dart';
-import 'package:tripit/config.dart';
-import 'package:tripit/providers/trip.provider.dart';
+import 'package:tripper/core/models/trip.model.dart';
+import 'package:tripper/config.dart';
+import 'package:tripper/providers/trip.provider.dart';
 
 final places = GoogleMapsPlaces(apiKey: PLACES_API_KEY);
 

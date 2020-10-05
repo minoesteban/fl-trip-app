@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
 // import 'package:geolocator/geolocator.dart';
-// import 'package:tripit/core/models/trip.model.dart';
+// import 'package:tripper/core/models/trip.model.dart';
 // import '../ui/widgets/map-search.dart';
 
 // class Search extends StatefulWidget {
@@ -17,7 +17,7 @@
 //   Widget build(BuildContext context) {
 //     return Scaffold(
 //       appBar: AppBar(
-//         title: Text('tripit',
+//         title: Text('tripper',
 //             style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
 //         centerTitle: true,
 //         backgroundColor: Colors.red[900],

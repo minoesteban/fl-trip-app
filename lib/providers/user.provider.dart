@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tripit/core/controllers/user.controller.dart';
-import 'package:tripit/core/models/user.model.dart';
+import 'package:tripper/core/controllers/user.controller.dart';
+import 'package:tripper/core/models/user.model.dart';
 
 class UserProvider with ChangeNotifier {
   UserController _controller = UserController();

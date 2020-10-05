@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/ui/screens/trip-main.dart';
+import 'package:tripper/ui/screens/trip-main.dart';
 import '../../core/models/place.model.dart';
 import '../../core/utils/s3-auth-headers.dart';
 import '../../providers/download.provider.dart';

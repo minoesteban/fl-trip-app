@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:tripit/core/utils/utils.dart';
+import 'package:tripper/core/utils/utils.dart';
 import 'place.model.dart';
 import 'trip.model.dart';
 

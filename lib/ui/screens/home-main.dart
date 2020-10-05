@@ -2,10 +2,10 @@ import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
-import 'package:tripit/providers/download.provider.dart';
-import 'package:tripit/providers/user.provider.dart';
-import 'package:tripit/ui/screens/cart-main.dart';
+import 'package:tripper/core/utils/s3-auth-headers.dart';
+import 'package:tripper/providers/download.provider.dart';
+import 'package:tripper/providers/user.provider.dart';
+import 'package:tripper/ui/screens/cart-main.dart';
 import '../../core/models/trip.model.dart';
 import '../../providers/cart.provider.dart';
 import '../../providers/trip.provider.dart';
@@ -70,7 +70,7 @@ class Home extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('tripit',
+        title: Text('tripper',
             style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
         centerTitle: true,
         backgroundColor: Colors.red[900],

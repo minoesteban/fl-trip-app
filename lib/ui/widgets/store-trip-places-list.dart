@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
-import 'package:tripit/providers/trip.provider.dart';
-import 'package:tripit/ui/screens/cart-main.dart';
+import 'package:tripper/core/utils/s3-auth-headers.dart';
+import 'package:tripper/providers/trip.provider.dart';
+import 'package:tripper/ui/screens/cart-main.dart';
 
 import '../../core/models/place.model.dart';
 import '../screens/place-dialog.dart';

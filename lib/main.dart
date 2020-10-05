@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:tripit/credentials.dart';
+import 'package:tripper/credentials.dart';
 import 'core/models/cart-item.model.dart';
 import 'core/models/cart.model.dart';
 import 'core/models/rating.model.dart';
@@ -99,7 +99,7 @@ void main() async {
         ),
       ],
       child: MaterialApp(
-        title: 'tripit',
+        title: 'tripper',
         debugShowCheckedModeBanner: false,
         routes: {
           '/': (context) => LoginMain(),

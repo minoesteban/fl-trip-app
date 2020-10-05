@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:tripit/core/utils/s3-auth-headers.dart';
+import 'package:tripper/core/utils/s3-auth-headers.dart';
 
 class ImageList extends StatelessWidget {
   final List<String> _images;
