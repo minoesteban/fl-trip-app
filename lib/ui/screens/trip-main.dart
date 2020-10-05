@@ -127,30 +127,6 @@ class TripMain extends StatelessWidget {
           ],
         ),
       );
-      return ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-        title: Text(
-          Provider.of<CountryProvider>(context, listen: false)
-              .getName(trip.countryId),
-          softWrap: true,
-          style: _titleStyle,
-        ),
-        subtitle: Text(
-          'location',
-          style: _subtitleStyle,
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Consumer<UserProvider>(
-              builder: (_, user, __) =>
-                  user.tripIsPurchased(trip.id) || user.user.id == trip.ownerId
-                      ? DownloadButton(trip)
-                      : PurchaseButton(trip),
-            ),
-          ],
-        ),
-      );
     }
 
     Widget buildStats() {
@@ -451,7 +427,7 @@ class DownloadButton extends StatelessWidget {
                 )
               : downloads.isDownloading
                   ? Container(
-                      constraints: BoxConstraints(maxWidth: 180, minWidth: 100),
+                      // constraints: BoxConstraints(maxWidth: 180, minWidth: 100),
                       width: 150,
                       child: LinearProgressIndicator(
                           valueColor: AlwaysStoppedAnimation(Colors.red[600]),

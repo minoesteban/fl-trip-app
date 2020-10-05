@@ -152,13 +152,8 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   Future<void> onPlay() {
-    // if (mediaItem?.duration == null) {
-    //   MediaItem modifiedMediaItem =
-    //       mediaItem.copyWith(duration: player.duration);
-    //   queue[queue.indexOf(mediaItem)] = modifiedMediaItem;
-    //   AudioServiceBackground.setQueue(queue);
-    // }
     player.play();
+    return null;
   }
 
   @override

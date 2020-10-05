@@ -1,18 +1,20 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:tripit/core/models/cart-item.model.dart';
-import 'package:tripit/core/models/cart.model.dart';
-import 'package:tripit/core/models/rating.model.dart';
-import 'package:tripit/core/models/user.model.dart';
-import 'package:tripit/core/utils/utils.dart';
-import 'package:tripit/providers/download.provider.dart';
-import 'package:tripit/ui/screens/trip-player.dart';
+import 'package:tripit/credentials.dart';
+import 'core/models/cart-item.model.dart';
+import 'core/models/cart.model.dart';
+import 'core/models/rating.model.dart';
+import 'core/models/user.model.dart';
 import 'core/models/download.model.dart';
 import 'core/models/place.model.dart';
 import 'core/models/trip.model.dart';
+import 'core/utils/utils.dart';
+import 'providers/download.provider.dart';
 import 'providers/cart.provider.dart';
 import 'providers/purchase.provider.dart';
 import 'providers/language.provider.dart';
@@ -20,6 +22,7 @@ import 'providers/country.provider.dart';
 import 'providers/user.provider.dart';
 import 'providers/filters.provider.dart';
 import 'providers/trip.provider.dart';
+import 'ui/screens/trip-player.dart';
 import 'ui/screens/cart-main.dart';
 import 'ui/screens/login.dart';
 import 'ui/screens/home-main.dart';
@@ -53,6 +56,19 @@ void main() async {
   Hive.registerAdapter(DownloadAdapter());
   Hive.registerAdapter(CoordinatesAdapter());
   Hive.registerAdapter(FileOriginAdapter());
+
+  OneSignal.shared.setLogLevel(OSLogLevel.none, OSLogLevel.none);
+  OneSignal.shared.init(ONESIGNAL_APP_ID, iOSSettings: {
+    OSiOSSettings.autoPrompt: false,
+    OSiOSSettings.inAppLaunchUrl: false
+  });
+  OneSignal.shared
+      .setInFocusDisplayType(OSNotificationDisplayType.notification);
+
+// The promptForPushNotificationsWithUserResponse function will show the iOS push notification prompt.
+// We recommend removing the following code and instead using an In-App Message to prompt for notification permission
+  await OneSignal.shared
+      .promptUserForPushNotificationPermission(fallbackToSettings: true);
 
   runApp(
     MultiProvider(

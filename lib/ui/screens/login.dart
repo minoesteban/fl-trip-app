@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:tripit/providers/country.provider.dart';
 import 'package:tripit/providers/download.provider.dart';
 import 'package:tripit/providers/language.provider.dart';
@@ -13,20 +15,20 @@ class LoginMain extends StatelessWidget {
 
   Future<void> init(BuildContext context) async {
     //TODO: hacer el get user dinamico segun login?
-    print('getuser');
-    await Provider.of<UserProvider>(context, listen: false).getUser(8, true);
-    print('position');
-    await Provider.of<UserProvider>(context, listen: false).getUserPosition();
-    print('init');
+    await Provider.of<UserProvider>(context, listen: false).init();
+    print('inituser');
     await Provider.of<DownloadProvider>(context, listen: false).init();
-    print('loadtrips');
+    print('initdownloads');
     await Provider.of<TripProvider>(context, listen: false).loadTrips();
-    print('getcounts');
-    await Provider.of<PurchaseProvider>(context, listen: false).getCounts();
-    print('loadcountries');
+    print('loadtrips');
     await Provider.of<CountryProvider>(context, listen: false).loadCountries();
-    print('loadlanguages');
     await Provider.of<LanguageProvider>(context, listen: false).loadLanguages();
+    Provider.of<PurchaseProvider>(context, listen: false).getCounts();
+
+    if (Provider.of<UserProvider>(context, listen: false).user.id > 0) {
+      await Provider.of<UserProvider>(context, listen: false).getUserPosition();
+      Navigator.pushReplacementNamed(context, TabNavigator.routeName);
+    }
   }
 
   @override
@@ -46,7 +48,12 @@ class LoginMain extends StatelessWidget {
                   ),
                 );
               return FlatButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    print('getuser');
+                    await Provider.of<UserProvider>(context, listen: false)
+                        .getUser(8, true);
+                    await Provider.of<UserProvider>(context, listen: false)
+                        .getUserPosition();
                     Navigator.pushReplacementNamed(
                         context, TabNavigator.routeName);
                   },

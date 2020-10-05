@@ -5,21 +5,35 @@ import 'package:tripit/core/controllers/user.controller.dart';
 import 'package:tripit/core/models/user.model.dart';
 
 class UserProvider with ChangeNotifier {
-  UserController _userController = UserController();
+  UserController _controller = UserController();
   User _user = User();
 
+  Future<void> login(String user, String password) async {}
+
+  Future<void> signup(String user, String password) async {}
+
+  Future<void> init() async {
+    _user = await _controller.init();
+  }
+
   Future<User> getUser(int userId, bool isCurrentUser) async {
-    return await _userController.getUser(userId).then((user) {
-      if (isCurrentUser) _user = user;
+    try {
+      User user = await _controller.getUser(userId);
+      if (isCurrentUser) {
+        _user = user;
+        await _controller.setCurrentLocal(user);
+      }
       return user;
-    }).catchError((err) => throw err);
+    } catch (err) {
+      throw err;
+    }
   }
 
   Future<void> getUserPosition() async {
     try {
       Position position = await getCurrentPosition(
           desiredAccuracy: LocationAccuracy.low,
-          timeLimit: Duration(seconds: 2));
+          timeLimit: Duration(seconds: 5));
       _user.position = position;
       notifyListeners();
     } catch (err) {
@@ -33,7 +47,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.favouriteTrips.add(id);
 
-    _userController.update(_user).catchError((err) => throw err);
+    _controller.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -43,7 +57,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.favouritePlaces.add(id);
 
-    _userController.update(_user).catchError((err) => throw err);
+    _controller.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -53,7 +67,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.purchasedTrips.add(id);
 
-    _userController.update(_user).catchError((err) => throw err);
+    _controller.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -63,7 +77,7 @@ class UserProvider with ChangeNotifier {
     else
       _user.purchasedPlaces.add(id);
 
-    _userController.update(_user).catchError((err) => throw err);
+    _controller.update(_user).catchError((err) => throw err);
     notifyListeners();
   }
 
@@ -84,7 +98,7 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<int> update(User newUser) async {
-    return await _userController.update(newUser).then((v) {
+    return await _controller.update(newUser).then((v) {
       _user = newUser;
       notifyListeners();
     }).catchError((err) => throw err);
@@ -94,7 +108,7 @@ class UserProvider with ChangeNotifier {
     _user.imageUrl = image.path;
     notifyListeners();
 
-    String downloadUrl = await _userController.uploadImage(_user.id, image);
+    String downloadUrl = await _controller.uploadImage(_user.id, image);
     if (downloadUrl != null) {
       _user.imageUrl = downloadUrl;
     }
@@ -102,7 +116,6 @@ class UserProvider with ChangeNotifier {
   }
 
   String getImage() {
-    // return '$_endpoint/${_user.imageUrl}';
     return _user.imageUrl;
   }
 

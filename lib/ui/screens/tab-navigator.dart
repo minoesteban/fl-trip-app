@@ -57,19 +57,19 @@ class _TabNavigatorState extends State<TabNavigator> {
               items: [
                 BottomNavigationBarItem(
                     backgroundColor: Colors.red[900],
-                    title: Text('map'),
+                    label: 'map',
                     icon: Icon(Icons.location_on)),
                 BottomNavigationBarItem(
                     backgroundColor: Colors.red[900],
-                    title: Text('home'),
+                    label: 'home',
                     icon: Icon(Icons.home)),
                 BottomNavigationBarItem(
                     backgroundColor: Colors.red[900],
-                    title: Text('store'),
+                    label: 'store',
                     icon: Icon(Icons.shop)),
                 BottomNavigationBarItem(
                   backgroundColor: Colors.red[900],
-                  title: Text('profile'),
+                  label: 'profile',
                   icon: Icon(Icons.person),
                 ),
               ],

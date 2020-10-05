@@ -35,7 +35,7 @@ class TripNew extends StatefulWidget {
 }
 
 class _TripNewState extends State<TripNew> {
-  Completer<GoogleMapController> _controller = Completer();
+  // Completer<GoogleMapController> _controller = Completer();
   Trip _newTrip;
   String _localeName;
   Position _userPosition;
@@ -88,10 +88,6 @@ class _TripNewState extends State<TripNew> {
     _countries = Provider.of<CountryProvider>(context, listen: false);
     _userPosition =
         Provider.of<UserProvider>(context, listen: false).user.position;
-    _initialPosition = CameraPosition(
-      target: LatLng(_userPosition.latitude, _userPosition.longitude),
-      zoom: 13,
-    );
   }
 
   @override
@@ -250,22 +246,7 @@ class _TripNewState extends State<TripNew> {
                 context: context,
                 delegate: PlaceNewSearch(_userPosition, '', Caller.TripNew));
             if (result != null) {
-              _controller.future.then(
-                (value) => value.animateCamera(
-                  CameraUpdate.newLatLngZoom(
-                      LatLng(result.geometry.location.lat,
-                          result.geometry.location.lng),
-                      14.5),
-                ),
-              );
-
               _newTrip.googlePlaceId = result.placeId;
-
-              _initialPosition = CameraPosition(
-                target: LatLng(
-                    result.geometry.location.lat, result.geometry.location.lng),
-                zoom: 14.5,
-              );
 
               var _countryName = '';
               result.addressComponents
@@ -277,7 +258,6 @@ class _TripNewState extends State<TripNew> {
                       }));
 
               setState(() {
-                _initialPosition = _initialPosition;
                 _newTrip = _newTrip;
                 _locationController.text = '${result.name}, $_countryName';
               });
@@ -672,10 +652,6 @@ class _TripNewState extends State<TripNew> {
             style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
           ),
           actions: [
-            IconButton(
-              icon: Icon(Icons.info_outline),
-              onPressed: () {},
-            ),
             IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () => onDeleteButton(_newTrip, context)),
