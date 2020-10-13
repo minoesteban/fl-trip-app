@@ -3,8 +3,8 @@ import 'package:amazon_cognito_identity_dart_2/sig_v4.dart';
 Map<String, String> generateAuthHeaders(String url) {
   Map<String, String> headers;
 
-  String accessKeyId = 'AKIAWTQJWJP4L4HLCHJL';
-  String secretAccessKey = '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';
+  String accessKeyId = '';
+  String secretAccessKey = '';
 
   String host = Uri.parse(url).host;
   String region = 'us-east-1';
