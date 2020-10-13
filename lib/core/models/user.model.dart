@@ -163,11 +163,17 @@ class User {
       'lastName': lastName,
       'imageUrl': imageUrl,
       'about': about,
+      'purchasedTrips': purchasedTrips,
+      'purchasedPlaces': purchasedPlaces,
+    };
+  }
+
+  Map<String, dynamic> toMapPrefs() {
+    return {
+      'id': id,
       'selectedLanguages': selectedLanguages,
       'favouriteTrips': favouriteTrips,
       'favouritePlaces': favouritePlaces,
-      'purchasedTrips': purchasedTrips,
-      'purchasedPlaces': purchasedPlaces,
       'downloadedTrips': downloadedTrips,
       'downloadedPlaces': downloadedPlaces,
       'onlyNearest': onlyNearest,
@@ -187,6 +193,9 @@ class User {
       lastName: map['lastName'],
       imageUrl: map['imageUrl'],
       about: map['about'],
+      selectedLanguages: map['selectedLanguages'] != null
+          ? List<String>.from(map['selectedLanguages'])
+          : [],
       favouriteTrips: map['favouriteTrips'] != null
           ? List<int>.from(map['favouriteTrips'])
           : [],

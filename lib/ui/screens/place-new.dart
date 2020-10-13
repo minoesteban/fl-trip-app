@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tripper/providers/credentials.provider.dart';
 import 'package:tripper/ui/utils/move-files.dart';
 import '../../core/utils/utils.dart';
 import '../../core/models/place.model.dart';
@@ -109,7 +110,9 @@ class _PlaceNewState extends State<PlaceNew> {
   @override
   Widget build(BuildContext context) {
     if (_locationController.text == '' && _newPlace.id > 0)
-      places
+      GoogleMapsPlaces(
+              apiKey: Provider.of<CredentialsProvider>(context, listen: false)
+                  .googlePlacesApiKey)
           .getDetailsByPlaceId(
             _newPlace.googlePlaceId,
             language: Platform.localeName.split('_')[0],

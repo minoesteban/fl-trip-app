@@ -190,6 +190,9 @@ class PurchaseButton extends StatelessWidget {
                 fontSize: 18,
                 letterSpacing: 1.5),
           ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
           onPressed: () {
             Provider.of<CartProvider>(context, listen: false)
                 .addItem(null, place);

@@ -20,6 +20,8 @@ init(BuildContext context, Trip trip) async {
       Provider.of<DownloadProvider>(context, listen: false);
   TripProvider trips = Provider.of<TripProvider>(context, listen: false);
 
+  print(AudioService.playbackState?.processingState);
+
   if (AudioService.playbackState?.processingState != null &&
       AudioService.playbackState?.processingState !=
           AudioProcessingState.none &&
@@ -81,7 +83,8 @@ class AudioPlayerTask extends BackgroundAudioTask {
   @override
   Future<void> onStart(Map<String, dynamic> params) async {
     final session = await AudioSession.instance;
-    await session.configure(AudioSessionConfiguration.speech());
+    // await session.configure(AudioSessionConfiguration.speech());
+    await session.setActive(true);
 
     var itemsJson = json.decode(params['items']);
     var _items =
@@ -171,6 +174,8 @@ class AudioPlayerTask extends BackgroundAudioTask {
     // down the task. If we don't, the background task will be destroyed before
     // the message gets sent to the UI.
     await _broadcastState();
+    final session = await AudioSession.instance;
+    await session.setActive(false);
     // Shut down this task
     await super.onStop();
   }
@@ -191,7 +196,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
       ],
       processingState: _getProcessingState(),
       playing: player.playing,
-      position: player.position,
+      position: player.position ?? Duration.zero,
       bufferedPosition: player.bufferedPosition,
       speed: player.speed,
     );

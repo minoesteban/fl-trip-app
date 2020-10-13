@@ -49,14 +49,14 @@ packages:
       name: audio_service
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.15.0"
+    version: "0.15.1"
   audio_session:
     dependency: "direct main"
     description:
       name: audio_session
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.7"
+    version: "0.0.8"
   badges:
     dependency: "direct main"
     description:
@@ -386,14 +386,14 @@ packages:
       name: google_maps_flutter
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.28+1"
+    version: "1.0.2"
   google_maps_flutter_platform_interface:
     dependency: transitive
     description:
       name: google_maps_flutter_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.4"
   google_maps_webservice:
     dependency: "direct main"
     description:
@@ -505,14 +505,14 @@ packages:
       name: just_audio
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.4"
-  jwt_decoder:
-    dependency: "direct main"
+    version: "0.5.2"
+  just_audio_platform_interface:
+    dependency: transitive
     description:
-      name: jwt_decoder
+      name: just_audio_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.0"
   latlong:
     dependency: transitive
     description:
@@ -660,6 +660,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.4"
+  pin_code_text_field:
+    dependency: "direct main"
+    description:
+      name: pin_code_text_field
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.7.1"
   platform:
     dependency: transitive
     description:
@@ -919,4 +926,4 @@ packages:
     version: "2.2.1"
 sdks:
   dart: ">=2.10.0-110 <2.11.0"
-  flutter: ">=1.18.0-6.0.pre <2.0.0"
+  flutter: ">=1.22.0 <2.0.0"

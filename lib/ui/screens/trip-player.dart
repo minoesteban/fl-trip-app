@@ -236,8 +236,12 @@ class ControlButtons extends StatelessWidget {
                 // margin: EdgeInsets.all(8.0),
                 width: 74.0,
                 height: 74.0,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation(Colors.grey[400]),
+                child: Container(
+                  margin: const EdgeInsets.all(20),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation(Colors.grey[400]),
+                  ),
                 ),
               )
             else if (playing != true)

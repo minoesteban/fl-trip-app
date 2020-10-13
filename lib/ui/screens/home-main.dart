@@ -29,7 +29,7 @@ class Home extends StatelessWidget {
         physics: ClampingScrollPhysics(),
         crossAxisCount: 2,
         primary: false,
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.6,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
         children: _ts

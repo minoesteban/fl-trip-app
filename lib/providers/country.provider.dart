@@ -6,6 +6,10 @@ class CountryProvider with ChangeNotifier {
   CountryController _controller = CountryController();
   List<Country> _countries;
 
+  CountryProvider() {
+    loadCountries().then((v) => print('countryprovider init'));
+  }
+
   Future<List<Country>> loadCountries() async {
     await _controller.getCountries().then((res) {
       _countries = res;

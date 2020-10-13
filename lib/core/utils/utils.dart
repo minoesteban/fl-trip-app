@@ -4,8 +4,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:hive/hive.dart';
 import 'package:path/path.dart' as path;
+import 'package:hive/hive.dart';
 
 part 'utils.g.dart';
 

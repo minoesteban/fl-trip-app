@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:tripper/config.dart';
-
-final places = GoogleMapsPlaces(apiKey: PLACES_API_KEY);
+import 'package:provider/provider.dart';
+import 'package:tripper/providers/credentials.provider.dart';
 
 enum Caller { TripNew, PlaceNew }
 
@@ -58,15 +57,19 @@ class PlaceNewSearch extends SearchDelegate<PlaceDetails> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return _buildResponses();
+    return _buildResponses(context);
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return _buildResponses();
+    return _buildResponses(context);
   }
 
-  _buildResponses() {
+  _buildResponses(BuildContext context) {
+    final places = GoogleMapsPlaces(
+        apiKey: Provider.of<CredentialsProvider>(context, listen: false)
+            .googlePlacesApiKey);
+
     if (query.length > 2) {
       List<Map<String, String>> _cities = [];
       List<Map<String, String>> _places = [];

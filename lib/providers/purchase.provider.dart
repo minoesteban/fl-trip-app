@@ -6,9 +6,12 @@ class PurchaseProvider with ChangeNotifier {
   PurchaseController _controller = PurchaseController();
   List<PurchaseCount> _counts;
 
-  Future<List<PurchaseCount>> getCounts() async {
+  // PurchaseProvider() {
+  //   getCounts().then((v) => print('purchaseprovider init'));
+  // }
+
+  Future<void> getCounts() async {
     _counts = await _controller.getCounts().catchError((err) => throw err);
-    return [..._counts];
   }
 
   int getCountBy(int tripId, int placeId) {

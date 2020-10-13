@@ -8,9 +8,19 @@ class UserProvider with ChangeNotifier {
   UserController _controller = UserController();
   User _user = User();
 
-  Future<void> login(String user, String password) async {}
+  Future<int> login(String user, String password) async {
+    int userId = await _controller.login(user, password);
+    await getUser(userId, true);
+    return userId;
+  }
 
-  Future<void> signup(String user, String password) async {}
+  Future<bool> signup(String user, String password) async {
+    return await _controller.signup(user, password);
+  }
+
+  Future<bool> activate(String user, String pin) async {
+    return await _controller.activate(user, pin);
+  }
 
   Future<void> init() async {
     _user = await _controller.init();
@@ -21,6 +31,9 @@ class UserProvider with ChangeNotifier {
       User user = await _controller.getUser(userId);
       if (isCurrentUser) {
         _user = user;
+        _user.position = await getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.low,
+            timeLimit: Duration(seconds: 10));
         await _controller.setCurrentLocal(user);
       }
       return user;
@@ -33,7 +46,7 @@ class UserProvider with ChangeNotifier {
     try {
       Position position = await getCurrentPosition(
           desiredAccuracy: LocationAccuracy.low,
-          timeLimit: Duration(seconds: 5));
+          timeLimit: Duration(seconds: 10));
       _user.position = position;
       notifyListeners();
     } catch (err) {
@@ -113,10 +126,6 @@ class UserProvider with ChangeNotifier {
       _user.imageUrl = downloadUrl;
     }
     notifyListeners();
-  }
-
-  String getImage() {
-    return _user.imageUrl;
   }
 
   User get user {

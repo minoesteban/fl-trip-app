@@ -18,6 +18,10 @@ class DownloadProvider extends ChangeNotifier {
   int downloadedContentLength = 0;
   double downloadPercentage = 0;
 
+  DownloadProvider() {
+    init().then((v) => print('downloadprovider init'));
+  }
+
   List<Download> get downloads {
     return controller.downloads;
   }

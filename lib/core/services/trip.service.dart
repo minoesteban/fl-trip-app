@@ -2,19 +2,22 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:tripper/providers/credentials.provider.dart';
 import '../../core/utils/utils.dart';
 import '../../core/models/trip.model.dart';
 import '../../config.dart';
 
 class TripService {
+  String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
   Map<String, String> _headers = {
     'content-type': 'application/json',
     'charset': 'UTF-8'
   };
-  String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
 
   Future<List<Trip>> getAll() async {
-    final res = await http.get('$_endpoint/trips/all', headers: _headers);
+    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
+    final res =
+        await http.get('$_endpoint/trips/all', headers: _headersWithKey);
     if (res.statusCode == HttpStatus.ok) {
       return await parseList(res.body);
     } else
@@ -22,7 +25,9 @@ class TripService {
   }
 
   Future<Trip> getByID(int id) async {
-    final res = await http.get('$_endpoint/trips/$id', headers: _headers);
+    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
+    final res =
+        await http.get('$_endpoint/trips/$id', headers: _headersWithKey);
     if (res.statusCode == HttpStatus.ok) {
       return await parse(res.body);
     } else
@@ -31,8 +36,9 @@ class TripService {
 
   Future<Trip> create(Trip trip) async {
     String url = '$_endpoint/trips';
+    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
     final res = await http.post(url,
-        headers: _headers, body: json.encode(trip.toMapForDB()));
+        headers: _headersWithKey, body: json.encode(trip.toMapForDB()));
     if (res.statusCode == HttpStatus.ok)
       return await parse(res.body);
     else
@@ -41,8 +47,9 @@ class TripService {
 
   Future<Trip> submit(int id) async {
     String url = '$_endpoint/trips/$id';
+    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
     final res = await http.patch(url,
-        headers: _headers, body: json.encode({'submitted': true}));
+        headers: _headersWithKey, body: json.encode({'submitted': true}));
     if (res.statusCode == HttpStatus.ok) {
       return await parse(res.body);
     } else {
@@ -52,8 +59,9 @@ class TripService {
 
   Future<Trip> update(Trip trip) async {
     String url = '$_endpoint/trips/${trip.id}';
+    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
     final res = await http.patch(url,
-        headers: _headers, body: json.encode(trip.toMapForDB()));
+        headers: _headersWithKey, body: json.encode(trip.toMapForDB()));
     if (res.statusCode == HttpStatus.ok) {
       return await parse(res.body);
     } else {
@@ -63,31 +71,18 @@ class TripService {
 
   Future<void> delete(int id) async {
     String url = '$_endpoint/trips/$id';
-    final res = await http.delete(url);
+    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    final res = await http.delete(url, headers: _headersJustKey);
     if (res.statusCode != HttpStatus.ok) {
       throw HttpException(res.body);
     }
   }
 
-  Future<Trip> parse(String data) async {
-    final decoded = json.decode(json.encode(json.decode(data)));
-    return Trip.fromMap(decoded['trip']);
-  }
-
-  Future<List<Trip>> parseList(String data) async {
-    final decoded = json.decode(json.encode(json.decode(data)));
-    List<Trip> _trips = [];
-
-    await decoded['trips']?.forEach(
-        (json) => Trip.fromMap(json).then((trip) => _trips.add(trip)));
-
-    return _trips;
-  }
-
   Future<String> uploadImage(int id, File pickedFile) async {
     String fileExtension = path.extension(pickedFile.path).substring(1);
     String url = '$_endpoint/trips/$id/files?type=$fileExtension';
-    var res = await http.put(url);
+    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var res = await http.put(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok) {
       String downloadUrl = json.decode(res.body)['downloadUrl'];
       File file = File(pickedFile.path);
@@ -98,8 +93,11 @@ class TripService {
           body: file.readAsBytesSync());
       if (res.statusCode == HttpStatus.ok) {
         String url = '$_endpoint/trips/$id';
+        var _headersWithKey = _headers
+          ..addAll({'x-api-key': await getKey('gk')});
         final res = await http.patch(url,
-            headers: _headers, body: json.encode({'imageUrl': downloadUrl}));
+            headers: _headersWithKey,
+            body: json.encode({'imageUrl': downloadUrl}));
         if (res.statusCode == HttpStatus.ok) {
           return json.decode(res.body)['trip']['imageUrl'];
         } else {
@@ -114,15 +112,18 @@ class TripService {
   Future<String> uploadAudio(int id, File audio) async {
     String fileExtension = path.extension(audio.path).substring(1);
     String url = '$_endpoint/trips/$id/files?type=$fileExtension';
-    var res = await http.put(url);
+    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var res = await http.put(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok) {
       String downloadUrl = json.decode(res.body)['downloadUrl'];
       res = await http.put(json.decode(res.body)['uploadUrl'],
           body: audio.readAsBytesSync());
       if (res.statusCode == HttpStatus.ok) {
         String url = '$_endpoint/trips/$id';
+        var _headersWithKey = _headers
+          ..addAll({'x-api-key': await getKey('gk')});
         res = await http.patch(url,
-            headers: _headers,
+            headers: _headersWithKey,
             body: json.encode({'previewAudioUrl': downloadUrl}));
         if (res.statusCode == HttpStatus.ok) {
           return json.decode(res.body)['trip']['previewAudioUrl'];
@@ -143,11 +144,27 @@ class TripService {
     String fileName = path.basenameWithoutExtension(Uri.parse(fileUrl).path);
     String url =
         '$_endpoint/trips/$id/files?type=$fileExtension;filename=$fileName';
-    var res = await http.get(url);
+    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var res = await http.get(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok) {
       return json.decode(res.body)['downloadUrl'];
     } else {
       throw HttpException(res.body.toString());
     }
+  }
+
+  Future<Trip> parse(String data) async {
+    final decoded = json.decode(json.encode(json.decode(data)));
+    return Trip.fromMap(decoded['trip']);
+  }
+
+  Future<List<Trip>> parseList(String data) async {
+    final decoded = json.decode(json.encode(json.decode(data)));
+    List<Trip> _trips = [];
+
+    await decoded['trips']?.forEach(
+        (json) => Trip.fromMap(json).then((trip) => _trips.add(trip)));
+
+    return _trips;
   }
 }

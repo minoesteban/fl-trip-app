@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:tripper/providers/credentials.provider.dart';
 import 'package:tripper/ui/utils/move-files.dart';
 import '../../ui/utils/trip-submit.dart';
 import '../../ui/screens/place-new.dart';
@@ -42,7 +42,6 @@ class _TripNewState extends State<TripNew> {
   CountryProvider _countries;
   LanguageProvider _languages;
   List<Place> _newPlaces = [];
-  CameraPosition _initialPosition;
   final _form = GlobalKey<FormState>();
   final _imageFocus = FocusNode();
   final _imageController = TextEditingController();
@@ -134,7 +133,9 @@ class _TripNewState extends State<TripNew> {
   Widget build(BuildContext context) {
     //get location name
     if (_locationController.text == '' && _newTrip.id > 0)
-      places
+      GoogleMapsPlaces(
+              apiKey: Provider.of<CredentialsProvider>(context, listen: false)
+                  .googlePlacesApiKey)
           .getDetailsByPlaceId(
             _newTrip.googlePlaceId,
             language: _localeName.split('_')[0],

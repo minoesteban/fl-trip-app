@@ -1,11 +1,10 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:tripper/credentials.dart';
+import 'package:tripper/providers/credentials.provider.dart';
+import 'package:tripper/ui/screens/login.dart';
 import 'core/models/cart-item.model.dart';
 import 'core/models/cart.model.dart';
 import 'core/models/rating.model.dart';
@@ -34,19 +33,12 @@ import 'ui/screens/tab-navigator.dart';
 import 'ui/screens/place-dialog.dart';
 import 'ui/screens/trip-main.dart';
 
-UserProvider _userProvider = UserProvider();
-TripProvider _trips = TripProvider();
-PurchaseProvider _purchases = PurchaseProvider();
-CountryProvider _countries = CountryProvider();
-LanguageProvider _languages = LanguageProvider();
-DownloadProvider _downloads = DownloadProvider();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
 
-  Hive.initFlutter();
+  await Hive.initFlutter();
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(TripAdapter());
   Hive.registerAdapter(PlaceAdapter());
@@ -57,18 +49,13 @@ void main() async {
   Hive.registerAdapter(CoordinatesAdapter());
   Hive.registerAdapter(FileOriginAdapter());
 
-  OneSignal.shared.setLogLevel(OSLogLevel.none, OSLogLevel.none);
-  OneSignal.shared.init(ONESIGNAL_APP_ID, iOSSettings: {
-    OSiOSSettings.autoPrompt: false,
-    OSiOSSettings.inAppLaunchUrl: false
-  });
-  OneSignal.shared
-      .setInFocusDisplayType(OSNotificationDisplayType.notification);
-
-// The promptForPushNotificationsWithUserResponse function will show the iOS push notification prompt.
-// We recommend removing the following code and instead using an In-App Message to prompt for notification permission
-  await OneSignal.shared
-      .promptUserForPushNotificationPermission(fallbackToSettings: true);
+  var _userProvider = UserProvider();
+  var _trips = TripProvider();
+  var _purchases = PurchaseProvider();
+  var _countries = CountryProvider();
+  var _languages = LanguageProvider();
+  var _downloads = DownloadProvider();
+  var _credentials = CredentialsProvider();
 
   runApp(
     MultiProvider(
@@ -91,6 +78,9 @@ void main() async {
         ChangeNotifierProvider<DownloadProvider>.value(
           value: _downloads,
         ),
+        ChangeNotifierProvider<CredentialsProvider>.value(
+          value: _credentials,
+        ),
         ChangeNotifierProvider<CartProvider>(
           create: (_) => CartProvider(),
         ),
@@ -102,7 +92,7 @@ void main() async {
         title: 'tripper',
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => LoginMain(),
+          '/': (context) => AuthScreen(), //LoginMain(),
           TabNavigator.routeName: (context) => TabNavigator(),
           Home.routeName: (context) => Home(),
           MapMain.routeName: (context) => MapMain(),
@@ -146,7 +136,8 @@ void main() async {
                   },
                   settings: settings);
             default:
-              return MaterialPageRoute<void>(builder: (context) => LoginMain());
+              return MaterialPageRoute<void>(
+                  builder: (context) => AuthScreen());
           }
         },
         theme: ThemeData(

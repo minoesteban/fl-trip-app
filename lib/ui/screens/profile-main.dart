@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:tripper/core/utils/s3-auth-headers.dart';
 import '../../ui/widgets/collapsible-text.dart';
@@ -67,53 +66,65 @@ class Profile extends StatelessWidget {
     }
 
     Widget buildAvatar() {
-      return Consumer<UserProvider>(builder: (_, userProvider, __) {
-        return Column(
-          children: <Widget>[
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8, right: 8),
-                  child: CircleAvatar(
-                    radius: 75,
-                    backgroundImage: currentUser.imageUrl != null
-                        ? !currentUser.imageUrl.startsWith('http')
-                            ? AssetImage(currentUser.imageUrl)
-                            : CachedNetworkImageProvider(
-                                userProvider.user.imageUrl,
-                                headers: generateAuthHeaders(
-                                    userProvider.user.imageUrl))
-                        : AssetImage('assets/images/avatar.png'),
-                  ),
+      return Column(
+        children: <Widget>[
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8, right: 8),
+                child: CircleAvatar(
+                  radius: 75,
+                  backgroundImage: currentUser.imageUrl != null
+                      ? !currentUser.imageUrl.startsWith('http')
+                          ? AssetImage(currentUser.imageUrl)
+                          : CachedNetworkImageProvider(currentUser.imageUrl,
+                              headers:
+                                  generateAuthHeaders(currentUser.imageUrl))
+                      : AssetImage('assets/images/avatar.png'),
                 ),
-                if (myProfile)
-                  IconButton(
-                    padding: const EdgeInsets.all(0),
-                    icon: Icon(Icons.camera_alt),
-                    color: Colors.grey[400],
-                    iconSize: 35,
-                    onPressed: () async {
-                      if (await onAddFileClicked(context, FileType.image)) {
-                        File image =
-                            await FilePicker.getFile(type: FileType.image);
-                        if (image != null) {
-                          userProvider.updateImage(image);
-                        }
+              ),
+              if (myProfile)
+                IconButton(
+                  padding: const EdgeInsets.all(0),
+                  icon: Icon(Icons.camera_alt),
+                  color: Colors.grey[400],
+                  iconSize: 35,
+                  onPressed: () async {
+                    if (await onAddFileClicked(context, FileType.image)) {
+                      File image =
+                          await FilePicker.getFile(type: FileType.image);
+                      if (image != null) {
+                        userProvider.updateImage(image);
                       }
-                    },
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '${toBeginningOfSentenceCase(currentUser.firstName)} ${toBeginningOfSentenceCase(currentUser.lastName)}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-            ),
-            const Divider(height: 30),
-          ],
-        );
-      });
+                    }
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(width: 18),
+              Text(
+                '${currentUser.firstName} ${currentUser.lastName}',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              ),
+              InkWell(
+                child: Icon(
+                  Icons.edit,
+                  size: 24,
+                  color: Colors.grey[400],
+                ),
+                onTap: () =>
+                    showDialog(context: context, child: Text('edit about')),
+              )
+            ],
+          ),
+          const Divider(height: 30),
+        ],
+      );
     }
 
     List<Widget> buildStats() {
@@ -196,7 +207,20 @@ class Profile extends StatelessWidget {
 
     List<Widget> buildDescription(String about) {
       return [
-        Text('about the creator', style: _titleStyle),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('about the creator', style: _titleStyle),
+            InkWell(
+              child: Icon(
+                Icons.edit,
+                color: Colors.grey[400],
+              ),
+              onTap: () =>
+                  showDialog(context: context, child: Text('edit about')),
+            )
+          ],
+        ),
         CollapsibleText(about),
         const Divider(height: 30),
       ];

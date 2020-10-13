@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:tripper/providers/credentials.provider.dart';
 
 import '../../core/models/rating.model.dart';
 import '../../config.dart';
@@ -12,8 +13,8 @@ class RatingService {
     String url = '$_endpoint/ratings?';
     if (tripId > 0) url += 'tripId=$tripId';
     if (placeId > 0) url += '&placeId=$placeId';
-
-    final res = await http.get(url);
+    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    final res = await http.get(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok)
       return parseRatings(res.body);
     else

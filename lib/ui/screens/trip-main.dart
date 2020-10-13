@@ -379,13 +379,16 @@ class PurchaseButton extends StatelessWidget {
           color: Colors.green[700],
           child: Text(
             trip.price == 0
-                ? 'add to cart   (free)'
-                : 'add to cart    \$${trip.price}',
+                ? 'add to cart (free)'
+                : 'add to cart \$${trip.price}',
             style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
                 letterSpacing: 1.5),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
           ),
           onPressed: () {
             Provider.of<CartProvider>(context, listen: false)

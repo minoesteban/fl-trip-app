@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
 import 'package:tripper/core/models/trip.model.dart';
-import 'package:tripper/config.dart';
+import 'package:tripper/providers/credentials.provider.dart';
 import 'package:tripper/providers/trip.provider.dart';
-
-final places = GoogleMapsPlaces(apiKey: PLACES_API_KEY);
 
 class HomeSearch extends SearchDelegate<Geometry> {
   List<Trip> _trips = [];
@@ -72,15 +70,19 @@ class HomeSearch extends SearchDelegate<Geometry> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return _buildResponses();
+    return _buildResponses(context);
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return _buildResponses();
+    return _buildResponses(context);
   }
 
-  _buildResponses() {
+  _buildResponses(BuildContext context) {
+    final places = GoogleMapsPlaces(
+        apiKey: Provider.of<CredentialsProvider>(context, listen: false)
+            .googlePlacesApiKey);
+
     if (query.length > 2) {
       List<Map<String, String>> _countries = []; //getCountries(_trips, query);
       List<Map<String, String>> _cities = []; //getCities(_trips, query);
