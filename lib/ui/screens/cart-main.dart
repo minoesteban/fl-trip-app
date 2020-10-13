@@ -135,7 +135,8 @@ class CartMain extends StatelessWidget {
                             httpHeaders: generateAuthHeaders(
                                 cart.items[i].isTrip
                                     ? cart.items[i].trip.imageUrl
-                                    : cart.items[i].place.imageUrl),
+                                    : cart.items[i].place.imageUrl,
+                                context),
                             imageUrl: cart.items[i].isTrip
                                 ? cart.items[i].trip.imageUrl
                                 : cart.items[i].place.imageUrl,

@@ -67,7 +67,8 @@ class PlacesList extends StatelessWidget {
                   borderRadius: BorderRadius.all(Radius.circular(5)),
                   child: CachedNetworkImage(
                     fit: BoxFit.cover,
-                    httpHeaders: generateAuthHeaders(places[index].imageUrl),
+                    httpHeaders:
+                        generateAuthHeaders(places[index].imageUrl, context),
                     imageUrl: places[index].imageUrl,
                     placeholder: (context, url) => Center(
                       child: CircularProgressIndicator(

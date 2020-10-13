@@ -102,7 +102,7 @@ class PlaceCard extends StatelessWidget {
               child: Stack(fit: StackFit.expand, children: [
                 CachedNetworkImage(
                   fit: BoxFit.cover,
-                  httpHeaders: generateAuthHeaders(_place.imageUrl),
+                  httpHeaders: generateAuthHeaders(_place.imageUrl, context),
                   imageUrl: _place.imageUrl,
                   placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(

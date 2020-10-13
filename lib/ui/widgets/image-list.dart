@@ -16,7 +16,7 @@ class ImageList extends StatelessWidget {
         child: CachedNetworkImage(
           width: MediaQuery.of(context).size.width - 10,
           fit: BoxFit.cover,
-          httpHeaders: generateAuthHeaders(_images[0]),
+          httpHeaders: generateAuthHeaders(_images[0], context),
           imageUrl: _images[0],
           placeholder: (context, url) => Center(
             child: CircularProgressIndicator(

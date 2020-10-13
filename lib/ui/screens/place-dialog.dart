@@ -30,7 +30,7 @@ class PlaceDialog extends StatelessWidget {
           tag: '${_place.id}_image',
           child: CachedNetworkImage(
             fit: BoxFit.fitWidth,
-            httpHeaders: generateAuthHeaders(_place.imageUrl),
+            httpHeaders: generateAuthHeaders(_place.imageUrl, context),
             imageUrl: _place.imageUrl,
             placeholder: (context, url) => Center(
               child: CircularProgressIndicator(

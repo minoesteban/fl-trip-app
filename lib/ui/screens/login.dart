@@ -62,7 +62,7 @@ Future<void> loginStep2(BuildContext context, int userId) async {
     await Provider.of<TripProvider>(context, listen: false).loadTrips();
     print('loadtrips');
     Provider.of<PurchaseProvider>(context, listen: false).getCounts();
-
+    Provider.of<UserProvider>(context, listen: false).getUserPosition();
     // _focusPIN.dispose();
     _pc.dispose();
 

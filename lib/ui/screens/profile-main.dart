@@ -79,8 +79,8 @@ class Profile extends StatelessWidget {
                       ? !currentUser.imageUrl.startsWith('http')
                           ? AssetImage(currentUser.imageUrl)
                           : CachedNetworkImageProvider(currentUser.imageUrl,
-                              headers:
-                                  generateAuthHeaders(currentUser.imageUrl))
+                              headers: generateAuthHeaders(
+                                  currentUser.imageUrl, context))
                       : AssetImage('assets/images/avatar.png'),
                 ),
               ),
@@ -356,8 +356,8 @@ class Profile extends StatelessWidget {
                                     fit: BoxFit.cover,
                                   )
                                 : CachedNetworkImage(
-                                    httpHeaders:
-                                        generateAuthHeaders(_trips[i].imageUrl),
+                                    httpHeaders: generateAuthHeaders(
+                                        _trips[i].imageUrl, context),
                                     imageUrl: _trips[i].imageUrl,
                                     fit: BoxFit.cover,
                                     errorWidget: (_, __, ___) => Container(

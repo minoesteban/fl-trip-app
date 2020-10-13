@@ -42,7 +42,7 @@ class UserService {
           final storage = FlutterSecureStorage();
           await storage.write(
               key: 'keys', value: json.encode(json.decode(res.body)['keys']));
-          print(await storage.read(key: 'keys'));
+          // print(await storage.read(key: 'keys'));
           return json.decode(res.body)['message'];
           break;
         case HttpStatus.badRequest:

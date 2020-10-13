@@ -1,10 +1,15 @@
 import 'package:amazon_cognito_identity_dart_2/sig_v4.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tripper/providers/credentials.provider.dart';
 
-Map<String, String> generateAuthHeaders(String url) {
+Map<String, String> generateAuthHeaders(String url, BuildContext context) {
   Map<String, String> headers;
 
-  String accessKeyId = '';
-  String secretAccessKey = '';
+  String accessKeyId =
+      Provider.of<CredentialsProvider>(context, listen: false).awsAccessKey;
+  String secretAccessKey =
+      Provider.of<CredentialsProvider>(context, listen: false).awsSecretKey;
 
   String host = Uri.parse(url).host;
   String region = 'us-east-1';

@@ -43,7 +43,8 @@ class Home extends StatelessWidget {
                         }),
                     child: GridTile(
                       child: CachedNetworkImage(
-                        httpHeaders: generateAuthHeaders(trip.imageUrl),
+                        httpHeaders:
+                            generateAuthHeaders(trip.imageUrl, context),
                         imageUrl: trip.imageUrl,
                         fit: BoxFit.cover,
                       ),

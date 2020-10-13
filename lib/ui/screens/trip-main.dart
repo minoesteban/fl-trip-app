@@ -67,7 +67,7 @@ class TripMain extends StatelessWidget {
                 fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.2),
           ),
           background: CachedNetworkImage(
-            httpHeaders: generateAuthHeaders(trip.imageUrl),
+            httpHeaders: generateAuthHeaders(trip.imageUrl, context),
             fit: BoxFit.cover,
             imageUrl: trip.imageUrl,
             placeholder: (context, url) => Center(
@@ -231,8 +231,8 @@ class TripMain extends StatelessWidget {
                     child: Hero(
                       tag: trip.places[i].imageUrl,
                       child: CachedNetworkImage(
-                          httpHeaders:
-                              generateAuthHeaders(trip.places[i].imageUrl),
+                          httpHeaders: generateAuthHeaders(
+                              trip.places[i].imageUrl, context),
                           fit: BoxFit.cover,
                           imageUrl: trip.places[i].imageUrl,
                           placeholder: (context, url) => Center(
@@ -304,7 +304,8 @@ class TripMain extends StatelessWidget {
                       radius: 30,
                       backgroundImage: CachedNetworkImageProvider(
                         snapshot.data.imageUrl,
-                        headers: generateAuthHeaders(snapshot.data.imageUrl),
+                        headers: generateAuthHeaders(
+                            snapshot.data.imageUrl, context),
                       ),
                     ),
                     title: Text(

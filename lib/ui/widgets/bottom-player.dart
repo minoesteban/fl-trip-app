@@ -53,7 +53,8 @@ class BottomPlayer extends StatelessWidget {
                               imageUrl: mediaItem?.artUri ?? queue[0].artUri,
                               fit: BoxFit.cover,
                               httpHeaders: generateAuthHeaders(
-                                  mediaItem?.artUri ?? queue[0].artUri),
+                                  mediaItem?.artUri ?? queue[0].artUri,
+                                  context),
                               placeholder: (context, url) => Center(
                                 child: Opacity(
                                   opacity: 0.5,
