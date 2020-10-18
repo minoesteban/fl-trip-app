@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:provider/provider.dart';
-import 'package:tripper/core/models/user.model.dart';
-import 'package:tripper/providers/credentials.provider.dart';
-import 'package:tripper/providers/purchase.provider.dart';
-import 'package:tripper/providers/trip.provider.dart';
-import 'package:tripper/providers/user.provider.dart';
-import 'package:tripper/ui/screens/tab-navigator.dart';
-import 'package:tripper/ui/utils/show-message.dart';
-import 'package:tripper/ui/utils/validator.dart';
+import '../../core/models/user.model.dart';
+import '../../providers/credentials.provider.dart';
+import '../../providers/purchase.provider.dart';
+import '../../providers/trip.provider.dart';
+import '../../providers/user.provider.dart';
+import '../screens/tab-navigator.dart';
+import '../utils/show-message.dart';
+import '../utils/validator.dart';
 
 enum AuthMode { Signup, Login }
 
-PageController _pc = PageController();
+PageController _pc;
 // FocusNode _focusPIN = FocusNode();
 bool waiting = false;
 Map<String, String> authData = {
@@ -26,6 +26,7 @@ Map<String, String> authData = {
 };
 
 Future<void> init(BuildContext context) async {
+  _pc = PageController();
   await Provider.of<UserProvider>(context, listen: false).init();
   int userId = Provider.of<UserProvider>(context, listen: false).user.id;
   // userId = 0;
@@ -62,12 +63,12 @@ Future<void> loginStep2(BuildContext context, int userId) async {
     await Provider.of<TripProvider>(context, listen: false).loadTrips();
     print('loadtrips');
     Provider.of<PurchaseProvider>(context, listen: false).getCounts();
-    Provider.of<UserProvider>(context, listen: false).getUserPosition();
+    Provider.of<UserProvider>(context, listen: false).getUser(userId, true);
     // _focusPIN.dispose();
     _pc.dispose();
 
     OneSignal.shared.setLogLevel(OSLogLevel.none, OSLogLevel.none);
-    OneSignal.shared.init(await getKey('oi'), iOSSettings: {
+    OneSignal.shared.init(getKey('oi'), iOSSettings: {
       OSiOSSettings.autoPrompt: false,
       OSiOSSettings.inAppLaunchUrl: false
     });
@@ -78,6 +79,8 @@ Future<void> loginStep2(BuildContext context, int userId) async {
     // We recommend removing the following code and instead using an In-App Message to prompt for notification permission
     await OneSignal.shared
         .promptUserForPushNotificationPermission(fallbackToSettings: true);
+    await OneSignal.shared.setExternalUserId(
+        Provider.of<UserProvider>(context, listen: false).user.username);
 
     Navigator.pushReplacementNamed(context, TabNavigator.routeName);
   } catch (err) {

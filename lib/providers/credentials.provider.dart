@@ -1,39 +1,63 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../credentials.dart';
 
 class CredentialsProvider extends ChangeNotifier {
-  Map<String, dynamic> _keys;
-
-  CredentialsProvider() {
-    final storage = FlutterSecureStorage();
-    storage.read(key: 'keys').then((v) {
-      _keys = json.decode(v);
-    });
-  }
+  // Map<String, dynamic> _keys;
+  // CredentialsProvider() {
+  //   final storage = FlutterSecureStorage();
+  //   storage.read(key: 'keys').then((v) {
+  //     _keys = v != null ? json.decode(v) : {};
+  //   });
+  // }
+  // Future<String> getKey(String key) async {
+  //   final storage = FlutterSecureStorage();
+  //   return json.decode(await storage.read(key: 'keys'))[key];
+  // }
 
   String get googlePlacesApiKey {
-    return _keys['gp'];
+    return GP;
+    // return _keys['gp'];
   }
 
   String get awsAccessKey {
-    return _keys['ak'];
+    return AK;
+    // return _keys['ak'];
   }
 
   String get awsSecretKey {
-    return _keys['sk'];
+    return SK;
+    // return _keys['sk'];
   }
 
   String get gatewayApiKey {
-    return _keys['gk'];
+    return GK;
+    // return _keys['gk'];
   }
 
   String get oneSignalAppId {
-    return _keys['oi'];
+    return OI;
+    // return _keys['oi'];
   }
 }
 
-Future<String> getKey(String key) async {
-  final storage = FlutterSecureStorage();
-  return json.decode(await storage.read(key: 'keys'))[key];
+String getKey(String key) {
+  switch (key) {
+    case 'gp':
+      return GP;
+      break;
+    case 'ak':
+      return AK;
+      break;
+    case 'sk':
+      return SK;
+      break;
+    case 'gk':
+      return GK;
+      break;
+    case 'oi':
+      return OI;
+      break;
+    default:
+      return '';
+  }
 }

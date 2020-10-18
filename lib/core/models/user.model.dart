@@ -163,6 +163,8 @@ class User {
       'lastName': lastName,
       'imageUrl': imageUrl,
       'about': about,
+      'favouriteTrips': favouriteTrips,
+      'favouritePlaces': favouritePlaces,
       'purchasedTrips': purchasedTrips,
       'purchasedPlaces': purchasedPlaces,
     };

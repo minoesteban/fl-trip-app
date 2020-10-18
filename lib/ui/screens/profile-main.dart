@@ -6,6 +6,7 @@ import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tripper/core/utils/s3-auth-headers.dart';
+import 'package:tripper/ui/widgets/profile-menu.dart';
 import '../../ui/widgets/collapsible-text.dart';
 import '../../core/models/user.model.dart';
 import '../../core/models/trip.model.dart';
@@ -386,7 +387,8 @@ class Profile extends StatelessWidget {
             style: const TextStyle(
                 fontWeight: FontWeight.bold, letterSpacing: 1.2)),
         actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+          ProfileMenu(),
+          // IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
       floatingActionButton: !myProfile

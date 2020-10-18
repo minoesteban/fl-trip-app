@@ -13,7 +13,7 @@ class RatingService {
     String url = '$_endpoint/ratings?';
     if (tripId > 0) url += 'tripId=$tripId';
     if (placeId > 0) url += '&placeId=$placeId';
-    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var _headersJustKey = {'x-api-key': getKey('gk')};
     final res = await http.get(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok)
       return parseRatings(res.body);

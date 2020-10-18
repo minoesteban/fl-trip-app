@@ -9,7 +9,7 @@ class PurchaseService {
   String _endpoint = Platform.isAndroid ? API_ENDPOINT_ANDROID : API_ENDPOINT;
 
   Future<List<PurchaseCount>> getCounts() async {
-    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var _headersJustKey = {'x-api-key': getKey('gk')};
     final res =
         await http.get('$_endpoint/purchases/count', headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok)

@@ -25,10 +25,6 @@ class _TripPlayerState extends State<TripPlayer> {
   void initState() {
     super.initState();
     trip = widget._trip;
-    // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    //   statusBarColor: Colors.black,
-    // ));
-
     init(context, trip);
   }
 

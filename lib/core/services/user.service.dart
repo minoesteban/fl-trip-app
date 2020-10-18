@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:tripper/core/utils/utils.dart';
@@ -16,7 +15,7 @@ class UserService {
   Future<User> getUser(int userId) async {
     String url = '$_endpoint/users/$userId';
     try {
-      var _headersJustKey = {'x-api-key': await getKey('gk')};
+      var _headersJustKey = {'x-api-key': getKey('gk')};
       final res = await http.get(url, headers: _headersJustKey);
       if (res.statusCode == HttpStatus.ok)
         return await parseUser(res.body);
@@ -39,9 +38,9 @@ class UserService {
       switch (res.statusCode) {
         case HttpStatus.ok:
           //Seteo keys varias
-          final storage = FlutterSecureStorage();
-          await storage.write(
-              key: 'keys', value: json.encode(json.decode(res.body)['keys']));
+          // final storage = FlutterSecureStorage();
+          // await storage.write(
+          //     key: 'keys', value: json.encode(json.decode(res.body)['keys']));
           // print(await storage.read(key: 'keys'));
           return json.decode(res.body)['message'];
           break;
@@ -111,7 +110,7 @@ class UserService {
     String url = '$_endpoint/users/${newUser.id}';
     try {
       var _headersWithKey = _headers;
-      _headersWithKey['x-api-key'] = await getKey('gk');
+      _headersWithKey['x-api-key'] = getKey('gk');
       final res = await http.patch(url,
           headers: _headersWithKey, body: json.encode(newUser.toMapForDB()));
 
@@ -136,7 +135,7 @@ class UserService {
     String fileExtension = path.extension(pickedFile.path).substring(1);
     String url = '$_endpoint/users/$id/files?type=$fileExtension';
     try {
-      var _headersJustKey = {'x-api-key': await getKey('gk')};
+      var _headersJustKey = {'x-api-key': getKey('gk')};
       var _headersWithKey = _headers..addAll(_headersJustKey);
 
       final res = await http.put(url, headers: _headersJustKey);

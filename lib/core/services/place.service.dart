@@ -14,7 +14,7 @@ class PlaceService {
 
   Future<Place> create(Place place) async {
     String url = '$_endpoint/trips/${place.tripId}/places';
-    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
+    var _headersWithKey = _headers..addAll({'x-api-key': getKey('gk')});
     final res = await http.post(url,
         headers: _headersWithKey, body: json.encode(place.toMapForDB()));
     if (res.statusCode == HttpStatus.ok)
@@ -25,7 +25,7 @@ class PlaceService {
 
   Future<Place> update(Place place) async {
     String url = '$_endpoint/trips/${place.tripId}/places/${place.id}';
-    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
+    var _headersWithKey = _headers..addAll({'x-api-key': getKey('gk')});
     final res = await http.patch(url,
         headers: _headersWithKey, body: json.encode(place.toMapForDB()));
     if (res.statusCode == HttpStatus.ok)
@@ -42,7 +42,7 @@ class PlaceService {
 
   Future<void> order(Place place) async {
     String url = '$_endpoint/trips/${place.tripId}/places/${place.id}';
-    var _headersWithKey = _headers..addAll({'x-api-key': await getKey('gk')});
+    var _headersWithKey = _headers..addAll({'x-api-key': getKey('gk')});
     final res = await http.patch(url,
         headers: _headersWithKey, body: json.encode({'order': place.order}));
     if (res.statusCode != HttpStatus.ok) throw HttpException(res.body);
@@ -57,7 +57,7 @@ class PlaceService {
     String fileExtension = path.extension(image.path).substring(1);
     String url =
         '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension';
-    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var _headersJustKey = {'x-api-key': getKey('gk')};
     var res = await http.put(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok) {
       String downloadUrl = json.decode(res.body)['downloadUrl'];
@@ -69,8 +69,7 @@ class PlaceService {
           body: file.readAsBytesSync());
       if (res.statusCode == HttpStatus.ok) {
         String url = '$_endpoint/trips/$tripId/places/$id';
-        var _headersWithKey = _headers
-          ..addAll({'x-api-key': await getKey('gk')});
+        var _headersWithKey = _headers..addAll({'x-api-key': getKey('gk')});
         final res = await http.patch(url,
             headers: _headersWithKey,
             body: json.encode({'imageUrl': downloadUrl}));
@@ -90,7 +89,7 @@ class PlaceService {
     String fileExtension = path.extension(audio.path).substring(1);
     String url =
         '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension;isFull=$isFullAudio';
-    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var _headersJustKey = {'x-api-key': getKey('gk')};
     var res = await http.put(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok) {
       String downloadUrl = json.decode(res.body)['downloadUrl'];
@@ -98,8 +97,7 @@ class PlaceService {
           body: audio.readAsBytesSync());
       if (res.statusCode == HttpStatus.ok) {
         String url = '$_endpoint/trips/$tripId/places/$id';
-        var _headersWithKey = _headers
-          ..addAll({'x-api-key': await getKey('gk')});
+        var _headersWithKey = _headers..addAll({'x-api-key': getKey('gk')});
         res = await http.patch(
           url,
           headers: _headersWithKey,
@@ -144,7 +142,7 @@ class PlaceService {
 
     String url =
         '$_endpoint/trips/$tripId/places/$id/files?type=$fileExtension;isFull=$isFullAudio;filename=$fileName';
-    var _headersJustKey = {'x-api-key': await getKey('gk')};
+    var _headersJustKey = {'x-api-key': getKey('gk')};
     var res = await http.get(url, headers: _headersJustKey);
     if (res.statusCode == HttpStatus.ok) {
       return json.decode(res.body)['downloadUrl'];

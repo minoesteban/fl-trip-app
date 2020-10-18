@@ -26,6 +26,10 @@ class UserProvider with ChangeNotifier {
     _user = await _controller.init();
   }
 
+  Future<void> logout() async {
+    return await _controller.logout();
+  }
+
   Future<User> getUser(int userId, bool isCurrentUser) async {
     try {
       User user = await _controller.getUser(userId);
