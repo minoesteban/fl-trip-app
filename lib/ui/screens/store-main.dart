@@ -33,7 +33,7 @@ class Store extends StatelessWidget {
                 ),
                 animationDuration: Duration(milliseconds: 300),
                 animationType: BadgeAnimationType.scale,
-                position: BadgePosition.topRight(top: 2, right: 2),
+                position: BadgePosition.topEnd(top: 2, end: 2),
                 badgeColor: Colors.white,
                 child: IconButton(
                     icon: Icon(Icons.shopping_cart),
@@ -47,7 +47,7 @@ class Store extends StatelessWidget {
       ),
       body: SafeArea(
         child: Center(
-          child: Text('store'),
+          child: Text('acá va el store'),
         ),
       ),
     );

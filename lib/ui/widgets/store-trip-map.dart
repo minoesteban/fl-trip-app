@@ -16,6 +16,7 @@ class TripMap extends StatelessWidget {
     Set<Marker> _markers = _trip.places
         .map(
           (t) => Marker(
+            //TODO: https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=1|F13E3E|FFFFFF
             icon: selectedPlaceId == null || selectedPlaceId == 0
                 ? BitmapDescriptor.defaultMarker
                 : selectedPlaceId == t.id
@@ -47,8 +48,10 @@ class TripMap extends StatelessWidget {
       }
     }
     return LatLngBounds(
-        northeast: LatLng(x1 + 0.01, y1 + 0.005),
-        southwest: LatLng(x0 - 0.005, y0 - 0.005));
+        // northeast: LatLng(x1 + 0.01, y1 + 0.005),
+        // southwest: LatLng(x0 - 0.005, y0 - 0.005));
+        northeast: LatLng(x1, y1),
+        southwest: LatLng(x0, y0));
   }
 
   _centerMap(GoogleMapController controller) {
@@ -59,7 +62,7 @@ class TripMap extends StatelessWidget {
                 .map((place) => LatLng(
                     place.coordinates.latitude, place.coordinates.longitude))
                 .toList()),
-            1)));
+            60)));
   }
 
   @override

@@ -35,7 +35,7 @@ class UserProvider with ChangeNotifier {
       User user = await _controller.getUser(userId);
       if (isCurrentUser) {
         _user = user;
-        _user.position = await getCurrentPosition(
+        _user.position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.low,
             timeLimit: Duration(seconds: 10));
         await _controller.setCurrentLocal(user);
@@ -48,7 +48,7 @@ class UserProvider with ChangeNotifier {
 
   Future<void> getUserPosition() async {
     try {
-      Position position = await getCurrentPosition(
+      Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.low,
           timeLimit: Duration(seconds: 10));
       _user.position = position;

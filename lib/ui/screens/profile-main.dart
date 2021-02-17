@@ -211,7 +211,7 @@ class Profile extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('about the creator', style: _titleStyle),
+            Text('profile', style: _titleStyle),
             InkWell(
               child: Icon(
                 Icons.edit,

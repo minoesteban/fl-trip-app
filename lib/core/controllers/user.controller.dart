@@ -6,7 +6,7 @@ import '../../core/services/user.service.dart';
 
 class UserController {
   UserService _service = UserService();
-  Box<User> userBox;
+  Box<User> userBox; //Box<User>
 
   Future<User> init() async {
     userBox = await Hive.openBox('users');

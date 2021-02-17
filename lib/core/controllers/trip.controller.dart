@@ -6,7 +6,7 @@ import '../models/trip.model.dart';
 
 class TripController {
   TripService _service = TripService();
-  Box<Trip> tripBox;
+  Box<Trip> tripBox; //Box<Trip>
 
   List<Trip> get trips {
     return tripBox.values.toList();

@@ -29,7 +29,7 @@ class Home extends StatelessWidget {
         physics: ClampingScrollPhysics(),
         crossAxisCount: 2,
         primary: false,
-        childAspectRatio: 0.6,
+        childAspectRatio: 0.8,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
         children: _ts
@@ -92,7 +92,7 @@ class Home extends StatelessWidget {
                 ),
                 animationDuration: Duration(milliseconds: 300),
                 animationType: BadgeAnimationType.scale,
-                position: BadgePosition.topRight(top: 2, right: 2),
+                position: BadgePosition.topEnd(top: 2, end: 2),
                 badgeColor: Colors.white,
                 child: IconButton(
                     icon: Icon(Icons.shopping_cart),

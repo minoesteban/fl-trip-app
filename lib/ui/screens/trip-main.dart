@@ -107,13 +107,13 @@ class TripMain extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  Provider.of<CountryProvider>(context, listen: false)
-                      .getName(trip.countryId),
+                  trip.locationName.split(',')[0],
                   softWrap: true,
                   style: _titleStyle,
                 ),
                 Text(
-                  'location',
+                  Provider.of<CountryProvider>(context, listen: false)
+                      .getName(trip.countryId),
                   style: _subtitleStyle,
                 ),
               ],
@@ -122,6 +122,10 @@ class TripMain extends StatelessWidget {
               builder: (_, user, __) =>
                   user.tripIsPurchased(trip.id) || user.user.id == trip.ownerId
                       ? DownloadButton(trip)
+                      // ? Text('purchased',
+                      //     style: TextStyle(
+                      //         color: Colors.black54,
+                      //         fontWeight: FontWeight.bold))
                       : PurchaseButton(trip),
             ),
           ],

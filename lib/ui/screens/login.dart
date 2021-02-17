@@ -79,8 +79,8 @@ Future<void> loginStep2(BuildContext context, int userId) async {
     // We recommend removing the following code and instead using an In-App Message to prompt for notification permission
     await OneSignal.shared
         .promptUserForPushNotificationPermission(fallbackToSettings: true);
-    await OneSignal.shared.setExternalUserId(
-        Provider.of<UserProvider>(context, listen: false).user.username);
+    // await OneSignal.shared.setExternalUserId(
+    //     Provider.of<UserProvider>(context, listen: false).user.username);
 
     Navigator.pushReplacementNamed(context, TabNavigator.routeName);
   } catch (err) {

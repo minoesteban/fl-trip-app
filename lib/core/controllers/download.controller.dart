@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:tripper/core/models/download.model.dart';
 
 class DownloadController {
-  Box<Download> downloadBox;
+  Box<Download> downloadBox; //Box<Download>
 
   List<Download> get downloads {
     return downloadBox.values.toList();
