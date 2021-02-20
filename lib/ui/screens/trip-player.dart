@@ -349,7 +349,7 @@ class _SeekBarState extends State<SeekBar> {
 }
 
 final TextStyle _titleStyle =
-    TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+    TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
 
 final TextStyle _titleBigStyle = TextStyle(
     fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey[900]);
@@ -361,7 +361,7 @@ final TextStyle _itemDisabledStyle = TextStyle(
     fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.bold);
 
 final TextStyle _subtitleStyle = TextStyle(
-  fontSize: 16,
+  fontSize: 18,
   color: Colors.black38,
   fontWeight: FontWeight.bold,
   letterSpacing: 1.1,

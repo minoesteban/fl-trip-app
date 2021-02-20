@@ -221,14 +221,16 @@ class TripMain extends StatelessWidget {
                   onTap: () {
                     List<String> images =
                         trip.places.map((e) => e.imageUrl).toList();
+                    List<String> names =
+                        trip.places.map((e) => e.name).toList();
                     //TODO: remove when image carrousel is solved
-                    images = [trip.places[i].imageUrl];
+                    // images = [trip.places[i].imageUrl];
 
                     showDialog(
                         barrierDismissible: true,
                         // barrierColor: Colors.black87,
                         context: context,
-                        builder: (context) => ImageList(images));
+                        builder: (context) => ImageList(names, images, i));
                   },
                   child: Card(
                     elevation: 1,

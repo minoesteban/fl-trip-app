@@ -26,20 +26,32 @@ class PlaceDialog extends StatelessWidget {
 
     Widget buildHeader() {
       return Stack(alignment: Alignment.bottomCenter, children: [
-        Hero(
-          tag: '${_place.id}_image',
-          child: CachedNetworkImage(
-            fit: BoxFit.fitWidth,
-            httpHeaders: generateAuthHeaders(_place.imageUrl, context),
-            imageUrl: _place.imageUrl,
-            placeholder: (context, url) => Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 0.5,
-                valueColor: AlwaysStoppedAnimation(Colors.grey[100]),
+        Stack(
+          alignment: Alignment.topLeft,
+          children: [
+            // Hero(
+            //   tag: '${_place.id}_image',
+            // child:
+            CachedNetworkImage(
+              fit: BoxFit.fitWidth,
+              httpHeaders: generateAuthHeaders(_place.imageUrl, context),
+              imageUrl: _place.imageUrl,
+              placeholder: (context, url) => Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 0.5,
+                  valueColor: AlwaysStoppedAnimation(Colors.grey[100]),
+                ),
+              ),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
+            // ),
+            Container(
+              alignment: Alignment.topLeft,
+              child: CloseButton(
+                color: Colors.white,
               ),
             ),
-            errorWidget: (context, url, error) => const Icon(Icons.error),
-          ),
+          ],
         ),
         Container(
           color: Colors.black45,
@@ -163,8 +175,8 @@ class PlaceDialog extends StatelessWidget {
           //about
           CollapsibleText(_place.about),
           //purchase / download
-          const Divider(height: 30),
-          buildPurchaseDownload(),
+          // const Divider(height: 30),
+          // buildPurchaseDownload(),
         ],
       ),
     );
